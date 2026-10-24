@@ -9,6 +9,9 @@ export default async function DemoPage({
 }) {
   const { id } = await params;
   const data = await loadDemoData(id);
-  if (!data) notFound();
+  
+  // Adding 'return' here helps TypeScript know data will never be null below
+  if (!data) return notFound(); 
+  
   return <DemoDashboard initialData={data} />;
 }

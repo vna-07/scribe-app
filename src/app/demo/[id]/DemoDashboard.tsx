@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { DemoData } from "@/lib/demo-data";
 import { rands, fmtDate } from "@/lib/format";
 import Image from "next/image";
+import Link from "next/link";
 
 interface ThembaMsg {
   role: "user" | "themba";
@@ -503,13 +504,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 </div>
                 <span className="text-[#5B5BE0] text-xl group-hover:translate-x-1 transition-transform">↓</span>
               </button>
-              <button onClick={() => { showToast("PDF generation coming soon.", "success"); setShowExport(false); }} className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-[#E1E4F7] hover:border-[#5B5BE0] transition-colors text-left group">
+              <Link href={`/statement/${data.businessId}`} className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-[#E1E4F7] hover:border-[#5B5BE0] transition-colors text-left group">
                 <div>
                   <div className="font-bold text-[#14173F]">Lender PDF Statement</div>
                   <div className="text-xs text-[#4A4F7A]">Evidence-backed summary with public QR code.</div>
                 </div>
-                <span className="text-[#5B5BE0] text-xl group-hover:translate-x-1 transition-transform">↓</span>
-              </button>
+                <span className="text-[#5B5BE0] text-xl group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
             </div>
             
             <button onClick={() => setShowExport(false)} className="w-full py-3 bg-[#F1F2FF] text-[#4B4FC9] font-bold rounded-xl hover:bg-[#E6E8FA] transition-colors">Cancel</button>

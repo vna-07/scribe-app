@@ -5,59 +5,60 @@ export default async function Home() {
   const bizId = await findDemoBusinessId();
 
   return (
-    <main className="min-h-screen bg-[#1a1a1a] text-[#f5f0e6] flex items-center justify-center p-6">
-      <div className="max-w-2xl w-full">
-        <p className="text-[#c9a961] tracking-[0.3em] text-xs mb-4">SCRIBE INTELLIGENCE</p>
-        <h1 className="font-serif text-4xl sm:text-5xl mb-6 leading-tight">
-          Real records.<br />
-          <span className="text-[#c9a961]">Greater opportunities.</span>
-        </h1>
-        <p className="text-[#a8a093] text-lg mb-10 max-w-xl">
-          SCRIBE turns a paper cash-book into evidence a lender can trust — and gives every trader
-          a first rung on the ladder.
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <div className="max-w-3xl w-full">
+        {/* Brand / Header */}
+        <div className="mb-12 border-b border-[#20221F]/10 pb-6">
+          <p className="text-[#B89A61] tracking-[0.2em] text-xs font-semibold mb-2">
+            SCRIBE · FINANCIAL INTELLIGENCE
+          </p>
+          <h1 className="font-serif text-5xl sm:text-6xl text-[#20221F] leading-tight">
+            Your business, <br />
+            <span className="text-[#B89A61] italic">understood.</span>
+          </h1>
+        </div>
+
+        <p className="text-[#20221F]/70 text-lg mb-12 max-w-xl">
+          SCRIBE turns a paper cash-book into evidence a lender can trust. A quiet, precise financial instrument for real South African businesses.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-4 mb-16">
           {bizId && (
             <>
               <Link
                 href={`/demo/${bizId}`}
-                className="bg-[#c9a961] text-[#1a1a1a] font-medium px-6 py-3 rounded-lg hover:bg-[#d4b877] transition text-center"
+                className="bg-[#20221F] text-[#F5F1E8] font-medium px-8 py-3.5 rounded-md hover:bg-[#3a3d38] transition-colors text-center"
               >
-                Open the live demo →
+                Open the live demo
               </Link>
               <Link
                 href={`/verify/${bizId}`}
-                className="border border-[#333] px-6 py-3 rounded-lg hover:border-[#c9a961] transition text-center"
+                className="border border-[#20221F]/20 text-[#20221F] px-8 py-3.5 rounded-md hover:border-[#B89A61] hover:text-[#B89A61] transition-colors text-center font-medium"
               >
-                View public verification
+                Public verification
               </Link>
             </>
           )}
-          {!bizId && (
-            <p className="text-[#a8a093] text-sm">
-              No demo business yet. Run the seed script first.
-            </p>
-          )}
         </div>
 
-        <div className="mt-16 pt-8 border-t border-[#333] grid sm:grid-cols-3 gap-6 text-sm">
+        {/* Feature Grid */}
+        <div className="grid sm:grid-cols-3 gap-8 border-t border-[#20221F]/10 pt-8">
           <div>
-            <p className="text-[#c9a961] font-medium mb-1">Tamper-evident</p>
-            <p className="text-[#a8a093]">
-              Every record is hash-chained and Ed25519-signed. Any edit is caught.
+            <h3 className="font-serif text-xl mb-2">Tamper-evident</h3>
+            <p className="text-sm text-[#20221F]/60 leading-relaxed">
+              Every record is hash-chained and cryptographically signed. Any edit is caught instantly.
             </p>
           </div>
           <div>
-            <p className="text-[#c9a961] font-medium mb-1">Grounded AI</p>
-            <p className="text-[#a8a093]">
-              Code computes. Themba explains. She never invents numbers.
+            <h3 className="font-serif text-xl mb-2">Forensic records</h3>
+            <p className="text-sm text-[#20221F]/60 leading-relaxed">
+              Click any figure to trace it back to the original evidence. Transparency is the default.
             </p>
           </div>
           <div>
-            <p className="text-[#c9a961] font-medium mb-1">Evidence-aware</p>
-            <p className="text-[#a8a093]">
-              The score is a range. It says what would improve it, and by how much.
+            <h3 className="font-serif text-xl mb-2">Grounded intelligence</h3>
+            <p className="text-sm text-[#20221F]/60 leading-relaxed">
+              Code computes the numbers. Themba explains them. She never guesses.
             </p>
           </div>
         </div>

@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 body {
-  background-color: #F5F1E8;
-  color: #20221F;
+  background-color: #E9EBFF; /* Lavender-white */
+  color: #14173F; /* Deep navy */
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 

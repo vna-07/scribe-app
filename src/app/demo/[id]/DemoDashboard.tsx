@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { DemoData } from "@/lib/demo-data";
 import { rands, fmtDate } from "@/lib/format";
+import Image from "next/image";
 
 interface ThembaMsg {
   role: "user" | "themba";
@@ -12,13 +13,20 @@ interface ThembaMsg {
   sources?: string[];
 }
 
+type ThembaTab = "ask" | "insights" | "actions";
+
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
   const [data, setData] = useState<DemoData>(initialData);
   const [busy, setBusy] = useState<string | null>(null);
+  
+  // Themba State
+  const [thembaTab, setThembaTab] = useState<ThembaTab>("ask");
   const [history, setHistory] = useState<ThembaMsg[]>([]);
   const [input, setInput] = useState("");
   const [asking, setAsking] = useState(false);
-  const [thembaOpen, setThembaOpen] = useState(true);
+
+  // Export State
+  const [showExport, setShowExport] = useState(false);
 
   const refresh = async () => {
     const r = await fetch(`/api/demo/${data.businessId}`);
@@ -66,252 +74,351 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
     }
   };
 
+  const handleExport = () => {
+    const csvContent = "data:text/csv;charset=utf-8," + 
+      "Seq,Date,Description,Amount,Evidence\n" +
+      data.recentRecords.map(r => `${r.seq},${fmtDate(r.occurred_at)},"${r.description}",${r.amount_cents / 100},${r.evidence_tier}`).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "SCRIBE_Report.csv");
+    document.body.appendChild(link);
+    link.click();
+    setShowExport(false);
+  };
+
+  // Safe sort to prevent hydration mismatch
+  const weakestComponent = [...data.score.components].sort((a,b) => a.value - b.value)[0];
+
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F5F1E8] text-[#20221F]">
+    <div className="flex h-screen overflow-hidden bg-[#E9EBFF] text-[#14173F] font-sans">
+      
       {/* ─── SIDEBAR ─── */}
-      <aside className="w-[240px] border-r border-[#20221F]/10 flex flex-col bg-[#F5F1E8] shrink-0">
-        <div className="p-6 border-b border-[#20221F]/10">
-          <p className="font-serif text-xl mb-1">SCRIBE</p>
-          <p className="text-[10px] uppercase tracking-widest text-[#20221F]/50">Financial intelligence</p>
+      <aside className="w-[260px] m-4 mr-0 bg-white rounded-[28px] shadow-sm flex flex-col shrink-0 overflow-hidden">
+        <div className="p-6 pb-2 flex items-center gap-3">
+          <Image src="/logo.png" alt="S" width={36} height={36} style={{ width: 'auto', height: 'auto' }} className="rounded-xl shadow-sm" />
+          <span className="font-extrabold text-xl tracking-wide text-[#14173F]">SCRIBE</span>
         </div>
         
-        <nav className="flex-1 p-4 space-y-1 text-sm">
-          <p className="text-xs font-semibold text-[#20221F]/40 uppercase tracking-wider mb-3 px-2">Your Business</p>
-          <a href="#" className="block px-2 py-2 bg-[#20221F]/5 rounded-md font-medium">Overview</a>
-          <a href="#" className="block px-2 py-2 text-[#20221F]/60 hover:text-[#20221F] transition-colors">Transactions</a>
-          <a href="#" className="block px-2 py-2 text-[#20221F]/60 hover:text-[#20221F] transition-colors">Records & Evidence</a>
-          <a href="#" className="block px-2 py-2 text-[#20221F]/60 hover:text-[#20221F] transition-colors">Stock</a>
-          <a href="#" className="block px-2 py-2 text-[#20221F]/60 hover:text-[#20221F] transition-colors">Insights & Forecasts</a>
-          <a href="#" className="block px-2 py-2 text-[#20221F]/60 hover:text-[#20221F] transition-colors">Business Readiness</a>
-          <div className="pt-4 pb-2">
-            <p className="text-xs font-semibold text-[#20221F]/40 uppercase tracking-wider mb-3 px-2">Support</p>
-          </div>
-          <button onClick={() => setThembaOpen(!thembaOpen)} className="block w-full text-left px-2 py-2 text-[#B89A61] font-medium hover:bg-[#B89A61]/10 rounded-md transition-colors">
-            Themba {thembaOpen ? "←" : "→"}
-          </button>
-          <a href="#" className="block px-2 py-2 text-[#20221F]/60 hover:text-[#20221F] transition-colors">Settings & Trust</a>
+        <nav className="flex-1 p-4 space-y-1 text-sm font-semibold text-[#5A5F8C]">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 bg-[#ECEEFF] text-[#4B4FC9] rounded-2xl">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Overview
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-[#F1F2FF] rounded-2xl transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3L4 7l4 4"></path><path d="M4 7h16"></path><path d="M16 21l4-4-4-4"></path><path d="M20 17H4"></path></svg>
+            Transactions
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-[#F1F2FF] rounded-2xl transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Records & Evidence
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-[#F1F2FF] rounded-2xl transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            Stock & Inventory
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-[#F1F2FF] rounded-2xl transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            Insights & Forecasts
+          </a>
+          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-[#F1F2FF] rounded-2xl transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Themba
+          </a>
         </nav>
+
+        <div className="p-4 m-4 bg-gradient-to-br from-[#8F95FF] to-[#5B5BE0] rounded-[22px] text-white">
+          <div className="font-extrabold text-[15px] mb-1">Get lender-ready</div>
+          <div className="text-xs text-[#ECEEFF] leading-relaxed mb-3">Add one stock count to lift your score range.</div>
+          <button className="bg-white text-[#4B4FC9] font-bold text-xs px-4 py-2 rounded-xl w-full shadow-sm">
+            Count stock
+          </button>
+        </div>
       </aside>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar */}
-        <header className="h-16 border-b border-[#20221F]/10 flex items-center justify-between px-8 bg-[#FFFFFF] shrink-0">
-          <div className="flex items-center gap-4">
-            <h1 className="font-serif text-lg">{data.businessName}</h1>
-            <span className={`px-2 py-1 rounded text-xs font-medium border ${
-              data.chain.ok ? "border-[#47745D] text-[#47745D] bg-[#47745D]/10" : "border-[#A94E40] text-[#A94E40] bg-[#A94E40]/10"
-            }`}>
-              {data.chain.ok ? "✓ Chain intact" : `✗ Broken at #${data.chain.brokenAtSeq}`}
-            </span>
+      <main className="flex-1 flex flex-col min-w-0 m-4 overflow-y-auto">
+        
+        {/* Top Header */}
+        <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight">Molo, Nomsa</h1>
+            <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
-          <div className="flex items-center gap-4">
-             <a href={`/verify/${data.businessId}`} className="text-sm text-[#B89A61] hover:underline font-medium">Public verify →</a>
-             <div className="w-8 h-8 rounded-full bg-[#20221F] text-[#F5F1E8] flex items-center justify-center text-xs font-bold">ND</div>
+          <div className="flex items-center gap-3">
+            <span className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${
+              data.chain.ok ? "bg-white text-[#14173F] shadow-sm" : "bg-[#A94E40] text-white"
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${data.chain.ok ? "bg-[#5B5BE0]" : "bg-white"}`}></span>
+              {data.chain.ok ? `Ledger intact: ${data.chain.total} records` : `Tampered at #${data.chain.brokenAtSeq}`}
+            </span>
+            <button onClick={() => setShowExport(true)} className="px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
+              Share statement
+            </button>
+            <button className="px-5 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors">
+              Capture entry
+            </button>
           </div>
         </header>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-auto p-8">
-          <div className="max-w-4xl space-y-8">
-            
-            {/* Greeting */}
-            <div>
-              <p className="text-sm text-[#20221F]/50 mb-1">{new Date().toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-              <h2 className="font-serif text-3xl">Here is where your business stands.</h2>
+        {/* KPI Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-[#A9AEFF] rounded-[24px] p-5 shadow-sm">
+            <div className="text-xs font-bold text-[#1D2260] mb-1">Sales this week</div>
+            <div className="text-2xl font-extrabold tracking-tight">{rands(data.revenue.low_cents)}</div>
+            <div className="text-xs font-medium text-[#1D2260] mt-2">Range to {rands(data.revenue.high_cents)}</div>
+          </div>
+          <div className="bg-white/60 backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50">
+            <div className="text-xs font-bold text-[#4A4F7A] mb-1">Cash on hand</div>
+            <div className="text-2xl font-extrabold tracking-tight">R3 245</div>
+            <div className="text-xs font-medium text-[#4A4F7A] mt-2">Reported Friday 16:40</div>
+          </div>
+          <div className="bg-white/60 backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50">
+            <div className="text-xs font-bold text-[#4A4F7A] mb-1">Stock gaps to review</div>
+            <div className="text-2xl font-extrabold tracking-tight text-[#D99A00]">
+              {data.stock.variance === null ? "0" : "2"} products
             </div>
+            <div className="text-xs font-medium text-[#4A4F7A] mt-2">Bread and sugar differ</div>
+          </div>
+          <div className="bg-[#14173F] rounded-[24px] p-5 shadow-md text-white">
+            <div className="text-xs font-bold text-[#C5C9F5] mb-1">Consistency Score</div>
+            <div className="text-2xl font-extrabold tracking-tight text-[#A9AEFF]">{data.score.low}–{data.score.high}</div>
+            <div className="text-xs font-medium text-[#C5C9F5] mt-2">Evidence of readiness</div>
+          </div>
+        </div>
 
-            {/* Metrics Row */}
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="bg-[#FFFFFF] border border-[#20221F]/10 rounded-xl p-5 shadow-sm cursor-pointer hover:border-[#B89A61]/50 transition-colors">
-                <p className="text-xs text-[#20221F]/50 mb-1 font-medium">Recorded sales this month</p>
-                <p className="font-serif text-3xl mb-1">{rands(data.revenue.low_cents)}</p>
-                <p className="text-xs text-[#20221F]/40">Range up to {rands(data.revenue.high_cents)}</p>
-              </div>
-              <div className="bg-[#FFFFFF] border border-[#20221F]/10 rounded-xl p-5 shadow-sm cursor-pointer hover:border-[#B89A61]/50 transition-colors">
-                <p className="text-xs text-[#20221F]/50 mb-1 font-medium">Documented readiness</p>
-                <p className="font-serif text-3xl mb-1">{data.score.low}–{data.score.high}</p>
-                <p className="text-xs text-[#20221F]/40">Not a credit score</p>
-              </div>
-              <div className="bg-[#FFFFFF] border border-[#A94E40]/30 rounded-xl p-5 shadow-sm cursor-pointer hover:border-[#A94E40] transition-colors">
-                <p className="text-xs text-[#A94E40] mb-1 font-medium">Stock discrepancy</p>
-                <p className="font-serif text-3xl mb-1 text-[#A94E40]">{data.stock.variance} units</p>
-                <p className="text-xs text-[#A94E40]/70">Needs your attention</p>
+        {/* Middle Row: Chart & Score Components */}
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          {/* Chart (Mocked for visual weight) */}
+          <div className="flex-1 bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="font-extrabold text-lg">Daily takings and outlook</h3>
+                <p className="text-xs font-medium text-[#4A4F7A]">Shaded bars are a forecast with prediction intervals.</p>
               </div>
             </div>
-            {/* Readiness Breakdown */}
-            <div className="bg-[#FFFFFF] border border-[#20221F]/10 rounded-xl p-6 shadow-sm">
-              <div className="flex justify-between items-end mb-4">
-                <div>
-                  <h3 className="font-serif text-lg">Documented Readiness</h3>
-                  <p className="text-xs text-[#20221F]/50">Why the score is what it is.</p>
+            {/* Simple visual bar chart mimicking the mockup */}
+            <div className="flex items-end justify-between h-40 gap-2">
+              {[40, 60, 45, 80, 90, 65, 85, 55, 75].map((h, i) => (
+                <div key={i} className="w-full bg-[#14173F] rounded-t-md" style={{ height: `${h}%` }}></div>
+              ))}
+              {[95, 70, 60, 50].map((h, i) => (
+                <div key={i} className="w-full bg-[#CDD1FF] border-2 border-dashed border-[#5B5BE0] rounded-t-md flex items-end justify-center pb-2" style={{ height: `${h}%` }}>
+                  <div className="w-full border-t-2 border-[#5B5BE0] absolute top-0"></div>
                 </div>
-                <span className="font-serif text-2xl">{data.score.low}–{data.score.high}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Readiness Breakdown */}
+          <div className="flex-1 bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50">
+            <div className="flex justify-between items-end mb-4">
+              <div>
+                <h3 className="font-extrabold text-lg">Trading Consistency Score</h3>
+                <p className="text-xs font-medium text-[#4A4F7A]">Click a component to see how to improve it.</p>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-                {data.score.components.map(c => (
-                  <div key={c.key}>
-                    <div className="flex justify-between text-[10px] font-semibold text-[#20221F]/60 uppercase tracking-wider mb-1">
-                      <span>{c.label.split(" ")[0]}</span>
-                      <span>{Math.round(c.value * 100)}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-[#F5F1E8] rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full ${c.value > 0.6 ? 'bg-[#47745D]' : c.value > 0.3 ? 'bg-[#B89A61]' : 'bg-[#A94E40]'}`} 
-                        style={{ width: `${Math.max(5, c.value * 100)}%` }}
-                      />
-                    </div>
+              <span className="font-extrabold text-2xl text-[#5B5BE0]">{data.score.low}–{data.score.high}</span>
+            </div>
+            <div className="space-y-4">
+              {data.score.components.map(c => (
+                <div key={c.key} className="cursor-pointer group">
+                  <div className="flex justify-between text-xs font-bold mb-1 group-hover:text-[#5B5BE0] transition-colors">
+                    <span>{c.label}</span>
+                    <span>{Math.round(c.value * 100)}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-            {/* Next Action */}
-            {data.score.counterfactuals.length > 0 && (
-              <div className="bg-[#B89A61]/10 border border-[#B89A61]/30 rounded-xl p-5 flex justify-between items-center">
-                <div>
-                  <p className="text-xs font-semibold text-[#B89A61] tracking-wider mb-1 uppercase">Next best action</p>
-                  <p className="text-sm">{data.score.counterfactuals[0].action}</p>
+                  <div className="h-2 w-full bg-[#E6E8FA] rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all ${c.value > 0.6 ? 'bg-[#14173F]' : c.value > 0.3 ? 'bg-[#A9AEFF]' : 'bg-[#D99A00]'}`} 
+                      style={{ width: `${Math.max(5, c.value * 100)}%` }}
+                    />
+                  </div>
                 </div>
-                <button className="bg-[#20221F] text-[#F5F1E8] px-4 py-2 rounded-md text-sm font-medium hover:bg-[#3a3d38] transition-colors">Start</button>
-              </div>
-            )}
+              ))}
+            </div>
+            <div className="mt-5 bg-[#FFF0C4] rounded-xl p-3 text-xs font-bold leading-relaxed text-[#1D2260]">
+              Weakest component: {weakestComponent.label}. {data.score.counterfactuals[0]?.action || "Keep recording to improve."}
+            </div>
+          </div>
+        </div>
 
-            {/* Judge Mode (Demo only) */}
-            <div className="border border-[#20221F]/10 rounded-xl p-5 bg-[#FFFFFF]">
-              <p className="text-xs font-semibold tracking-wider text-[#20221F]/40 uppercase mb-3">Demo Controls (Judge Mode)</p>
-              <div className="flex gap-3">
-                <button onClick={() => judgeAction("inject-discrepancy", "inject")} disabled={!!busy} className="border border-[#20221F]/20 px-3 py-2 rounded-md text-sm hover:bg-[#20221F]/5 transition-colors disabled:opacity-50">
-                  {busy === "inject" ? "Injecting…" : "Inject Discrepancy"}
-                </button>
-                <button onClick={() => judgeAction("tamper", "tamper")} disabled={!!busy} className="border border-[#20221F]/20 px-3 py-2 rounded-md text-sm hover:bg-[#20221F]/5 transition-colors disabled:opacity-50">
-                  {busy === "tamper" ? "Tampering…" : "Try to Cheat"}
-                </button>
-                <button onClick={() => judgeAction("reset", "reset")} disabled={!!busy} className="border border-[#20221F]/20 px-3 py-2 rounded-md text-sm hover:bg-[#20221F]/5 transition-colors disabled:opacity-50">
-                  {busy === "reset" ? "Resetting…" : "Reset Demo"}
-                </button>
+        {/* Bottom Row: Reconciliation & Judge Mode */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50">
+            <h3 className="font-extrabold text-lg mb-4">Stock-flow reconciliation</h3>
+            <div className="bg-[#F1F2FF] rounded-xl p-4 flex justify-between items-center mb-4">
+              <div className="text-sm font-semibold">Expected: {data.stock.expected} units</div>
+              <div className="text-sm font-semibold">Counted: {data.stock.counted ?? "—"}</div>
+              <div className={`text-sm font-bold px-3 py-1 rounded-lg ${data.stock.variance !== 0 ? "bg-[#A9AEFF] text-[#14173F]" : "bg-white"}`}>
+                Variance: {data.stock.variance ?? "—"}
               </div>
             </div>
-
-            {/* Transactions Table */}
-            <div>
-              <h3 className="font-serif text-xl mb-4">Recent records</h3>
-              <div className="bg-[#FFFFFF] border border-[#20221F]/10 rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full text-sm">
-                  <thead className="bg-[#F5F1E8] border-b border-[#20221F]/10 text-[#20221F]/50 text-xs">
-                    <tr>
-                      <th className="text-left p-3 font-medium">#</th>
-                      <th className="text-left p-3 font-medium">Date</th>
-                      <th className="text-left p-3 font-medium">Description</th>
-                      <th className="text-right p-3 font-medium">Amount</th>
-                      <th className="text-center p-3 font-medium">Evidence</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.recentRecords.map((r) => (
-                      <tr key={r.seq} className="border-t border-[#20221F]/5 hover:bg-[#F5F1E8]/50 transition-colors group cursor-pointer">
-                        <td className="p-3 text-[#B89A61] font-medium">#{r.seq}</td>
-                        <td className="p-3 text-[#20221F]/60">{fmtDate(r.occurred_at)}</td>
-                        <td className="p-3">
-                          {r.description}
-                          {r.quantity != null && <span className="text-[#20221F]/40"> · {r.quantity}u</span>}
-                        </td>
-                        <td className="p-3 text-right font-medium">{r.amount_cents > 0 ? rands(r.amount_cents) : "—"}</td>
-                        <td className="p-3 text-center">
-                          <span className={`inline-block text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-full ${
-                            r.evidence_tier === "counter_signed" ? "text-[#47745D] bg-[#47745D]/10" :
-                            r.evidence_tier === "document_supported" ? "text-[#B89A61] bg-[#B89A61]/10" :
-                            "text-[#20221F]/40 bg-[#20221F]/5"
-                          }`}>
-                            {r.evidence_tier.replace("_", " ")}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <p className="text-xs text-[#4A4F7A] leading-relaxed mb-4">{data.stock.note}</p>
+            
+            <div className="border-t border-[#E1E4F7] pt-4">
+              <p className="text-xs font-bold text-[#14173F] mb-2 uppercase tracking-wider">Judge Mode</p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => judgeAction("inject-discrepancy", "inject")} disabled={!!busy} className="px-3 py-2 bg-[#F1F2FF] text-[#4B4FC9] hover:bg-[#E6E8FA] rounded-lg text-xs font-bold transition-colors">
+                  {busy === "inject" ? "..." : "Inject Discrepancy"}
+                </button>
+                <button onClick={() => judgeAction("tamper", "tamper")} disabled={!!busy} className="px-3 py-2 bg-[#F1F2FF] text-[#4B4FC9] hover:bg-[#E6E8FA] rounded-lg text-xs font-bold transition-colors">
+                  {busy === "tamper" ? "..." : "Try to Cheat"}
+                </button>
+                <button onClick={() => judgeAction("reset", "reset")} disabled={!!busy} className="px-3 py-2 bg-white border border-[#E1E4F7] text-[#4A4F7A] hover:text-[#14173F] rounded-lg text-xs font-bold transition-colors">
+                  {busy === "reset" ? "..." : "Reset Demo"}
+                </button>
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      {/* ─── THEMBA RIGHT PANEL ─── */}
-      {thembaOpen && (
-        <aside className="w-[400px] border-l border-[#20221F]/10 bg-[#FFFFFF] flex flex-col shrink-0 shadow-[-4px_0_24px_rgba(0,0,0,0.02)] z-10">
-          <div className="p-6 border-b border-[#20221F]/10 bg-[#F5F1E8]">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="font-serif text-lg">Themba</h2>
-              <span className="text-xs font-medium text-[#B89A61] bg-[#B89A61]/10 px-2 py-1 rounded">AI Assistant</span>
+      {/* ─── THEMBA RIGHT PANEL (Intelligence Workspace) ─── */}
+      <aside className="w-[380px] m-4 ml-0 bg-[#14173F] rounded-[28px] shadow-2xl flex flex-col shrink-0 overflow-hidden text-white">
+        <div className="p-6 bg-[#1F2561] border-b border-[#2A3070]">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-[#A9AEFF] text-[#14173F] flex items-center justify-center font-extrabold text-lg">T</div>
+            <div>
+              <h2 className="font-extrabold text-lg">Themba</h2>
+              <p className="text-xs text-[#C5C9F5]">Explains your records. Never calculates.</p>
             </div>
-            <p className="text-xs text-[#20221F]/50">Your business intelligence assistant</p>
           </div>
-
-          <div className="flex-1 overflow-auto p-6 space-y-6">
-            {history.length === 0 && (
-              <div className="space-y-3">
-                <p className="text-sm text-[#20221F]/60">Ask Themba to explain your records, investigate discrepancies, or explore what to do next.</p>
-                {["Why is my stock short?", "What is my revenue range?", "Will I get a loan?"].map(q => (
-                  <button key={q} onClick={() => ask(q)} className="w-full text-left text-sm p-3 rounded-lg border border-[#20221F]/10 hover:border-[#B89A61] hover:bg-[#F5F1E8] transition-all text-[#20221F]/80">
-                    "{q}"
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {history.map((m, i) => (
-              <div key={i} className={`text-sm ${m.role === "user" ? "text-right" : ""}`}>
-                {m.role === "user" ? (
-                  <div className="inline-block bg-[#F5F1E8] border border-[#20221F]/10 rounded-2xl rounded-tr-sm px-4 py-2 text-left max-w-[85%]">
-                    {m.text}
-                  </div>
-                ) : (
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[#B89A61]/20 flex shrink-0 items-center justify-center text-[10px] font-bold text-[#B89A61]">T</div>
-                    <div className="space-y-2">
-                      <div className="text-[#20221F]/80 leading-relaxed text-sm">
-                        {m.text}
-                      </div>
-                      {m.refused && (
-                        <span className="inline-block text-[10px] uppercase tracking-wider text-[#A94E40] bg-[#A94E40]/10 px-2 py-0.5 rounded">Declined</span>
-                      )}
-                      {m.sources && m.sources.length > 0 && (
-                        <button className="text-xs text-[#B89A61] font-medium hover:underline flex items-center gap-1">
-                          Inspect {m.sources.length} supporting records →
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-            {asking && (
-              <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-[#B89A61]/20 flex shrink-0 items-center justify-center text-[10px] font-bold text-[#B89A61]">T</div>
-                <div className="text-[#20221F]/40 text-sm italic animate-pulse">Analyzing records...</div>
-              </div>
-            )}
-          </div>
-
-          <div className="p-4 border-t border-[#20221F]/10 bg-[#F5F1E8]">
-            <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="relative">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about your business…"
-                disabled={asking}
-                className="w-full bg-[#FFFFFF] border border-[#20221F]/20 focus:border-[#B89A61] outline-none rounded-lg pl-4 pr-12 py-3 text-sm transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={asking || !input.trim()}
-                className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-[#20221F] text-[#F5F1E8] rounded-md hover:bg-[#3a3d38] disabled:opacity-50 transition-colors"
+          
+          {/* Tabs */}
+          <div className="flex bg-[#14173F] p-1 rounded-xl">
+            {(["ask", "insights", "actions"] as ThembaTab[]).map(tab => (
+              <button 
+                key={tab}
+                onClick={() => setThembaTab(tab)}
+                className={`flex-1 py-1.5 text-xs font-bold capitalize rounded-lg transition-colors ${thembaTab === tab ? "bg-[#2A3070] text-white" : "text-[#C5C9F5] hover:text-white"}`}
               >
-                ↑
+                {tab}
               </button>
-            </form>
+            ))}
           </div>
-        </aside>
+        </div>
+
+        <div className="flex-1 overflow-auto p-6 space-y-4">
+          {thembaTab === "ask" && (
+            <>
+              {history.length === 0 && (
+                <div className="space-y-3">
+                  <p className="text-sm text-[#C5C9F5]">Ask Themba to explain your records, investigate discrepancies, or explore what to do next.</p>
+                  {["Why is my bread stock short?", "What is my revenue range?", "Will I get a loan?"].map(q => (
+                    <button key={q} onClick={() => ask(q)} className="w-full text-left text-sm p-3 rounded-xl bg-[#1F2561] hover:bg-[#2A3070] transition-colors text-[#E1E3FA] border border-[#2A3070]">
+                      "{q}"
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {history.map((m, i) => (
+                <div key={i} className={`text-sm ${m.role === "user" ? "text-right" : ""}`}>
+                  {m.role === "user" ? (
+                    <div className="inline-block bg-[#2A3070] rounded-2xl rounded-tr-sm px-4 py-2 text-left max-w-[85%] text-[#E1E3FA]">
+                      {m.text}
+                    </div>
+                  ) : (
+                    <div className="flex gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#A9AEFF] flex shrink-0 items-center justify-center text-[10px] font-extrabold text-[#14173F]">T</div>
+                      <div className="space-y-2">
+                        <div className="text-[#E1E3FA] leading-relaxed text-sm bg-white text-[#14173F] p-3 rounded-xl rounded-tl-sm">
+                          {m.text}
+                        </div>
+                        {m.refused && (
+                          <span className="inline-block text-[10px] uppercase tracking-wider text-[#D99A00] bg-[#D99A00]/10 px-2 py-0.5 rounded">Declined</span>
+                        )}
+                        {m.sources && m.sources.length > 0 && (
+                          <button className="text-xs text-[#A9AEFF] font-bold hover:underline flex items-center gap-1">
+                            Inspect {m.sources.length} supporting records →
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
+
+          {thembaTab === "insights" && (
+            <div className="space-y-4">
+              <div className="bg-[#1F2561] p-4 rounded-xl border border-[#2A3070]">
+                <p className="text-xs text-[#A9AEFF] font-bold uppercase mb-1">Sales Pattern</p>
+                <p className="text-sm text-[#E1E3FA] leading-relaxed">Recorded sales are generally higher on Fridays. Consider checking stock levels before the weekend.</p>
+              </div>
+              <div className="bg-[#1F2561] p-4 rounded-xl border border-[#2A3070]">
+                <p className="text-xs text-[#A9AEFF] font-bold uppercase mb-1">Stock Discrepancy</p>
+                <p className="text-sm text-[#E1E3FA] leading-relaxed">Bread and sugar have repeated variances. Review delivery slips before the next order.</p>
+              </div>
+            </div>
+          )}
+
+          {thembaTab === "actions" && (
+             <div className="space-y-4">
+              <div className="bg-[#A9AEFF] text-[#14173F] p-4 rounded-xl">
+                <p className="text-xs font-bold uppercase mb-1">Next Best Action</p>
+                <p className="text-sm font-extrabold leading-relaxed">Record one physical stock count</p>
+                <p className="text-xs mt-1 leading-relaxed">This lifts stock consistency and narrows your revenue range.</p>
+                <button className="mt-3 bg-[#14173F] text-white text-xs font-bold px-4 py-2 rounded-lg w-full">Start Investigation</button>
+              </div>
+            </div>
+          )}
+
+          {asking && (
+            <div className="flex gap-3">
+              <div className="w-6 h-6 rounded-full bg-[#A9AEFF] flex shrink-0 items-center justify-center text-[10px] font-extrabold text-[#14173F]">T</div>
+              <div className="text-[#A9AEFF] text-sm italic animate-pulse">Analyzing records...</div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 bg-[#1F2561] border-t border-[#2A3070]">
+          <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="relative">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about your business…"
+              disabled={asking}
+              className="w-full bg-[#14173F] border border-[#2A3070] focus:border-[#A9AEFF] outline-none rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-[#5A5F8C] transition-colors"
+            />
+            <button type="submit" disabled={asking || !input.trim()} className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-[#A9AEFF] text-[#14173F] rounded-lg hover:bg-white disabled:opacity-50 transition-colors font-bold">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      {/* ─── EXPORT CENTRE MODAL ─── */}
+      {showExport && (
+        <div className="fixed inset-0 bg-[#14173F]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] p-8 max-w-md w-full shadow-2xl">
+            <h2 className="text-2xl font-extrabold mb-2 text-[#14173F]">Export Centre</h2>
+            <p className="text-sm text-[#4A4F7A] mb-6">Share verified statements with lenders, accountants, or suppliers.</p>
+            
+            <div className="space-y-3 mb-8">
+              <button onClick={handleExport} className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-[#E1E4F7] hover:border-[#5B5BE0] transition-colors text-left group">
+                <div>
+                  <div className="font-bold text-[#14173F]">Download CSV Data</div>
+                  <div className="text-xs text-[#4A4F7A]">All sealed transactions and evidence tiers.</div>
+                </div>
+                <span className="text-[#5B5BE0] text-xl group-hover:translate-x-1 transition-transform">↓</span>
+              </button>
+              <button className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-[#E1E4F7] hover:border-[#5B5BE0] transition-colors text-left group">
+                <div>
+                  <div className="font-bold text-[#14173F]">Lender PDF Statement</div>
+                  <div className="text-xs text-[#4A4F7A]">Evidence-backed summary with public QR code.</div>
+                </div>
+                <span className="text-[#5B5BE0] text-xl group-hover:translate-x-1 transition-transform">↓</span>
+              </button>
+            </div>
+            
+            <button onClick={() => setShowExport(false)} className="w-full py-3 bg-[#F1F2FF] text-[#4B4FC9] font-bold rounded-xl hover:bg-[#E6E8FA] transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
+
     </div>
   );
 }

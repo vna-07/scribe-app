@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { askThemba } from "@/lib/themba";
 import { loadBusinessRecords } from "@/lib/demo-seed";
 import { db } from "@/lib/db";
+import type { ConversationTurn } from "@/lib/themba-context";
 
 export async function POST(req: NextRequest) {
-  const { business_id, question } = await req.json();
+  const { business_id, question, history = [] } = await req.json();
   if (!business_id || typeof question !== "string") {
     return NextResponse.json({ error: "business_id and question required" }, { status: 400 });
   }
@@ -25,6 +26,7 @@ export async function POST(req: NextRequest) {
     question,
     records,
     businessName: String(bizRes.rows[0].name),
+    history: Array.isArray(history) ? (history as ConversationTurn[]) : [],
   });
 
   return NextResponse.json(answer);

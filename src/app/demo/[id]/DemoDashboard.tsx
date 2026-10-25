@@ -10,6 +10,7 @@ import { BarChart, DonutChart } from "@/components/Visuals";
 import EvidenceWorkspace from "@/components/EvidenceWorkspace";
 import ImportWizard from "@/components/ImportWizard";
 import CaptureFlow from "@/components/CaptureFlow";
+import SaleModal from "@/components/SaleModal";
 import { useApp } from "@/context/AppContext";
 import StockTab from "./StockTab";
 import IntelligenceTab from "./IntelligenceTab";
@@ -47,6 +48,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [showExport, setShowExport] = useState(false);
   const [showCapture, setShowCapture] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showSale, setShowSale] = useState(false);
   
   const [showScamShield, setShowScamShield] = useState(false);
   const [scamMessage, setScamMessage] = useState("");
@@ -222,8 +224,8 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <button onClick={() => setShowImport(true)} className="hidden sm:flex px-4 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
               Import CSV
             </button>
-            <button onClick={() => setShowCapture(true)} className="hidden md:flex px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors">
-              + Capture
+            <button onClick={() => setShowSale(true)} className="hidden md:flex px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors">
+              + Record Sale
             </button>
           </div>
         </header>
@@ -494,6 +496,15 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           businessId={data.businessId} 
           onComplete={refresh} 
           onClose={() => setShowCapture(false)} 
+        />
+      )}
+
+      {/* ─── SALE MODAL ─── */}
+      {showSale && (
+        <SaleModal 
+          businessId={data.businessId} 
+          onComplete={refresh} 
+          onClose={() => setShowSale(false)} 
         />
       )}
 

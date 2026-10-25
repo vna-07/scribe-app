@@ -11,13 +11,13 @@ body {
   font-family: var(--font-instrument), ui-serif, Georgia, serif !important;
 }
 
-/* Base Dark Mode Overrides */
+/* --- DARK MODE SUPPORT --- */
 html.dark body {
-  background-color: #0E1130; /* Deep midnight navy */
+  background-color: #0E1130; /* Midnight navy */
   color: #E9EBFF; /* Lavender-white text */
 }
 
-/* We will override specific backgrounds for the demo dashboard in dark mode */
+/* Force the components to adapt to Dark Mode */
 html.dark .bg-white { background-color: #14173F; }
 html.dark .bg-white\/90 { background-color: #1A1E4D; }
 html.dark .bg-white\/60 { background-color: #1A1E4D; }
@@ -30,6 +30,6 @@ html.dark .text-\[\#4A4F7A\] { color: #A9AEFF; }
 html.dark .border-\[\#E1E4F7\] { border-color: #2A3070; }
 html.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 
-/* Specific UI elements */
+/* Keep the warning yellow but dark for night mode */
 html.dark .bg-\[\#FFF0C4\] { background-color: #4A3B10; border-color: #D99A00; }
 html.dark .text-\[\#1D2260\] { color: #F5F1E8; }

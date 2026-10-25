@@ -33,7 +33,7 @@ export default function SettingsPage() {
           <section className="bg-white dark:bg-[#14173F] rounded-[28px] p-8 shadow-sm border border-[#E1E4F7] dark:border-[#2A3070] transition-colors">
             <h2 className="text-lg font-extrabold text-[#14173F] dark:text-white mb-6">Appearance</h2>
             
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
                 { id: "light", label: "Light" },
                 { id: "dark", label: "Dark" },

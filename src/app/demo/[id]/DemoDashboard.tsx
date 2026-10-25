@@ -127,7 +127,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       )}
 
       {/* ─── SIDEBAR ─── */}
-      <aside className="w-[260px] m-4 mr-0 bg-white rounded-[28px] shadow-sm flex flex-col shrink-0 overflow-hidden">
+      <aside className="hidden md:flex w-[260px] m-4 mr-0 bg-white rounded-[28px] shadow-sm flex-col shrink-0 overflow-hidden">
         <div className="p-6 pb-2 flex items-center gap-3">
           <Image src="/logo_symbol.png" alt="S" width={36} height={36} style={{ width: 'auto', height: 'auto' }} className="rounded-xl shadow-sm" />
           <span className="font-extrabold text-xl tracking-wide text-[#14173F]">SCRIBE</span>
@@ -187,18 +187,18 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       </aside>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="flex-1 flex flex-col min-w-0 m-4 overflow-y-auto">
+      <main className="flex-1 flex flex-col min-w-0 m-2 md:m-4 pb-24 md:pb-0 overflow-y-auto">
         
         {/* Top Header */}
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
               {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : "Growth Studio"}
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 ${
+            <span className={`hidden sm:flex px-4 py-2 rounded-xl text-xs font-bold items-center gap-2 ${
               data.chain.ok ? "bg-white text-[#14173F] shadow-sm" : "bg-[#A94E40] text-white"
             }`}>
               <span className={`w-2 h-2 rounded-full ${data.chain.ok ? "bg-[#5B5BE0]" : "bg-white"}`}></span>
@@ -206,18 +206,18 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </span>
             <button onClick={() => setThembaOpen(true)} className="px-4 py-2.5 rounded-xl bg-[#5B5BE0] text-white font-bold text-sm shadow-sm hover:brightness-110 transition-all flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-              Ask Themba
+              <span className="hidden sm:inline">Ask Themba</span>
             </button>
-            <button onClick={() => setShowScamShield(true)} className="px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
+            <button onClick={() => setShowScamShield(true)} className="hidden sm:flex px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
               Scam Shield
             </button>
             <button onClick={() => setShowExport(true)} className="px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
-              Share statement
+              Share
             </button>
-            <button onClick={() => setShowImport(true)} className="px-4 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
+            <button onClick={() => setShowImport(true)} className="hidden sm:flex px-4 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
               Import CSV
             </button>
-            <button onClick={() => setShowCapture(true)} className="px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors">
+            <button onClick={() => setShowCapture(true)} className="hidden md:flex px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors">
               + Capture
             </button>
           </div>
@@ -252,7 +252,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </div>
 
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
-              <div className="flex-1 bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50">
+              <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <h3 className="font-extrabold text-lg">Daily Recorded Sales</h3>
@@ -262,7 +262,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 <BarChart data={dailySales} />
               </div>
 
-              <div className="flex-1 bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50">
+              <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
                 <div className="flex justify-between items-end mb-4">
                   <div>
                     <h3 className="font-extrabold text-lg">Trading Consistency Score</h3>
@@ -296,9 +296,9 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </div>
 
             <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50">
+              <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
                 <h3 className="font-extrabold text-lg mb-4">Stock-flow reconciliation</h3>
-                <div className="bg-[#F1F2FF] rounded-xl p-4 flex justify-between items-center mb-4">
+                <div className="bg-[#F1F2FF] rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                   <div className="text-sm font-semibold">Expected: {data.stock.expected} units</div>
                   <div className="text-sm font-semibold">Counted: {data.stock.counted ?? "—"}</div>
                   <div className={`text-sm font-bold px-3 py-1 rounded-lg ${data.stock.variance !== 0 ? "bg-[#A9AEFF] text-[#14173F]" : "bg-white"}`}>
@@ -328,20 +328,20 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
         {/* ─── RECORDS TAB ─── */}
         {mainTab === "records" && (
-          <div className="bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50 flex-1 overflow-auto">
-            <div className="flex justify-between items-center mb-6">
+          <div className="bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50 flex-1 overflow-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-extrabold">Forensic Ledger</h2>
                 <p className="text-sm text-[#4A4F7A]">Every record is cryptographically signed. Any edit will break the chain.</p>
               </div>
-              <button onClick={() => setShowCapture(true)} className="px-4 py-2 bg-[#14173F] text-white rounded-lg text-sm font-bold">
+              <button onClick={() => setShowCapture(true)} className="px-4 py-2 bg-[#14173F] text-white rounded-lg text-sm font-bold w-full sm:w-auto">
                 + Add Record
               </button>
             </div>
 
             {/* FORENSIC BREAK BANNER */}
             {!data.chain.ok && (
-              <div className="bg-[#A94E40] text-white rounded-2xl p-6 mb-6 shadow-lg flex items-center justify-between">
+              <div className="bg-[#A94E40] text-white rounded-2xl p-4 md:p-6 mb-6 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-extrabold flex items-center gap-2">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
@@ -351,67 +351,69 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                     The chain is broken at Record #{data.chain.brokenAtSeq}. The stored hash no longer matches the record's contents. All subsequent records are invalid.
                   </p>
                 </div>
-                <button onClick={() => judgeAction("reset", "reset")} className="bg-white text-[#A94E40] font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-100 transition-colors shrink-0 ml-4">
+                <button onClick={() => judgeAction("reset", "reset")} className="bg-white text-[#A94E40] font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-100 transition-colors shrink-0 w-full md:w-auto">
                   Fix Ledger
                 </button>
               </div>
             )}
             
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[#F1F2FF] text-[#4A4F7A] text-xs uppercase tracking-wider">
-                <tr>
-                  <th className="p-4 rounded-tl-xl">Seq</th>
-                  <th className="p-4">Date</th>
-                  <th className="p-4">Description</th>
-                  <th className="p-4">Amount</th>
-                  <th className="p-4">Evidence</th>
-                  <th className="p-4 rounded-tr-xl">Hash</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E1E4F7]">
-                {data.recentRecords.map(r => {
-                  const isTampered = data.chain?.brokenAtSeq === r.seq;
-                  const isAfterBreak = data.chain?.brokenAtSeq !== null && r.seq > (data.chain?.brokenAtSeq ?? Infinity);
-                  
-                  return (
-                    <tr 
-                      key={r.seq} 
-                      onClick={() => setSelectedRecord(r)}
-                      className={`cursor-pointer group transition-colors ${
-                        isTampered ? "bg-[#A94E40]/10 border-l-4 border-l-[#A94E40]" : 
-                        isAfterBreak ? "bg-red-50/30 opacity-50" : 
-                        "hover:bg-[#F1F2FF]/50"
-                      }`}
-                    >
-                      <td className={`p-4 font-bold ${isTampered ? "text-[#A94E40]" : "text-[#5B5BE0]"}`}>#{r.seq}</td>
-                      <td className="p-4 text-[#4A4F7A]">{fmtDate(r.occurred_at)}</td>
-                      <td className="p-4 font-medium">
-                        {r.description}
-                        {isTampered && <span className="ml-2 text-[10px] font-bold uppercase text-[#A94E40] bg-[#A94E40]/10 px-2 py-0.5 rounded-full">Tampered</span>}
-                      </td>
-                      <td className={`p-4 font-bold ${isTampered ? "text-[#A94E40]" : ""}`}>{rands(r.amount_cents)}</td>
-                      <td className="p-4">
-                        <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-lg ${
-                          r.evidence_tier === "counter_signed" ? "bg-[#47745D]/10 text-[#47745D]" : 
-                          r.evidence_tier === "document_supported" ? "bg-[#A9AEFF]/20 text-[#4B4FC9]" : "bg-[#E6E8FA] text-[#4A4F7A]"
-                        }`}>
-                          {r.evidence_tier.replace("_", " ")}
-                        </span>
-                      </td>
-                      <td className={`p-4 text-xs font-mono truncate max-w-[120px] ${isTampered ? "text-[#A94E40] line-through decoration-2" : "text-[#5A5F8C]"}`} title="Cryptographic hash">
-                        {r.canonical_hash ? r.canonical_hash.slice(0, 16) + "..." : "hash"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm min-w-[600px]">
+                <thead className="bg-[#F1F2FF] text-[#4A4F7A] text-xs uppercase tracking-wider">
+                  <tr>
+                    <th className="p-4 rounded-tl-xl">Seq</th>
+                    <th className="p-4">Date</th>
+                    <th className="p-4">Description</th>
+                    <th className="p-4">Amount</th>
+                    <th className="p-4">Evidence</th>
+                    <th className="p-4 rounded-tr-xl">Hash</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E1E4F7]">
+                  {data.recentRecords.map(r => {
+                    const isTampered = data.chain?.brokenAtSeq === r.seq;
+                    const isAfterBreak = data.chain?.brokenAtSeq !== null && r.seq > (data.chain?.brokenAtSeq ?? Infinity);
+                    
+                    return (
+                      <tr 
+                        key={r.seq} 
+                        onClick={() => setSelectedRecord(r)}
+                        className={`cursor-pointer group transition-colors ${
+                          isTampered ? "bg-[#A94E40]/10 border-l-4 border-l-[#A94E40]" : 
+                          isAfterBreak ? "bg-red-50/30 opacity-50" : 
+                          "hover:bg-[#F1F2FF]/50"
+                        }`}
+                      >
+                        <td className={`p-4 font-bold ${isTampered ? "text-[#A94E40]" : "text-[#5B5BE0]"}`}>#{r.seq}</td>
+                        <td className="p-4 text-[#4A4F7A]">{fmtDate(r.occurred_at)}</td>
+                        <td className="p-4 font-medium">
+                          {r.description}
+                          {isTampered && <span className="ml-2 text-[10px] font-bold uppercase text-[#A94E40] bg-[#A94E40]/10 px-2 py-0.5 rounded-full">Tampered</span>}
+                        </td>
+                        <td className={`p-4 font-bold ${isTampered ? "text-[#A94E40]" : ""}`}>{rands(r.amount_cents)}</td>
+                        <td className="p-4">
+                          <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-lg ${
+                            r.evidence_tier === "counter_signed" ? "bg-[#47745D]/10 text-[#47745D]" : 
+                            r.evidence_tier === "document_supported" ? "bg-[#A9AEFF]/20 text-[#4B4FC9]" : "bg-[#E6E8FA] text-[#4A4F7A]"
+                          }`}>
+                            {r.evidence_tier.replace("_", " ")}
+                          </span>
+                        </td>
+                        <td className={`p-4 text-xs font-mono truncate max-w-[120px] ${isTampered ? "text-[#A94E40] line-through decoration-2" : "text-[#5A5F8C]"}`} title="Cryptographic hash">
+                          {r.canonical_hash ? r.canonical_hash.slice(0, 16) + "..." : "hash"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
         {/* ─── TASKS / GROWTH STUDIO TAB ─── */}
         {mainTab === "tasks" && (
-          <div className="bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50 flex-1 overflow-auto">
+          <div className="bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50 flex-1 overflow-auto">
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-xl font-extrabold">Growth Studio</h2>
@@ -444,6 +446,33 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           </div>
         )}
       </main>
+
+      {/* ─── MOBILE BOTTOM NAVIGATION ─── */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1A1F52] border-t border-[#E1E4F7] dark:border-[#2A3070] px-6 py-3 flex justify-between items-center z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-safe">
+        <button onClick={() => setMainTab("overview")} className={`flex flex-col items-center gap-1 ${mainTab === "overview" ? "text-[#5B5BE0]" : "text-[#5A5F8C]"}`}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span className="text-[10px] font-bold">Overview</span>
+        </button>
+        
+        <button onClick={() => setMainTab("records")} className={`flex flex-col items-center gap-1 ${mainTab === "records" ? "text-[#5B5BE0]" : "text-[#5A5F8C]"}`}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          <span className="text-[10px] font-bold">Records</span>
+        </button>
+
+        <button onClick={() => setShowCapture(true)} className="flex flex-col items-center justify-center w-12 h-12 bg-[#5B5BE0] text-white rounded-full shadow-lg -mt-6">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+
+        <button onClick={() => setMainTab("tasks")} className={`flex flex-col items-center gap-1 ${mainTab === "tasks" ? "text-[#5B5BE0]" : "text-[#5A5F8C]"}`}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          <span className="text-[10px] font-bold">Tasks</span>
+        </button>
+
+        <button onClick={() => setThembaOpen(true)} className="flex flex-col items-center gap-1 text-[#5A5F8C]">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span className="text-[10px] font-bold">Themba</span>
+        </button>
+      </div>
 
       {/* ─── CAPTURE FLOW MODAL ─── */}
       {showCapture && (

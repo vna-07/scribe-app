@@ -262,7 +262,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="animate-stagger delay-1 bg-[#A9AEFF] dark:bg-[#2A3070] rounded-[24px] p-5 shadow-sm">
-                <div className="text-xs font-bold text-[#1D2260] mb-1">Sales this week</div>
+                <div className="text-xs font-bold text-[#1D2260] mb-1">Total recorded sales</div>
                 <div className="text-2xl font-extrabold tracking-tight tabular-nums">{rands(data.revenue.low_cents)}</div>
                 <div className="text-xs font-medium text-[#1D2260] mt-2 tabular-nums">Range to {rands(data.revenue.high_cents)}</div>
               </div>
@@ -295,17 +295,21 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               </div>
               
               <div className="space-y-3">
-                {data.stock.variance !== 0 && data.stock.variance !== null && (
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-[#FFF0C4] dark:bg-[#4A3B10] border border-[#D99A00]">
+                {data.stockState.products.filter(p => p.status === "open").map(p => (
+                  <div key={p.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-[#FFF0C4] dark:bg-[#4A3B10] border border-[#D99A00]">
                     <div>
-                      <p className="font-bold text-[#1D2260] dark:text-[#F2B84B] text-sm">Investigate {Math.abs(data.stock.variance)}-unit variance</p>
-                      <p className="text-xs text-[#1D2260] dark:text-[#C5C9F5] mt-0.5">Your physical count didn't match the expected stock.</p>
+                      <p className="font-bold text-[#1D2260] dark:text-[#F2B84B] text-sm">
+                        {p.name} — {p.variance! > 0 ? "+" : ""}{p.variance} {p.unit}s {p.variance! < 0 ? "short" : "over"}
+                      </p>
+                      <p className="text-xs text-[#1D2260] dark:text-[#C5C9F5] mt-0.5">
+                        Expected {p.expected} · Counted {p.counted}
+                      </p>
                     </div>
                     <button onClick={() => setThembaOpen(true)} className="mt-3 sm:mt-0 px-4 py-2 bg-[#14173F] text-white text-xs font-bold rounded-lg hover:bg-[#2A3070]">
                       Ask Themba
                     </button>
                   </div>
-                )}
+                ))}
 
                 {tasks.filter(t => t.status === 'pending').length > 0 && (
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-[#F1F2FF] dark:bg-[#2A3070] border border-[#E1E4F7] dark:border-[#3A4080]">
@@ -319,7 +323,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                   </div>
                 )}
 
-                {data.stock.variance === 0 && tasks.filter(t => t.status === 'pending').length === 0 && (
+                {data.stockState.open_variances === 0 && tasks.filter(t => t.status === 'pending').length === 0 && (
                   <div className="p-4 rounded-xl bg-[#47745D]/10 border border-[#47745D]/20 text-center">
                     <p className="text-sm font-bold text-[#47745D] dark:text-[#A9AEFF]">You're all caught up! No outstanding actions.</p>
                   </div>
@@ -373,17 +377,26 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
-                <h3 className="font-extrabold text-lg mb-4">Stock-flow reconciliation</h3>
-                <div className="bg-[#F1F2FF] rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-                  <div className="text-sm font-semibold tabular-nums">Expected: {data.stock.expected} units</div>
-                  <div className="text-sm font-semibold tabular-nums">Counted: {data.stock.counted ?? "—"}</div>
-                  <div className={`text-sm font-bold px-3 py-1 rounded-lg tabular-nums ${data.stock.variance !== 0 ? "bg-[#A9AEFF] text-[#14173F]" : "bg-white"}`}>
-                    Variance: {data.stock.variance ?? "—"}
-                  </div>
+                <h3 className="font-extrabold text-lg mb-4">Stock reconciliation</h3>
+                <div className="space-y-2">
+                  {data.stockState.products.slice(0, 6).map(p => (
+                    <div key={p.id} className="flex items-center justify-between text-sm py-2 border-b border-[#E1E4F7] last:border-0">
+                      <span className="font-medium text-[#14173F] truncate max-w-[50%]">{p.name}</span>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-xs text-[#5A5F8C] tabular-nums">Expected {p.expected}</span>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full tabular-nums ${
+                          p.status === "open" ? "bg-[#FFF0C4] text-[#D99A00]" :
+                          p.status === "reconciled" ? "bg-[#47745D]/10 text-[#47745D]" :
+                          "bg-[#E1E4F7] text-[#5A5F8C]"
+                        }`}>
+                          {p.status === "no_count" ? "No count" : p.variance === 0 ? "✓ Matched" : `${p.variance! > 0 ? "+" : ""}${p.variance}`}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-xs text-[#4A4F7A] leading-relaxed mb-4">{data.stock.note}</p>
                 
-                <div className="border-t border-[#E1E4F7] pt-4">
+                <div className="border-t border-[#E1E4F7] pt-4 mt-4">
                   <p className="text-xs font-bold text-[#14173F] mb-2 uppercase tracking-wider">Judge Mode</p>
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => judgeAction("inject-discrepancy", "inject")} disabled={!!busy} className="px-3 py-2 bg-[#F1F2FF] text-[#4B4FC9] hover:bg-[#E6E8FA] rounded-lg text-xs font-bold transition-colors">

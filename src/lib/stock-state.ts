@@ -33,30 +33,32 @@ export async function getBusinessStockState(businessId: string): Promise<Busines
     sql: `SELECT product_id, type, quantity_delta, observed_quantity, created_at 
           FROM stock_movements 
           WHERE business_id = ? 
-          ORDER BY created_at ASC`,
+          ORDER BY created_at ASC, id ASC`,
     args: [businessId],
   });
 
   const products: ProductState[] = productsRes.rows.map((p: any) => {
     const movements = movementsRes.rows.filter((m: any) => m.product_id === p.id);
 
-    let expected = 0;
-    let latestCount: { qty: number; at: number } | null = null;
+    let runningExpected = 0;
+    // Track expected at the moment of the latest count, not the current expected.
+    let lastCountSnapshot: { qty: number; expected_at_count: number } | null = null;
 
     for (const m of movements) {
       const delta = Number(m.quantity_delta);
       if (m.type === "count") {
         const observed = m.observed_quantity != null ? Number(m.observed_quantity) : null;
         if (observed !== null) {
-          latestCount = { qty: observed, at: Number(m.created_at) };
+          lastCountSnapshot = { qty: observed, expected_at_count: runningExpected };
         }
       } else {
-        expected += delta;
+        runningExpected += delta;
       }
     }
 
-    const counted = latestCount?.qty ?? null;
-    const variance = counted !== null ? counted - expected : null;
+    const counted = lastCountSnapshot?.qty ?? null;
+    const variance =
+      lastCountSnapshot !== null ? counted! - lastCountSnapshot.expected_at_count : null;
 
     let status: ProductState["status"] = "no_count";
     if (counted !== null) {
@@ -71,14 +73,14 @@ export async function getBusinessStockState(businessId: string): Promise<Busines
       sell_price_cents: Number(p.selling_price_cents) || 0,
       cost_price_cents: p.cost_price_cents ? Number(p.cost_price_cents) : null,
       reorder_threshold: Number(p.reorder_threshold) || 0,
-      expected,
+      expected: runningExpected,
       counted,
       variance,
       status,
     };
   });
 
-  const withVariance = products.filter(p => p.variance !== null && p.variance !== 0);
+  const withVariance = products.filter((p) => p.variance !== null && p.variance !== 0);
 
   return {
     products,
@@ -86,7 +88,7 @@ export async function getBusinessStockState(businessId: string): Promise<Busines
     with_variance: withVariance.length,
     open_variances: withVariance.length,
     total_expected_units: products.reduce((s, p) => s + p.expected, 0),
-    total_counted_units: products.some(p => p.counted !== null)
+    total_counted_units: products.some((p) => p.counted !== null)
       ? products.reduce((s, p) => s + (p.counted ?? 0), 0)
       : null,
   };

@@ -300,11 +300,16 @@ async function main() {
       }
     }
 
-    // Makro monthly 1st
+    // Makro monthly (1st of month) — sized for ~30 days of sales
     if (dom === 1) {
-      for (const sku of ["MZE-10", "SUG-2", "OIL-2"]) {
-        const p = PRODUCTS.find((pp) => pp.sku === sku)!;
-        const delQty = sku === "MZE-10" ? randInt(10, 20) : sku === "SUG-2" ? randInt(12, 24) : randInt(6, 12);
+      const makroProducts: { sku: string; qty: [number, number] }[] = [
+        { sku: "MZE-10", qty: [20, 30] },
+        { sku: "SUG-2", qty: [40, 60] },
+        { sku: "OIL-2", qty: [25, 40] },
+      ];
+      for (const item of makroProducts) {
+        const p = PRODUCTS.find((pp) => pp.sku === item.sku)!;
+        const delQty = randInt(item.qty[0], item.qty[1]);
         const recId = uuid();
         pendingRecords.push({
           id: recId, kind: "stock_purchase",
@@ -313,7 +318,7 @@ async function main() {
           occurred_at: currentDay + 4 * 3600_000, evidence_tier: "document_supported",
         });
         pendingMovements.push({
-          id: uuid(), product_id: productIds[sku], type: "delivery",
+          id: uuid(), product_id: productIds[item.sku], type: "delivery",
           quantity_delta: delQty, observed_quantity: null,
           reference_record_id: recId, notes: "Monthly Makro bulk order",
           created_at: currentDay + 4 * 3600_000,
@@ -321,11 +326,18 @@ async function main() {
       }
     }
 
-    // Cash & Carry bi-weekly
-    if (dom === 1 || dom === 15) {
-      for (const sku of ["MLK-1", "WAS-1", "CDL-6", "CHP-S", "PAR-1"]) {
-        const p = PRODUCTS.find((pp) => pp.sku === sku)!;
-        const delQty = sku === "CHP-S" ? randInt(40, 80) : randInt(15, 30);
+    // Cash & Carry weekly (Mondays) — matches daily sales rate so stock stays stable
+    if (dow === 1) {
+      const cncProducts: { sku: string; qty: [number, number] }[] = [
+        { sku: "MLK-1", qty: [40, 60] },
+        { sku: "WAS-1", qty: [15, 22] },
+        { sku: "CDL-6", qty: [15, 22] },
+        { sku: "CHP-S", qty: [60, 90] },
+        { sku: "PAR-1", qty: [25, 40] },
+      ];
+      for (const item of cncProducts) {
+        const p = PRODUCTS.find((pp) => pp.sku === item.sku)!;
+        const delQty = randInt(item.qty[0], item.qty[1]);
         const recId = uuid();
         pendingRecords.push({
           id: recId, kind: "stock_purchase",
@@ -334,9 +346,9 @@ async function main() {
           occurred_at: currentDay + 5 * 3600_000, evidence_tier: "document_supported",
         });
         pendingMovements.push({
-          id: uuid(), product_id: productIds[sku], type: "delivery",
+          id: uuid(), product_id: productIds[item.sku], type: "delivery",
           quantity_delta: delQty, observed_quantity: null,
-          reference_record_id: recId, notes: "Bi-weekly Cash & Carry",
+          reference_record_id: recId, notes: "Weekly Cash & Carry restock",
           created_at: currentDay + 5 * 3600_000,
         });
       }
@@ -416,10 +428,15 @@ async function main() {
         const movements = pendingMovements.filter((m) => m.product_id === productIds[p.sku] && m.type !== "count");
         const expected = movements.reduce((s, m) => s + m.quantity_delta, 0);
         let counted = expected;
-        // Deliberate open variance on Airtime R10 in October
-        if (p.sku === "AIR-R10" && dom === 1 && new Date(currentDay).getUTCMonth() === 9) {
+
+        // Deliberate open variance on Airtime R10 — placed at the LAST count (Oct 15)
+        // so it doesn't get overwritten by a later routine count.
+        const isOct15Count =
+          dom === 15 && new Date(currentDay).getUTCMonth() === 9;
+        if (p.sku === "AIR-R10" && isOct15Count) {
           counted = expected - 8;
         }
+
         const countId = uuid();
         pendingRecords.push({
           id: countId, kind: "stock_count", amount_cents: 0, quantity: counted,

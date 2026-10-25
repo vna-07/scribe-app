@@ -7,9 +7,6 @@ export const LOCALES: { code: Locale; label: string; native: string }[] = [
   { code: "af", label: "Afrikaans", native: "Afrikaans" },
 ];
 
-// ⚠️ TRANSLATIONS PENDING NATIVE REVIEW
-// The following strings require sign-off by a native speaker before public launch.
-// Currently marked: [REVIEW] = financial/legal/ambiguous term.
 export const dictionary = {
   en: {
     nav: {
@@ -33,56 +30,32 @@ export const dictionary = {
       loading: "Loading…",
       error: "Something went wrong",
       retry: "Retry",
-      addRecord: "Add record",
-      captureEntry: "Capture entry",
-      recordSale: "Record sale",
-      recordExpense: "Record expense",
-    },
-    overview: {
-      greeting: "Molo",
-      subtitle: "Here is where your business stands.",
-      revenue: "Recorded sales",
-      readiness: "[REVIEW] Documented readiness",
-      variance: "Stock discrepancy",
-      actionCentre: "Action Centre",
-      allCaughtUp: "You're all caught up.",
     },
     themba: {
       title: "Themba",
       subtitle: "Business Operations Assistant",
+      intro:
+        "I'm Themba. I can investigate your records, draft messages to suppliers, propose plans, and help you understand your business. Try one of the suggestions below, or ask anything.",
+      suggestion: {
+        supplier: "Draft a message to my supplier",
+        stock: "Why is my stock short?",
+        score: "How can I improve my readiness score?",
+      },
       placeholder: "Ask Themba to investigate or do something…",
       proposeAction: "Proposed Action",
       approve: "Approve & Execute",
       executed: "Action Executed",
       declined: "Declined",
     },
-    growth: {
-      title: "Growth Studio",
-      newGoal: "+ New Goal",
-      clearCompleted: "Clear completed",
-      deleteTask: "Delete task",
-      noTasks: "No tasks yet. Ask Themba to create a plan.",
-    },
-    stock: {
-      title: "Product Catalogue",
-      addProduct: "+ Add Product",
-      receive: "Receive",
-      count: "Count",
-    },
-    aiSummary: {
-      title: "Business summary",
-      badge: "AI-generated · Themba",
-      expand: "Show recent highlights and outlook →",
-      collapse: "← Collapse",
-    },
-    settings: {
-      title: "Settings",
-      appearance: "Appearance",
-      language: "Language",
-      light: "Daylight",
-      dark: "Night",
-      sunlight: "Sunlight",
-      system: "System",
+    overview: {
+      greeting: "Molo",
+      salesLabel: "Total recorded sales",
+      salesSub: "Range across all recorded months",
+      stockLabel: "Stock gaps to review",
+      stockSub: "{total} tracked · {variance} with variance",
+      scoreLabel: "Consistency Score",
+      actionCentre: "Action Centre",
+      allCaughtUp: "You're all caught up.",
     },
   },
   xh: {
@@ -99,64 +72,35 @@ export const dictionary = {
       trustCentre: "Iziko Lokuthembela",
     },
     common: {
-      save: "Gcina",
-      cancel: "Rhoxisa",
-      delete: "Cima",
-      close: "Vala",
-      confirm: "Qinisekisa",
-      loading: "Kuyalayisha…",
-      error: "Kukho into engahambanga kakuhle",
-      retry: "Zama kwakhona",
-      addRecord: "Yongeza irekhodi",
-      captureEntry: "Faka irekhodi",
-      recordSale: "Bhala intengiso",
-      recordExpense: "[REVIEW] Bhala inkcitho",
-    },
-    overview: {
-      greeting: "Molo",
-      subtitle: "Nantsi indawo ibhinqa lakho.",
-      revenue: "Intengiso erekhodiweyo",
-      readiness: "[REVIEW] Ukulungela okubhaliweyo",
-      variance: "Umahluko kwisitokhwe",
-      actionCentre: "Iziko Lwentshukumo",
-      allCaughtUp: "Awukho umsebenzi osalayo.",
+      save: "Gcina", cancel: "Rhoxisa", delete: "Cima", close: "Vala",
+      confirm: "Qinisekisa", loading: "Kuyalayisha…",
+      error: "Kukho into engahambanga kakuhle", retry: "Zama kwakhona",
     },
     themba: {
       title: "Themba",
       subtitle: "Umncedisi wokusebenza kwezoshishino",
+      intro:
+        "NdinguThemba. Ndingaphenya iirekhodi zakho, ndibhale imiyalezo kubathengisi, ndicebise izicwangciso, kwaye ndikuncede uqonde ishishini lakho.",
+      suggestion: {
+        supplier: "Bhala umyalezo kumthengisi wam",
+        stock: "Kutheni isitokhwe sam sifutshane?",
+        score: "Ndingasiphucula njani inqaku lam lokulungela?",
+      },
       placeholder: "Buza uThemba ukuba aphenye okanye enze into…",
       proposeAction: "Isenzo esiphakanyisiweyo",
       approve: "Vuma & Phumeza",
       executed: "Isenzo siphunyeziwe",
       declined: "Kwaliwe",
     },
-    growth: {
-      title: "Istudio Yokukhula",
-      newGoal: "+ Injongo Entsha",
-      clearCompleted: "Cima ezigqityiweyo",
-      deleteTask: "Cima umsebenzi",
-      noTasks: "Akukho misebenzi. Buza uThemba ukuba enze isicwangciso.",
-    },
-    stock: {
-      title: "Uluhlu lweemveliso",
-      addProduct: "+ Yongeza imveliso",
-      receive: "Yamkela",
-      count: "Bala",
-    },
-    aiSummary: {
-      title: "Isishwankathelo seshishini",
-      badge: "Yenziwe nge-AI · Themba",
-      expand: "Bonisa izinto ezintsha kunye nombono →",
-      collapse: "← Vala",
-    },
-    settings: {
-      title: "Izicwangciso",
-      appearance: "Inkangeleko",
-      language: "Ulwimi",
-      light: "Ukukhanya",
-      dark: "Ubusuku",
-      sunlight: "Ilanga",
-      system: "Inkqubo",
+    overview: {
+      greeting: "Molo",
+      salesLabel: "Intengiso erekhodiweyo iyonke",
+      salesSub: "Uluhlu kuzo zonke iinyanga ezirekhodiweyo",
+      stockLabel: "Izithuba zesitokhwe ekufuneka zihlolwe",
+      stockSub: "{total} zilandelwa · {variance} ezinomahluko",
+      scoreLabel: "Inqaku Lokungaguquguquki",
+      actionCentre: "Iziko Lwentshukumo",
+      allCaughtUp: "Awukho umsebenzi osalayo.",
     },
   },
   zu: {
@@ -173,64 +117,35 @@ export const dictionary = {
       trustCentre: "Isikhungo Sokwethemba",
     },
     common: {
-      save: "Gcina",
-      cancel: "Khansela",
-      delete: "Susa",
-      close: "Vala",
-      confirm: "Qinisekisa",
-      loading: "Kuyalayisha…",
-      error: "Kukhona okungahambanga kahle",
-      retry: "Zama futhi",
-      addRecord: "Engeza irekhodi",
-      captureEntry: "Faka irekhodi",
-      recordSale: "Bhala ukuthengisa",
-      recordExpense: "[REVIEW] Bhala izindleko",
-    },
-    overview: {
-      greeting: "Sawubona",
-      subtitle: "Nakhu lapho ibhizinisi lakho likhona.",
-      revenue: "Ukuthengisa okurekhodiwe",
-      readiness: "[REVIEW] Ukulungela okubhaliwe",
-      variance: "Umehluko kwisitoko",
-      actionCentre: "Isikhungo Sezenzo",
-      allCaughtUp: "Awukho umsebenzi osele.",
+      save: "Gcina", cancel: "Khansela", delete: "Susa", close: "Vala",
+      confirm: "Qinisekisa", loading: "Kuyalayisha…",
+      error: "Kukhona okungahambanga kahle", retry: "Zama futhi",
     },
     themba: {
       title: "Themba",
       subtitle: "Umsizi wezokusebenza kwebhizinisi",
+      intro:
+        "NginguThemba. Ngingaphenya amarekhodi akho, ngibhale imilayezo kubabizi, ngiphakamise izinhlelo, futhi ngikusize uqonde ibhizinisi lakho.",
+      suggestion: {
+        supplier: "Bhala umlayezo kumhlinzeki wami",
+        stock: "Kungani isitoko sami sishoda?",
+        score: "Ngingasithuthukisa kanjani iphuzu lami lokulungela?",
+      },
       placeholder: "Buza uThemba ukuthi aphenye noma enze okuthile…",
       proposeAction: "Isenzo esihlongozwayo",
       approve: "Vuma & Qhubeka",
       executed: "Isenzo senziwe",
       declined: "Kwenqatshiwe",
     },
-    growth: {
-      title: "Isitudiyo Sokukhula",
-      newGoal: "+ Inhloso Entsha",
-      clearCompleted: "Susa okuphelile",
-      deleteTask: "Susa umsebenzi",
-      noTasks: "Awekho imisebenzi. Buza uThemba ukuthi enze uhlelo.",
-    },
-    stock: {
-      title: "Uhlu lwemikhiqizo",
-      addProduct: "+ Engeza umkhiqizo",
-      receive: "Yamukela",
-      count: "Bala",
-    },
-    aiSummary: {
-      title: "Isifinyezo sebhizinisi",
-      badge: "Kwenziwe nge-AI · Themba",
-      expand: "Khombisa okusha kanye nombono →",
-      collapse: "← Vala",
-    },
-    settings: {
-      title: "Izilungiselelo",
-      appearance: "Ukubukeka",
-      language: "Ulimi",
-      light: "Ukukhanya",
-      dark: "Ubusuku",
-      sunlight: "Ilanga",
-      system: "Uhlelo",
+    overview: {
+      greeting: "Sawubona",
+      salesLabel: "Ukuthengisa okurekhodiwe konke",
+      salesSub: "Ibanga kuzo zonke izinyanga ezirekhodiwe",
+      stockLabel: "Izikhala zesitoko okufanele zibuyekezwe",
+      stockSub: "{total} zilandelwa · {variance} ezinomehluko",
+      scoreLabel: "Iphuzu Lokungaguquguquki",
+      actionCentre: "Isikhungo Sezenzo",
+      allCaughtUp: "Awukho umsebenzi osele.",
     },
   },
   af: {
@@ -247,83 +162,49 @@ export const dictionary = {
       trustCentre: "Trust-sentrum",
     },
     common: {
-      save: "Stoor",
-      cancel: "Kanselleer",
-      delete: "Verwyder",
-      close: "Maak toe",
-      confirm: "Bevestig",
-      loading: "Laai tans…",
-      error: "Iets het verkeerd gegaan",
-      retry: "Probeer weer",
-      addRecord: "Voeg rekord by",
-      captureEntry: "Vasle rekord",
-      recordSale: "Teken verkoop aan",
-      recordExpense: "[REVIEW] Teken uitgawe aan",
-    },
-    overview: {
-      greeting: "Hallo",
-      subtitle: "Hier is waar jou besigheid staan.",
-      revenue: "Aangetekende verkope",
-      readiness: "[REVIEW] Gedokumenteerde gereedheid",
-      variance: "Voorraadverskil",
-      actionCentre: "Aksiesentrum",
-      allCaughtUp: "Jy is op datum.",
+      save: "Stoor", cancel: "Kanselleer", delete: "Verwyder", close: "Maak toe",
+      confirm: "Bevestig", loading: "Laai tans…",
+      error: "Iets het verkeerd gegaan", retry: "Probeer weer",
     },
     themba: {
       title: "Themba",
       subtitle: "Besigheidsbedryfsassistent",
+      intro:
+        "Ek is Themba. Ek kan jou rekords ondersoek, boodskappe aan verskaffers opstel, planne voorstel en jou help om jou besigheid te verstaan.",
+      suggestion: {
+        supplier: "Stel 'n boodskap aan my verskaffer op",
+        stock: "Hoekom is my voorraad te min?",
+        score: "Hoe kan ek my gereedheidstelling verbeter?",
+      },
       placeholder: "Vra Themba om te ondersoek of iets te doen…",
       proposeAction: "Voorgestelde aksie",
       approve: "Keur goed & Voer uit",
       executed: "Aksie uitgevoer",
       declined: "Afgekeur",
     },
-    growth: {
-      title: "Groei Studio",
-      newGoal: "+ Nuwe doelwit",
-      clearCompleted: "Verwyder voltooides",
-      deleteTask: "Verwyder taak",
-      noTasks: "Nog geen take nie. Vra Themba om 'n plan te maak.",
-    },
-    stock: {
-      title: "Produkkatalogus",
-      addProduct: "+ Voeg produk by",
-      receive: "Ontvang",
-      count: "Tel",
-    },
-    aiSummary: {
-      title: "Besigheidsopsomming",
-      badge: "KI-gegenereer · Themba",
-      expand: "Wys onlangse hoogtepunte en vooruitsig →",
-      collapse: "← Vou in",
-    },
-    settings: {
-      title: "Instellings",
-      appearance: "Voorkoms",
-      language: "Taal",
-      light: "Daglig",
-      dark: "Nag",
-      sunlight: "Sonlig",
-      system: "Stelsel",
+    overview: {
+      greeting: "Hallo",
+      salesLabel: "Totale aangetekende verkope",
+      salesSub: "Reeks oor alle aangetekende maande",
+      stockLabel: "Voorraadgapings om na te gaan",
+      stockSub: "{total} dopgehou · {variance} met verskil",
+      scoreLabel: "Konsekwentheidstelling",
+      actionCentre: "Aksiesentrum",
+      allCaughtUp: "Jy is op datum.",
     },
   },
 } as const;
 
-// Helper: dot-path string lookup with English fallback
 export function getTranslation(locale: Locale, path: string): string {
   const keys = path.split(".");
-  let node: any = dictionary[locale];
-  for (const k of keys) {
-    if (node?.[k] == null) break;
-    node = node[k];
-  }
-  if (typeof node === "string") return node;
+  const lookup = (dict: any): string | null => {
+    let node: any = dict;
+    for (const k of keys) {
+      if (node?.[k] == null) return null;
+      node = node[k];
+    }
+    return typeof node === "string" ? node : null;
+  };
 
-  // Fallback to English
-  node = dictionary.en;
-  for (const k of keys) {
-    if (node?.[k] == null) return path;
-    node = node[k];
-  }
-  return typeof node === "string" ? node : path;
+  return lookup(dictionary[locale]) ?? lookup(dictionary.en) ?? path;
 }

@@ -11,6 +11,7 @@ import EvidenceWorkspace from "@/components/EvidenceWorkspace";
 import ImportWizard from "@/components/ImportWizard";
 import CaptureFlow from "@/components/CaptureFlow";
 import SaleModal from "@/components/SaleModal";
+import ExpenseModal from "@/components/ExpenseModal";
 import { useApp } from "@/context/AppContext";
 import StockTab from "./StockTab";
 import IntelligenceTab from "./IntelligenceTab";
@@ -49,6 +50,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [showCapture, setShowCapture] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showSale, setShowSale] = useState(false);
+  const [showExpense, setShowExpense] = useState(false);
   
   const [showScamShield, setShowScamShield] = useState(false);
   const [scamMessage, setScamMessage] = useState("");
@@ -227,6 +229,9 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <button onClick={() => setShowSale(true)} className="hidden md:flex px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors">
               + Record Sale
             </button>
+            <button onClick={() => setShowExpense(true)} className="hidden md:flex px-4 py-2.5 rounded-xl bg-white text-[#D99A00] font-bold text-sm shadow-sm hover:shadow-md transition-shadow border border-[#E1E4F7] dark:border-[#2A3070] dark:bg-[#1A1F52]">
+              - Record Expense
+            </button>
           </div>
         </header>
 
@@ -255,6 +260,46 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 <div className="text-xs font-bold text-[#C5C9F5] mb-1">Consistency Score</div>
                 <div className="text-2xl font-extrabold tracking-tight text-[#A9AEFF] tabular-nums">{data.score.low}–{data.score.high}</div>
                 <div className="text-xs font-medium text-[#C5C9F5] mt-2">Evidence of readiness</div>
+              </div>
+            </div>
+
+            {/* ─── ACTION CENTRE ─── */}
+            <div className="bg-white dark:bg-[#1A1F52] rounded-[24px] p-6 border border-[#E1E4F7] dark:border-[#2A3070] shadow-sm mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="w-2 h-2 rounded-full bg-[#D99A00] animate-pulse"></span>
+                <h3 className="font-extrabold text-[#14173F] dark:text-white text-lg">Action Centre</h3>
+              </div>
+              
+              <div className="space-y-3">
+                {data.stock.variance !== 0 && data.stock.variance !== null && (
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-[#FFF0C4] dark:bg-[#4A3B10] border border-[#D99A00]">
+                    <div>
+                      <p className="font-bold text-[#1D2260] dark:text-[#F2B84B] text-sm">Investigate {Math.abs(data.stock.variance)}-unit variance</p>
+                      <p className="text-xs text-[#1D2260] dark:text-[#C5C9F5] mt-0.5">Your physical count didn't match the expected stock.</p>
+                    </div>
+                    <button onClick={() => setThembaOpen(true)} className="mt-3 sm:mt-0 px-4 py-2 bg-[#14173F] text-white text-xs font-bold rounded-lg hover:bg-[#2A3070]">
+                      Ask Themba
+                    </button>
+                  </div>
+                )}
+
+                {tasks.filter(t => t.status === 'pending').length > 0 && (
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-[#F1F2FF] dark:bg-[#2A3070] border border-[#E1E4F7] dark:border-[#3A4080]">
+                    <div>
+                      <p className="font-bold text-[#14173F] dark:text-white text-sm">You have {tasks.filter(t => t.status === 'pending').length} pending tasks</p>
+                      <p className="text-xs text-[#4A4F7A] dark:text-[#C5C9F5] mt-0.5">Review your Growth Studio to keep momentum.</p>
+                    </div>
+                    <button onClick={() => setMainTab("tasks")} className="mt-3 sm:mt-0 px-4 py-2 bg-white text-[#5B5BE0] text-xs font-bold rounded-lg border border-[#E1E4F7] hover:bg-[#F1F2FF]">
+                      View Tasks
+                    </button>
+                  </div>
+                )}
+
+                {data.stock.variance === 0 && tasks.filter(t => t.status === 'pending').length === 0 && (
+                  <div className="p-4 rounded-xl bg-[#47745D]/10 border border-[#47745D]/20 text-center">
+                    <p className="text-sm font-bold text-[#47745D] dark:text-[#A9AEFF]">You're all caught up! No outstanding actions.</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -505,6 +550,15 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           businessId={data.businessId} 
           onComplete={refresh} 
           onClose={() => setShowSale(false)} 
+        />
+      )}
+
+      {/* ─── EXPENSE MODAL ─── */}
+      {showExpense && (
+        <ExpenseModal 
+          businessId={data.businessId} 
+          onComplete={refresh} 
+          onClose={() => setShowExpense(false)} 
         />
       )}
 

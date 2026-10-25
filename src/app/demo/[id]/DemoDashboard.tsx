@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { generateAnalytics } from "@/lib/analytics";
 import { BarChart, DonutChart } from "@/components/Visuals";
+import EvidenceWorkspace from "@/components/EvidenceWorkspace";
 
 interface ThembaMsg {
   role: "user" | "themba";
@@ -50,6 +51,9 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
   // Tasks State
   const [tasks, setTasks] = useState<any[]>([]);
+  
+  // Evidence Workspace State
+  const [selectedRecord, setSelectedRecord] = useState<any>(null);
   
   // Fetch tasks on load
   useEffect(() => {
@@ -390,8 +394,12 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               </thead>
               <tbody className="divide-y divide-[#E1E4F7]">
                 {data.recentRecords.map(r => (
-                  <tr key={r.seq} className="hover:bg-[#F1F2FF]/50 transition-colors">
-                    <td className="p-4 font-bold text-[#5B5BE0]">#{r.seq}</td>
+                  <tr 
+                    key={r.seq} 
+                    onClick={() => setSelectedRecord(r)}
+                    className="hover:bg-[#F1F2FF]/50 transition-colors cursor-pointer group"
+                  >
+                    <td className="p-4 font-bold text-[#5B5BE0] group-hover:underline">#{r.seq}</td>
                     <td className="p-4 text-[#4A4F7A]">{fmtDate(r.occurred_at)}</td>
                     <td className="p-4 font-medium">{r.description}</td>
                     <td className="p-4 font-bold">{rands(r.amount_cents)}</td>
@@ -755,6 +763,14 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </button>
           </div>
         </div>
+      )}
+
+      {/* ─── EVIDENCE WORKSPACE ─── */}
+      {selectedRecord && (
+        <EvidenceWorkspace 
+          record={selectedRecord} 
+          onClose={() => setSelectedRecord(null)} 
+        />
       )}
 
     </div>

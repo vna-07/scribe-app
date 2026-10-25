@@ -4,6 +4,8 @@ import Image from "next/image";
 import { loadDemoData } from "@/lib/demo-data";
 import { rands, fmtDate } from "@/lib/format";
 import PrintButton from "./PrintButton";
+import { generateAnalytics } from "@/lib/analytics";
+import { BarChart } from "@/components/Visuals";
 
 export default async function StatementPage({
   params,
@@ -13,6 +15,10 @@ export default async function StatementPage({
   const { id } = await params;
   const data = await loadDemoData(id);
   if (!data) notFound();
+
+  const { dailySales } = generateAnalytics(
+    data.recentRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
+  );
 
   const generatedAt = new Date().toLocaleString("en-ZA", {
     dateStyle: "long",
@@ -122,6 +128,14 @@ export default async function StatementPage({
                 </p>
                 <p className="text-[10px] text-[#5A5F8C] mt-1">{stockSeverity}</p>
               </div>
+            </div>
+          </section>
+
+          {/* Sales Chart */}
+          <section>
+            <h3 className="text-lg font-extrabold text-[#14173F] mb-4">Sales Performance (14 Days)</h3>
+            <div className="bg-[#F8F9FF] rounded-xl p-6 border border-[#E1E4F7] print:bg-white print:border-[#14173F]">
+              <BarChart data={dailySales} height={100} />
             </div>
           </section>
 

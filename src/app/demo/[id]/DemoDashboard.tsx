@@ -5,6 +5,8 @@ import type { DemoData } from "@/lib/demo-data";
 import { rands, fmtDate } from "@/lib/format";
 import Image from "next/image";
 import Link from "next/link";
+import { generateAnalytics } from "@/lib/analytics";
+import { BarChart, DonutChart } from "@/components/Visuals";
 
 interface ThembaMsg {
   role: "user" | "themba";
@@ -23,6 +25,10 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [busy, setBusy] = useState<string | null>(null);
   const [mainTab, setMainTab] = useState<MainTab>("overview");
   
+  const { dailySales, expenseCategories } = generateAnalytics(
+    data.recentRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
+  );
+
   // Toast State
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
@@ -287,20 +293,11 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               <div className="flex-1 bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50">
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h3 className="font-extrabold text-lg">Daily takings and outlook</h3>
-                    <p className="text-xs font-medium text-[#4A4F7A]">Shaded bars are a forecast with prediction intervals.</p>
+                    <h3 className="font-extrabold text-lg">Daily Recorded Sales</h3>
+                    <p className="text-xs font-medium text-[#4A4F7A]">Past 14 days. Hover to inspect.</p>
                   </div>
                 </div>
-                <div className="flex items-end justify-between h-40 gap-2">
-                  {[40, 60, 45, 80, 90, 65, 85, 55, 75].map((h, i) => (
-                    <div key={i} className="w-full bg-[#14173F] rounded-t-md" style={{ height: `${h}%` }}></div>
-                  ))}
-                  {[95, 70, 60, 50].map((h, i) => (
-                    <div key={i} className="w-full bg-[#CDD1FF] border-2 border-dashed border-[#5B5BE0] rounded-t-md flex items-end justify-center pb-2" style={{ height: `${h}%` }}>
-                      <div className="w-full border-t-2 border-[#5B5BE0] absolute top-0"></div>
-                    </div>
-                  ))}
-                </div>
+                <BarChart data={dailySales} />
               </div>
 
               <div className="flex-1 bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50">
@@ -324,6 +321,12 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                     </div>
                   ))}
                 </div>
+                
+                <div className="mt-6 border-t border-[#E1E4F7] pt-6">
+                  <h3 className="font-extrabold text-sm mb-3">Expense Breakdown</h3>
+                  <DonutChart data={expenseCategories} />
+                </div>
+
                 <div className="mt-5 bg-[#FFF0C4] rounded-xl p-3 text-xs font-bold leading-relaxed text-[#1D2260]">
                   Weakest component: {weakestComponent.label}. {data.score.counterfactuals[0]?.action || "Keep recording to improve."}
                 </div>

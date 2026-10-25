@@ -100,3 +100,41 @@ body {
 .shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
 .dark .shadow-sm { box-shadow: 0 0 0 1px var(--border-divider); }
 .dark .shadow-md { box-shadow: 0 0 0 1px var(--border-divider), 0 4px 6px rgba(0, 0, 0, 0.3); }
+
+/* ─── SUNLIGHT THEME (High Contrast) ─── */
+.sunlight {
+  --bg-page: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-glass: #FFFFFF;
+  --border-glass: #14173F; /* Strong borders */
+  --bg-panel: #FFFFFF;
+  
+  --text-main: #0A0C2B;
+  --text-muted: #0A0C2B;
+  --border-divider: #14173F;
+  
+  --primary: #3D3DC4;
+  --accent: #3D3DC4;
+  --amber: #8A5A00;
+  --red: #8C1D18;
+}
+
+/* Disable all gradients and blobs in Sunlight */
+.sunlight body {
+  background-image: none !important;
+  background-color: #FFFFFF !important;
+  font-size: 1.05rem; /* Slightly larger text */
+}
+
+.sunlight .bg-\[\#E9EBFF\] { background-color: #FFFFFF !important; }
+.sunlight .bg-\[\#14173F\] { background-color: #FFFFFF !important; border: 2px solid #14173F !important; color: #0A0C2B !important; }
+.sunlight .text-white { color: #0A0C2B !important; }
+.sunlight .bg-white\/60 { backdrop-filter: none !important; border: 1px solid #14173F !important; }
+.sunlight .shadow-sm, .sunlight .shadow-md, .sunlight .shadow-xl { box-shadow: none !important; border: 1px solid #14173F !important; }
+.sunlight button { border: 1px solid #14173F; } /* Make buttons distinct */
+
+/* ─── TABULAR NUMERALS FOR FINANCIALS ─── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}

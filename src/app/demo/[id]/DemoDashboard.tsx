@@ -31,6 +31,10 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
     data.recentRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
   );
 
+  // Sidebar & Mobile Nav State
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+
   // Toast State
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
@@ -127,62 +131,58 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       )}
 
       {/* ─── SIDEBAR ─── */}
-      <aside className="hidden md:flex w-[260px] m-4 mr-0 bg-white rounded-[28px] shadow-sm flex-col shrink-0 overflow-hidden">
-        <div className="p-6 pb-2 flex items-center gap-3">
-          <Image src="/logo_symbol.png" alt="S" width={36} height={36} style={{ width: 'auto', height: 'auto' }} className="rounded-xl shadow-sm" />
-          <span className="font-extrabold text-xl tracking-wide text-[#14173F]">SCRIBE</span>
-        </div>
+      <aside className={`hidden md:flex ${isCollapsed ? "w-[80px]" : "w-[260px]"} m-4 mr-0 bg-white rounded-[28px] shadow-sm flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out`}>
         
-        <nav className="flex-1 p-4 space-y-1 text-sm font-semibold text-[#5A5F8C] overflow-y-auto">
-          <button onClick={() => setMainTab("overview")} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors ${mainTab === "overview" ? "bg-[#ECEEFF] text-[#4B4FC9]" : "hover:bg-[#F1F2FF]"}`}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            Overview
-          </button>
+        <div className={`p-6 pb-2 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
+          <div className="flex items-center gap-3">
+            <Image src="/logo_symbol.png" alt="S" width={36} height={36} style={{ width: 'auto', height: 'auto' }} className="rounded-xl shadow-sm shrink-0" />
+            {!isCollapsed && <span className="font-extrabold text-xl tracking-wide text-[#14173F] dark:text-white whitespace-nowrap">SCRIBE</span>}
+          </div>
+          {!isCollapsed && (
+            <button onClick={() => setIsCollapsed(true)} className="text-[#5A5F8C] hover:text-[#14173F] dark:text-[#A9AEFF]">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+          )}
+        </div>
 
-          <button onClick={() => setMainTab("records")} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors ${mainTab === "records" ? "bg-[#ECEEFF] text-[#4B4FC9]" : "hover:bg-[#F1F2FF]"}`}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            Records & Evidence
+        {/* Expand button when collapsed */}
+        {isCollapsed && (
+          <button onClick={() => setIsCollapsed(false)} className="mx-auto mb-4 text-[#5A5F8C] hover:text-[#14173F] dark:text-[#A9AEFF]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </button>
-
-          <button onClick={() => alert("Stock & Inventory module coming soon.")} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-[#F1F2FF] transition-colors text-left text-[#5A5F8C]/60">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-            Stock & Inventory
-          </button>
-
-          <button onClick={() => alert("Business Intelligence module coming soon.")} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-[#F1F2FF] transition-colors text-left text-[#5A5F8C]/60">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg>
-            Business Intelligence
-          </button>
-
-          <button onClick={() => setMainTab("tasks")} className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors ${mainTab === "tasks" ? "bg-[#ECEEFF] text-[#4B4FC9]" : "hover:bg-[#F1F2FF]"}`}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-            Growth Studio
-          </button>
-
-          <button onClick={() => alert("Reports & Exports coming soon.")} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-[#F1F2FF] transition-colors text-left text-[#5A5F8C]/60">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-            Reports
-          </button>
-
-          <button onClick={() => alert("Opportunities coming soon.")} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-[#F1F2FF] transition-colors text-left text-[#5A5F8C]/60">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-            Opportunities
-          </button>
+        )}
+        
+        <nav className="flex-1 p-4 space-y-1 text-sm font-semibold text-[#5A5F8C] dark:text-[#C5C9F5] overflow-y-auto overflow-x-hidden">
+          {/* Navigation Items */}
+          {[
+            { id: "overview", label: "Overview", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> },
+            { id: "records", label: "Records", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> },
+            { id: "stock", label: "Stock", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> },
+            { id: "intelligence", label: "Intelligence", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg> },
+            { id: "tasks", label: "Growth Studio", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg> },
+            { id: "opportunities", label: "Opportunities", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg> },
+            { id: "reports", label: "Reports", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> },
+          ].map(item => (
+            <button 
+              key={item.id}
+              onClick={() => {
+                if (item.id === 'overview' || item.id === 'records' || item.id === 'tasks') setMainTab(item.id as any);
+                else alert(`${item.label} module coming soon.`);
+              }} 
+              title={isCollapsed ? item.label : undefined}
+              className={`w-full flex items-center ${isCollapsed ? "justify-center" : "gap-3"} px-4 py-2.5 rounded-xl transition-colors ${mainTab === item.id ? "bg-[#ECEEFF] dark:bg-[#2A3070] text-[#4B4FC9] dark:text-[#A9AEFF]" : "hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070]"}`}
+            >
+              {item.icon}
+              {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
+            </button>
+          ))}
         </nav>
 
-        <div className="p-4 border-t border-[#E1E4F7] dark:border-[#2A3070]">
-          <Link href="/settings" className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] transition-colors text-left text-[#5A5F8C] dark:text-[#A9AEFF]">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            Settings
+        <div className={`p-4 border-t border-[#E1E4F7] dark:border-[#2A3070]`}>
+          <Link href="/settings" title={isCollapsed ? "Settings" : undefined} className={`w-full flex items-center ${isCollapsed ? "justify-center" : "gap-3"} px-4 py-2.5 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] transition-colors text-left text-[#5A5F8C] dark:text-[#A9AEFF]`}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            {!isCollapsed && <span className="whitespace-nowrap">Settings</span>}
           </Link>
-        </div>
-
-        <div className="p-4 m-4 mt-0 bg-gradient-to-br from-[#8F95FF] to-[#5B5BE0] rounded-[22px] text-white">
-          <div className="font-extrabold text-[15px] mb-1">Get lender-ready</div>
-          <div className="text-xs text-[#ECEEFF] leading-relaxed mb-3">Add one stock count to lift your score range.</div>
-          <button onClick={() => setShowCapture(true)} className="bg-white text-[#4B4FC9] font-bold text-xs px-4 py-2 rounded-xl w-full shadow-sm">
-            Count stock
-          </button>
         </div>
       </aside>
 
@@ -229,24 +229,24 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="bg-[#A9AEFF] rounded-[24px] p-5 shadow-sm">
                 <div className="text-xs font-bold text-[#1D2260] mb-1">Sales this week</div>
-                <div className="text-2xl font-extrabold tracking-tight">{rands(data.revenue.low_cents)}</div>
-                <div className="text-xs font-medium text-[#1D2260] mt-2">Range to {rands(data.revenue.high_cents)}</div>
+                <div className="text-2xl font-extrabold tracking-tight tabular-nums">{rands(data.revenue.low_cents)}</div>
+                <div className="text-xs font-medium text-[#1D2260] mt-2 tabular-nums">Range to {rands(data.revenue.high_cents)}</div>
               </div>
               <div className="bg-white/60 backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50">
                 <div className="text-xs font-bold text-[#4A4F7A] mb-1">Cash on hand</div>
-                <div className="text-2xl font-extrabold tracking-tight">R3 245</div>
+                <div className="text-2xl font-extrabold tracking-tight tabular-nums">R3 245</div>
                 <div className="text-xs font-medium text-[#4A4F7A] mt-2">Reported Friday 16:40</div>
               </div>
               <div className="bg-white/60 backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50">
                 <div className="text-xs font-bold text-[#4A4F7A] mb-1">Stock gaps to review</div>
-                <div className="text-2xl font-extrabold tracking-tight text-[#D99A00]">
+                <div className="text-2xl font-extrabold tracking-tight text-[#D99A00] tabular-nums">
                   {data.stock.variance === null ? "0" : "2"} products
                 </div>
                 <div className="text-xs font-medium text-[#4A4F7A] mt-2">Bread and sugar differ</div>
               </div>
               <div className="bg-[#14173F] rounded-[24px] p-5 shadow-md text-white">
                 <div className="text-xs font-bold text-[#C5C9F5] mb-1">Consistency Score</div>
-                <div className="text-2xl font-extrabold tracking-tight text-[#A9AEFF]">{data.score.low}–{data.score.high}</div>
+                <div className="text-2xl font-extrabold tracking-tight text-[#A9AEFF] tabular-nums">{data.score.low}–{data.score.high}</div>
                 <div className="text-xs font-medium text-[#C5C9F5] mt-2">Evidence of readiness</div>
               </div>
             </div>
@@ -268,14 +268,14 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                     <h3 className="font-extrabold text-lg">Trading Consistency Score</h3>
                     <p className="text-xs font-medium text-[#4A4F7A]">Click a component to see how to improve it.</p>
                   </div>
-                  <span className="font-extrabold text-2xl text-[#5B5BE0]">{data.score.low}–{data.score.high}</span>
+                  <span className="font-extrabold text-2xl text-[#5B5BE0] tabular-nums">{data.score.low}–{data.score.high}</span>
                 </div>
                 <div className="space-y-4">
                   {data.score.components.map(c => (
                     <div key={c.key} className="cursor-pointer group">
                       <div className="flex justify-between text-xs font-bold mb-1 group-hover:text-[#5B5BE0] transition-colors">
                         <span>{c.label}</span>
-                        <span>{Math.round(c.value * 100)}</span>
+                        <span className="tabular-nums">{Math.round(c.value * 100)}</span>
                       </div>
                       <div className="h-2 w-full bg-[#E6E8FA] rounded-full overflow-hidden">
                         <div className={`h-full rounded-full transition-all ${c.value > 0.6 ? 'bg-[#14173F]' : c.value > 0.3 ? 'bg-[#A9AEFF]' : 'bg-[#D99A00]'}`} style={{ width: `${Math.max(5, c.value * 100)}%` }} />
@@ -299,9 +299,9 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
                 <h3 className="font-extrabold text-lg mb-4">Stock-flow reconciliation</h3>
                 <div className="bg-[#F1F2FF] rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-                  <div className="text-sm font-semibold">Expected: {data.stock.expected} units</div>
-                  <div className="text-sm font-semibold">Counted: {data.stock.counted ?? "—"}</div>
-                  <div className={`text-sm font-bold px-3 py-1 rounded-lg ${data.stock.variance !== 0 ? "bg-[#A9AEFF] text-[#14173F]" : "bg-white"}`}>
+                  <div className="text-sm font-semibold tabular-nums">Expected: {data.stock.expected} units</div>
+                  <div className="text-sm font-semibold tabular-nums">Counted: {data.stock.counted ?? "—"}</div>
+                  <div className={`text-sm font-bold px-3 py-1 rounded-lg tabular-nums ${data.stock.variance !== 0 ? "bg-[#A9AEFF] text-[#14173F]" : "bg-white"}`}>
                     Variance: {data.stock.variance ?? "—"}
                   </div>
                 </div>
@@ -384,13 +384,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                           "hover:bg-[#F1F2FF]/50"
                         }`}
                       >
-                        <td className={`p-4 font-bold ${isTampered ? "text-[#A94E40]" : "text-[#5B5BE0]"}`}>#{r.seq}</td>
-                        <td className="p-4 text-[#4A4F7A]">{fmtDate(r.occurred_at)}</td>
+                        <td className={`p-4 font-bold tabular-nums ${isTampered ? "text-[#A94E40]" : "text-[#5B5BE0]"}`}>#{r.seq}</td>
+                        <td className="p-4 text-[#4A4F7A] tabular-nums">{fmtDate(r.occurred_at)}</td>
                         <td className="p-4 font-medium">
                           {r.description}
                           {isTampered && <span className="ml-2 text-[10px] font-bold uppercase text-[#A94E40] bg-[#A94E40]/10 px-2 py-0.5 rounded-full">Tampered</span>}
                         </td>
-                        <td className={`p-4 font-bold ${isTampered ? "text-[#A94E40]" : ""}`}>{rands(r.amount_cents)}</td>
+                        <td className={`p-4 font-bold tabular-nums ${isTampered ? "text-[#A94E40]" : ""}`}>{rands(r.amount_cents)}</td>
                         <td className="p-4">
                           <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-lg ${
                             r.evidence_tier === "counter_signed" ? "bg-[#47745D]/10 text-[#47745D]" : 
@@ -448,29 +448,30 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       </main>
 
       {/* ─── MOBILE BOTTOM NAVIGATION ─── */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1A1F52] border-t border-[#E1E4F7] dark:border-[#2A3070] px-6 py-3 flex justify-between items-center z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-safe">
-        <button onClick={() => setMainTab("overview")} className={`flex flex-col items-center gap-1 ${mainTab === "overview" ? "text-[#5B5BE0]" : "text-[#5A5F8C]"}`}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-          <span className="text-[10px] font-bold">Overview</span>
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1A1F52] border-t border-[#E1E4F7] dark:border-[#2A3070] px-4 py-3 flex justify-between items-center z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-safe">
+        <button onClick={() => setMainTab("overview")} className={`flex flex-col items-center gap-1 w-16 ${mainTab === "overview" ? "text-[#5B5BE0] dark:text-[#A9AEFF]" : "text-[#5A5F8C]"}`}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span className="text-[10px] font-bold">Home</span>
         </button>
         
-        <button onClick={() => setMainTab("records")} className={`flex flex-col items-center gap-1 ${mainTab === "records" ? "text-[#5B5BE0]" : "text-[#5A5F8C]"}`}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        <button onClick={() => setMainTab("records")} className={`flex flex-col items-center gap-1 w-16 ${mainTab === "records" ? "text-[#5B5BE0] dark:text-[#A9AEFF]" : "text-[#5A5F8C]"}`}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
           <span className="text-[10px] font-bold">Records</span>
         </button>
 
-        <button onClick={() => setShowCapture(true)} className="flex flex-col items-center justify-center w-12 h-12 bg-[#5B5BE0] text-white rounded-full shadow-lg -mt-6">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <button onClick={() => alert("Stock module coming soon.")} className={`flex flex-col items-center gap-1 w-16 text-[#5A5F8C]`}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          <span className="text-[10px] font-bold">Stock</span>
         </button>
 
-        <button onClick={() => setMainTab("tasks")} className={`flex flex-col items-center gap-1 ${mainTab === "tasks" ? "text-[#5B5BE0]" : "text-[#5A5F8C]"}`}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-          <span className="text-[10px] font-bold">Tasks</span>
-        </button>
-
-        <button onClick={() => setThembaOpen(true)} className="flex flex-col items-center gap-1 text-[#5A5F8C]">
+        <button onClick={() => setThembaOpen(true)} className={`flex flex-col items-center gap-1 w-16 text-[#5A5F8C]`}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
           <span className="text-[10px] font-bold">Themba</span>
+        </button>
+
+        <button onClick={() => setShowMore(true)} className={`flex flex-col items-center gap-1 w-16 text-[#5A5F8C]`}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+          <span className="text-[10px] font-bold">More</span>
         </button>
       </div>
 
@@ -560,7 +561,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                     <span className="text-xs uppercase font-bold tracking-wider text-[#14173F]">
                       Risk: {scamResult.risk}
                     </span>
-                    <span className="text-xs font-bold text-[#4A4F7A]">
+                    <span className="text-xs font-bold text-[#4A4F7A] tabular-nums">
                       Score: {scamResult.score}/100
                     </span>
                   </div>
@@ -643,6 +644,44 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           onComplete={refresh} 
           onClose={() => setShowImport(false)} 
         />
+      )}
+
+      {/* ─── MOBILE MORE MENU ─── */}
+      {showMore && (
+        <div className="md:hidden fixed inset-0 bg-[#14173F]/50 backdrop-blur-sm z-50 flex items-end justify-center pb-16">
+          <div className="bg-white dark:bg-[#1A1F52] w-full max-w-sm rounded-t-[28px] p-6 shadow-2xl animate-in slide-in-from-bottom duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-extrabold text-[#14173F] dark:text-white">More</h2>
+              <button onClick={() => setShowMore(false)} className="text-[#5A5F8C] hover:text-[#14173F] dark:text-[#A9AEFF]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <div className="space-y-2">
+              <button onClick={() => { alert("Intelligence coming soon"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg>
+                Business Intelligence
+              </button>
+              <button onClick={() => { setMainTab("tasks"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                Growth Studio
+              </button>
+              <button onClick={() => { alert("Opportunities coming soon"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                Opportunities
+              </button>
+              <button onClick={() => { setShowExport(true); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                Reports
+              </button>
+            </div>
+            <div className="border-t border-[#E1E4F7] dark:border-[#2A3070] mt-4 pt-4">
+              <Link href="/settings" className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#5A5F8C] dark:text-[#A9AEFF] transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Settings
+              </Link>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>

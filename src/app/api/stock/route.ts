@@ -33,13 +33,17 @@ export async function POST(req: NextRequest) {
 
     if (action === "log_movement") {
       const id = uuid();
-      // We do NOT update the product balance directly. We just log the movement.
+      const { product_id, type, quantity_delta, observed_quantity, reference_id, notes } = body;
+      
+      // Enforce the ledger rule: count movements have 0 delta, and record the observed value
+      const finalDelta = type === "count" ? 0 : quantity_delta;
+
       await db().execute({
-        sql: `INSERT INTO stock_movements (id, business_id, product_id, type, quantity_delta, reference_id, notes, created_at) 
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO stock_movements (id, business_id, product_id, type, quantity_delta, observed_quantity, reference_id, notes, created_at) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
-          id, business_id, body.product_id, body.type, body.quantity_delta,
-          body.reference_id || null, body.notes || null, nowMs()
+          id, business_id, product_id, type, finalDelta, observed_quantity || null,
+          reference_id || null, notes || null, nowMs()
         ],
       });
       return NextResponse.json({ ok: true, id });

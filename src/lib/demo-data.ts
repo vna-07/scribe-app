@@ -3,17 +3,28 @@ import { loadBusinessRecords } from "./demo-seed";
 import { verifyChain } from "./ledger";
 import { reconcileStock, revenueRange } from "./reconcile";
 import { consistencyScore } from "./score";
+import { getBusinessStockState, type BusinessStockState } from "./stock-state";
 
 export interface DemoData {
   businessId: string;
   businessName: string;
   businessLocation: string;
   recordCount: number;
-  lowStockCount: number; // Added
   stock: ReturnType<typeof reconcileStock>;
+  stockState: BusinessStockState;
   revenue: ReturnType<typeof revenueRange>;
   score: ReturnType<typeof consistencyScore>;
   chain: ReturnType<typeof verifyChain>;
+  chartRecords: Array<{
+    seq: number;
+    kind: string;
+    description: string;
+    amount_cents: number;
+    quantity: number | null;
+    occurred_at: number;
+    evidence_tier: string;
+    status: string;
+  }>;
   recentRecords: Array<{
     seq: number;
     kind: string;
@@ -36,41 +47,32 @@ export async function loadDemoData(businessId: string): Promise<DemoData | null>
   if (bizRes.rows.length === 0) return null;
 
   const records = await loadBusinessRecords(businessId);
+  const stockState = await getBusinessStockState(businessId);
 
-  // Calculate low stock count
-  const lowStockRes = await db().execute({
-    sql: `SELECT COUNT(*) as count FROM (
-            SELECT p.id, COALESCE(SUM(m.quantity_delta), 0) as stock
-            FROM products p
-            LEFT JOIN stock_movements m ON p.id = m.product_id
-            WHERE p.business_id = ?
-            GROUP BY p.id
-            HAVING stock <= p.reorder_threshold
-          )`,
-    args: [businessId],
+  const toRow = (r: any) => ({
+    seq: r.seq,
+    kind: r.kind,
+    description: r.description,
+    amount_cents: r.amount_cents,
+    quantity: r.quantity,
+    occurred_at: r.occurred_at,
+    evidence_tier: r.evidence_tier,
+    status: r.status,
   });
-  
-  const lowStockCount = Number(lowStockRes.rows[0]?.count || 0);
 
   return {
     businessId,
     businessName: String(bizRes.rows[0].name),
     businessLocation: String(bizRes.rows[0].location),
     recordCount: records.length,
-    lowStockCount,
     stock: reconcileStock(records),
+    stockState,
     revenue: revenueRange(records),
     score: consistencyScore(records),
     chain: verifyChain(records),
-    recentRecords: records.slice(-8).reverse().map((r) => ({
-      seq: r.seq,
-      kind: r.kind,
-      description: r.description,
-      amount_cents: r.amount_cents,
-      quantity: r.quantity,
-      occurred_at: r.occurred_at,
-      evidence_tier: r.evidence_tier,
-      status: r.status,
+    chartRecords: records.slice(-250).map(toRow),
+    recentRecords: records.slice(-15).reverse().map((r) => ({
+      ...toRow(r),
       canonical_hash: r.canonical_hash,
       prev_hash: r.prev_hash,
     })),

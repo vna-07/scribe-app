@@ -88,7 +88,7 @@ export default function StockTab({ businessId, onRefresh }: { businessId: string
     const actual = parseInt(countForm.actual_qty);
     const variance = actual - expected;
 
-    // 1. Log the physical count movement
+    // 1. Log the physical count observation
     await fetch("/api/stock", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -97,12 +97,13 @@ export default function StockTab({ businessId, onRefresh }: { businessId: string
         business_id: businessId,
         product_id: showCount.id,
         type: "count",
-        quantity_delta: 0, // The count itself doesn't change the balance, it just records reality
-        notes: `Physical count: ${actual} units (Variance: ${variance > 0 ? '+' : ''}${variance})`,
+        quantity_delta: 0,
+        observed_quantity: actual,
+        notes: `Physical count: ${actual} units (Expected: ${expected})`,
       }),
     });
 
-    // 2. If there is a variance, we immediately log an adjustment to fix the books
+    // 2. If there is a variance, log an adjustment to fix the ledger
     if (variance !== 0) {
       await fetch("/api/stock", {
         method: "POST",
@@ -112,7 +113,7 @@ export default function StockTab({ businessId, onRefresh }: { businessId: string
           business_id: businessId,
           product_id: showCount.id,
           type: "adjustment",
-          quantity_delta: variance, // Adjusts the balance to match the physical count
+          quantity_delta: variance,
           notes: `Auto-adjustment to match physical count of ${actual}`,
         }),
       });
@@ -121,7 +122,7 @@ export default function StockTab({ businessId, onRefresh }: { businessId: string
     setShowCount(null);
     setCountForm({ actual_qty: "" });
     fetchProducts();
-    onRefresh(); // Update the dashboard variance card
+    onRefresh();
     setBusy(false);
   };
 

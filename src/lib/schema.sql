@@ -97,3 +97,18 @@ CREATE TABLE IF NOT EXISTS stock_movements (
   notes TEXT,
   created_at INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS goals (
+  id TEXT PRIMARY KEY,
+  business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  target_value REAL,
+  current_value REAL DEFAULT 0,
+  target_date INTEGER,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'paused')),
+  created_at INTEGER NOT NULL
+);
+
+-- Add a goal_id to the tasks table to link them
+ALTER TABLE tasks ADD COLUMN goal_id TEXT REFERENCES goals(id) ON DELETE CASCADE;

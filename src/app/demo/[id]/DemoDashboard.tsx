@@ -13,8 +13,10 @@ import CaptureFlow from "@/components/CaptureFlow";
 import { useApp } from "@/context/AppContext";
 import StockTab from "./StockTab";
 import IntelligenceTab from "./IntelligenceTab";
+import GrowthTab from "./GrowthTab";
+import ReportsTab from "./ReportsTab";
 
-type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence";
+type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
   const { setBusinessId, setThembaOpen } = useApp();
@@ -50,7 +52,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [scamResult, setScamResult] = useState<any>(null);
   const [scamLoading, setScamLoading] = useState(false);
 
-  // Tasks State
+  // Tasks State (kept for legacy support, though GrowthTab handles its own now)
   const [tasks, setTasks] = useState<any[]>([]);
   
   // Evidence Workspace State
@@ -168,7 +170,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <button 
               key={item.id}
               onClick={() => {
-                if (['overview', 'records', 'tasks', 'stock', 'intelligence'].includes(item.id)) setMainTab(item.id as any);
+                if (['overview', 'records', 'tasks', 'stock', 'intelligence', 'reports'].includes(item.id)) setMainTab(item.id as any);
                 else alert(`${item.label} module coming soon.`);
               }} 
               title={isCollapsed ? item.label : undefined}
@@ -195,7 +197,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "intelligence" ? "Business Intelligence" : "Growth Studio"}
+              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "intelligence" ? "Business Intelligence" : mainTab === "reports" ? "Reports & Exports" : "Growth Studio"}
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
@@ -429,36 +431,15 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
         {/* ─── TASKS / GROWTH STUDIO TAB ─── */}
         {mainTab === "tasks" && (
-          <div className="bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50 flex-1 overflow-auto">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-xl font-extrabold">Growth Studio</h2>
-                <p className="text-sm text-[#4A4F7A]">Turn insights into tracked actions.</p>
-              </div>
-            </div>
-            
-            {tasks.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-[#4A4F7A] text-sm mb-4">No active tasks yet.</p>
-                <p className="text-xs text-[#5A5F8C]">Ask Themba for advice and save the suggestions here.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {tasks.map((t: any) => (
-                  <div key={t.id} className="flex items-start gap-4 p-4 rounded-xl border border-[#E1E4F7] hover:border-[#5B5BE0] transition-colors bg-white">
-                    <div className="mt-1">
-                      <div className="w-5 h-5 rounded border-2 border-[#5B5BE0] flex items-center justify-center cursor-pointer">
-                        {/* Mock checkbox for visual */}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="font-bold text-[#14173F]">{t.title}</p>
-                      <p className="text-xs text-[#4A4F7A] mt-1">{t.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="flex-1 overflow-auto">
+            <GrowthTab businessId={data.businessId} />
+          </div>
+        )}
+
+        {/* ─── REPORTS TAB ─── */}
+        {mainTab === "reports" && (
+          <div className="flex-1 overflow-auto">
+            <ReportsTab businessId={data.businessId} data={data} />
           </div>
         )}
       </main>
@@ -685,7 +666,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
                 Opportunities
               </button>
-              <button onClick={() => { setShowExport(true); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
+              <button onClick={() => { setMainTab("reports"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                 Reports
               </button>

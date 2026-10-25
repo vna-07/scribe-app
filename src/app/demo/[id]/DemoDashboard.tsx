@@ -9,6 +9,7 @@ import { generateAnalytics } from "@/lib/analytics";
 import { BarChart, DonutChart } from "@/components/Visuals";
 import EvidenceWorkspace from "@/components/EvidenceWorkspace";
 import ImportWizard from "@/components/ImportWizard";
+import { useApp } from "@/context/AppContext";
 
 interface ThembaMsg {
   role: "user" | "themba";
@@ -23,6 +24,14 @@ type ThembaTab = "ask" | "insights" | "actions";
 type MainTab = "overview" | "records" | "tasks";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
+  const { setBusinessId, setThembaOpen } = useApp();
+  
+  // Set the global context when this page mounts
+  useEffect(() => {
+    setBusinessId(initialData.businessId);
+    return () => setBusinessId(""); // Clear on unmount
+  }, [initialData.businessId, setBusinessId]);
+
   const [data, setData] = useState<DemoData>(initialData);
   const [busy, setBusy] = useState<string | null>(null);
   const [mainTab, setMainTab] = useState<MainTab>("overview");
@@ -34,8 +43,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   // Toast State
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
-  // Themba State
-  const [thembaOpen, setThembaOpen] = useState(true);
+  // Themba State (kept for local functionality, though UI is now global)
   const [thembaTab, setThembaTab] = useState<ThembaTab>("ask");
   const [history, setHistory] = useState<ThembaMsg[]>([]);
   const [input, setInput] = useState("");
@@ -285,6 +293,10 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               <span className={`w-2 h-2 rounded-full ${data.chain.ok ? "bg-[#5B5BE0]" : "bg-white"}`}></span>
               {data.chain.ok ? `Ledger intact: ${data.chain.total} records` : `Tampered at #${data.chain.brokenAtSeq}`}
             </span>
+            <button onClick={() => setThembaOpen(true)} className="px-4 py-2.5 rounded-xl bg-[#5B5BE0] text-white font-bold text-sm shadow-sm hover:brightness-110 transition-all flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              Ask Themba
+            </button>
             <button onClick={() => setShowScamShield(true)} className="px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
               Scam Shield
             </button>
@@ -521,143 +533,6 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           </div>
         )}
       </main>
-
-      {/* ─── THEMBA PERSISTENT DRAWER ─── */}
-      {!thembaOpen && (
-        <button 
-          onClick={() => setThembaOpen(true)}
-          className="fixed bottom-8 right-8 w-16 h-16 bg-[#14173F] text-[#A9AEFF] rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform z-40 group"
-        >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:animate-pulse"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#A94E40] rounded-full border-2 border-white"></span>
-        </button>
-      )}
-
-      {thembaOpen && (
-        <aside className="w-[380px] m-4 ml-0 bg-[#14173F] rounded-[28px] shadow-2xl flex flex-col shrink-0 overflow-hidden text-white relative">
-          <div className="p-6 bg-[#1F2561] border-b border-[#2A3070]">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#A9AEFF] text-[#14173F] flex items-center justify-center font-extrabold text-lg">T</div>
-                <div>
-                  <h2 className="font-extrabold text-lg">Themba</h2>
-                  <p className="text-xs text-[#C5C9F5]">Explains your records. Never calculates.</p>
-                </div>
-              </div>
-              <button onClick={() => setThembaOpen(false)} className="text-[#C5C9F5] hover:text-white transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
-            </div>
-            
-            <div className="flex bg-[#14173F] p-1 rounded-xl">
-              {(["ask", "insights", "actions"] as ThembaTab[]).map(tab => (
-                <button key={tab} onClick={() => setThembaTab(tab)} className={`flex-1 py-1.5 text-xs font-bold capitalize rounded-lg transition-colors ${thembaTab === tab ? "bg-[#2A3070] text-white" : "text-[#C5C9F5] hover:text-white"}`}>
-                  {tab}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-auto p-6 space-y-4">
-            {thembaTab === "ask" && (
-              <>
-                {history.length === 0 && (
-                  <div className="space-y-3">
-                    <p className="text-sm text-[#C5C9F5]">Ask Themba to explain your records, investigate discrepancies, or explore what to do next.</p>
-                    {["Why is my bread stock short?", "What is my revenue range?", "Will I get a loan?"].map(q => (
-                      <button key={q} onClick={() => ask(q)} className="w-full text-left text-sm p-3 rounded-xl bg-[#1F2561] hover:bg-[#2A3070] transition-colors text-[#E1E3FA] border border-[#2A3070]">
-                        "{q}"
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {history.map((m, i) => (
-                  <div key={i} className={`text-sm ${m.role === "user" ? "text-right" : ""}`}>
-                    {m.role === "user" ? (
-                      <div className="inline-block bg-[#2A3070] rounded-2xl rounded-tr-sm px-4 py-2 text-left max-w-[85%] text-[#E1E3FA]">{m.text}</div>
-                    ) : (
-                      <div className="flex gap-3">
-                        <div className="w-6 h-6 rounded-full bg-[#A9AEFF] flex shrink-0 items-center justify-center text-[10px] font-extrabold text-[#14173F]">T</div>
-                        <div className="space-y-2">
-                          <div className="text-[#E1E3FA] leading-relaxed text-sm bg-white text-[#14173F] p-3 rounded-xl rounded-tl-sm">{m.text}</div>
-                          {m.refused && <span className="inline-block text-[10px] uppercase tracking-wider text-[#D99A00] bg-[#D99A00]/10 px-2 py-0.5 rounded">Declined</span>}
-                          {m.sources && m.sources.length > 0 && (
-                            <button onClick={() => { setMainTab("records"); showToast("Opened ledger to inspect sources.", "success"); }} className="text-xs text-[#A9AEFF] font-bold hover:underline flex items-center gap-1">
-                              Inspect {m.sources.length} supporting records →
-                            </button>
-                          )}
-                          
-                          {m.suggestions && m.suggestions.length > 0 && (
-                            <div className="mt-2 space-y-2">
-                              <p className="text-[10px] uppercase tracking-wider text-[#A9AEFF] font-bold">Suggested Actions</p>
-                              {m.suggestions.slice(0, 2).map((s, idx) => (
-                                <div key={idx} className="bg-[#1F2561] border border-[#2A3070] rounded-lg p-2 flex justify-between items-center gap-2">
-                                  <span className="text-xs text-[#E1E3FA]">{s}</span>
-                                  <button 
-                                    onClick={() => createTask(s, `Suggested by Themba based on query: "${m.text.slice(0, 30)}..."`)}
-                                    className="bg-[#A9AEFF] text-[#14173F] text-[10px] font-bold px-2 py-1 rounded hover:bg-white transition-colors shrink-0"
-                                  >
-                                    + Task
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {asking && (
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[#A9AEFF] flex shrink-0 items-center justify-center text-[10px] font-extrabold text-[#14173F]">T</div>
-                    <div className="text-[#A9AEFF] text-sm italic animate-pulse">Analyzing records...</div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {thembaTab === "insights" && (
-              <div className="space-y-4">
-                <div className="bg-[#1F2561] p-4 rounded-xl border border-[#2A3070]">
-                  <p className="text-xs text-[#A9AEFF] font-bold uppercase mb-1">Sales Pattern</p>
-                  <p className="text-sm text-[#E1E3FA] leading-relaxed">Recorded sales are generally higher on Fridays. Consider checking stock levels before the weekend.</p>
-                </div>
-                <div className="bg-[#1F2561] p-4 rounded-xl border border-[#2A3070]">
-                  <p className="text-xs text-[#A9AEFF] font-bold uppercase mb-1">Stock Discrepancy</p>
-                  <p className="text-sm text-[#E1E3FA] leading-relaxed">Bread and sugar have repeated variances. Review delivery slips before the next order.</p>
-                </div>
-              </div>
-            )}
-
-            {thembaTab === "actions" && (
-              <div className="space-y-4">
-                <div className="bg-[#A9AEFF] text-[#14173F] p-4 rounded-xl">
-                  <p className="text-xs font-bold uppercase mb-1">Next Best Action</p>
-                  <p className="text-sm font-extrabold leading-relaxed">Record one physical stock count</p>
-                  <p className="text-xs mt-1 leading-relaxed">This lifts stock consistency and narrows your revenue range.</p>
-                  <button onClick={() => setShowCapture(true)} className="mt-3 bg-[#14173F] text-white text-xs font-bold px-4 py-2 rounded-lg w-full">Record Stock Count</button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="p-4 bg-[#1F2561] border-t border-[#2A3070]">
-            <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="relative">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about your business…"
-                disabled={asking}
-                className="w-full bg-[#14173F] border border-[#2A3070] focus:border-[#A9AEFF] outline-none rounded-xl pl-4 pr-12 py-3 text-sm text-white placeholder-[#5A5F8C] transition-colors"
-              />
-              <button type="submit" disabled={asking || !input.trim()} className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-[#A9AEFF] text-[#14173F] rounded-lg hover:bg-white disabled:opacity-50 transition-colors font-bold">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-              </button>
-            </form>
-          </div>
-        </aside>
-      )}
 
       {/* ─── CAPTURE MODAL ─── */}
       {showCapture && (

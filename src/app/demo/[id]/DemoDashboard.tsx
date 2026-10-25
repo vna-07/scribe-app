@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { DemoData } from "@/lib/demo-data";
 import { rands, fmtDate } from "@/lib/format";
 import Image from "next/image";
@@ -12,10 +12,11 @@ interface ThembaMsg {
   refused?: boolean;
   provider?: string;
   sources?: string[];
+  suggestions?: string[];
 }
 
 type ThembaTab = "ask" | "insights" | "actions";
-type MainTab = "overview" | "records";
+type MainTab = "overview" | "records" | "tasks";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
   const [data, setData] = useState<DemoData>(initialData);
@@ -40,6 +41,17 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [scamMessage, setScamMessage] = useState("");
   const [scamResult, setScamResult] = useState<any>(null);
   const [scamLoading, setScamLoading] = useState(false);
+
+  // Tasks State
+  const [tasks, setTasks] = useState<any[]>([]);
+  
+  // Fetch tasks on load
+  useEffect(() => {
+    fetch(`/api/tasks?business_id=${data.businessId}`)
+      .then(r => r.json())
+      .then(d => setTasks(d))
+      .catch(() => {});
+  }, [data.businessId]);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
     setToast({ msg, type });
@@ -70,6 +82,24 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       showToast("Action failed.", "error");
     } finally {
       setBusy(null);
+    }
+  };
+
+  const createTask = async (title: string, desc: string) => {
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ business_id: data.businessId, title, description: desc }),
+      });
+      if (!res.ok) throw new Error();
+      
+      // Refresh task list
+      const newTasks = await fetch(`/api/tasks?business_id=${data.businessId}`).then(r => r.json());
+      setTasks(newTasks);
+      showToast("Task created and saved.", "success");
+    } catch {
+      showToast("Failed to create task.", "error");
     }
   };
 
@@ -133,7 +163,14 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       const json = await r.json();
       setHistory((h) => [
         ...h,
-        { role: "themba", text: json.answer ?? "(no answer)", refused: json.refused, provider: json.provider, sources: json.sources },
+        { 
+          role: "themba", 
+          text: json.answer ?? "(no answer)", 
+          refused: json.refused, 
+          provider: json.provider, 
+          sources: json.sources,
+          suggestions: json.follow_up_questions 
+        },
       ]);
     } finally {
       setAsking(false);
@@ -168,6 +205,10 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             Records & Evidence
           </button>
+          <button onClick={() => setMainTab("tasks")} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-colors ${mainTab === "tasks" ? "bg-[#ECEEFF] text-[#4B4FC9]" : "hover:bg-[#F1F2FF]"}`}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            Growth Studio
+          </button>
           {/* Other links can be wired up later */}
           <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-[#F1F2FF] rounded-2xl transition-colors opacity-50 cursor-not-allowed">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
@@ -191,7 +232,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">
-              {mainTab === "overview" ? "Molo, Nomsa" : "Records & Evidence"}
+              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : "Growth Studio"}
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
@@ -368,6 +409,41 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </table>
           </div>
         )}
+
+        {/* ─── TASKS / GROWTH STUDIO TAB ─── */}
+        {mainTab === "tasks" && (
+          <div className="bg-white/90 rounded-[28px] p-6 shadow-sm border border-white/50 flex-1 overflow-auto">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-extrabold">Growth Studio</h2>
+                <p className="text-sm text-[#4A4F7A]">Turn insights into tracked actions.</p>
+              </div>
+            </div>
+            
+            {tasks.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-[#4A4F7A] text-sm mb-4">No active tasks yet.</p>
+                <p className="text-xs text-[#5A5F8C]">Ask Themba for advice and save the suggestions here.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {tasks.map((t: any) => (
+                  <div key={t.id} className="flex items-start gap-4 p-4 rounded-xl border border-[#E1E4F7] hover:border-[#5B5BE0] transition-colors bg-white">
+                    <div className="mt-1">
+                      <div className="w-5 h-5 rounded border-2 border-[#5B5BE0] flex items-center justify-center cursor-pointer">
+                        {/* Mock checkbox for visual */}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-bold text-[#14173F]">{t.title}</p>
+                      <p className="text-xs text-[#4A4F7A] mt-1">{t.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* ─── THEMBA RIGHT PANEL ─── */}
@@ -417,6 +493,23 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                           <button onClick={() => { setMainTab("records"); showToast("Opened ledger to inspect sources.", "success"); }} className="text-xs text-[#A9AEFF] font-bold hover:underline flex items-center gap-1">
                             Inspect {m.sources.length} supporting records →
                           </button>
+                        )}
+                        
+                        {m.suggestions && m.suggestions.length > 0 && (
+                          <div className="mt-2 space-y-2">
+                            <p className="text-[10px] uppercase tracking-wider text-[#A9AEFF] font-bold">Suggested Actions</p>
+                            {m.suggestions.slice(0, 2).map((s, idx) => (
+                              <div key={idx} className="bg-[#1F2561] border border-[#2A3070] rounded-lg p-2 flex justify-between items-center gap-2">
+                                <span className="text-xs text-[#E1E3FA]">{s}</span>
+                                <button 
+                                  onClick={() => createTask(s, `Suggested by Themba based on query: "${m.text.slice(0, 30)}..."`)}
+                                  className="bg-[#A9AEFF] text-[#14173F] text-[10px] font-bold px-2 py-1 rounded hover:bg-white transition-colors shrink-0"
+                                >
+                                  + Task
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
                     </div>

@@ -1,0 +1,21 @@
+{
+  "name": "SCRIBE Intelligence",
+  "short_name": "SCRIBE",
+  "description": "Financial intelligence and business growth platform for small businesses.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E9EBFF",
+  "theme_color": "#14173F",
+  "icons": [
+    {
+      "src": "/logo_symbol.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo_symbol.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

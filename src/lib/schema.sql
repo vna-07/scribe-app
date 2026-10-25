@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   email_verified_at INTEGER,
   is_demo INTEGER NOT NULL DEFAULT 0,
+  is_admin INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL
 );
 
@@ -110,5 +111,5 @@ CREATE TABLE IF NOT EXISTS goals (
   created_at INTEGER NOT NULL
 );
 
--- Add a goal_id to the tasks table to link them
-ALTER TABLE tasks ADD COLUMN goal_id TEXT REFERENCES goals(id) ON DELETE CASCADE;
+-- Migrations for existing databases
+ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0;

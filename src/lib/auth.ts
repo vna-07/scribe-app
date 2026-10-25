@@ -71,6 +71,7 @@ export interface CurrentUser {
   name: string;
   email: string;
   is_demo: number;
+  is_admin: number;
 }
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -78,7 +79,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   if (!userId) return null;
   const { db } = await import("./db");
   const res = await db().execute({
-    sql: "SELECT id, name, email, is_demo FROM users WHERE id = ?",
+    sql: "SELECT id, name, email, is_demo, is_admin FROM users WHERE id = ?",
     args: [userId],
   });
   if (res.rows.length === 0) return null;
@@ -88,6 +89,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     name: String(r.name),
     email: String(r.email),
     is_demo: Number(r.is_demo),
+    is_admin: Number(r.is_admin),
   };
 }
 

@@ -29,5 +29,11 @@ export async function POST(req: NextRequest) {
     args: [recordId],
   });
 
+  // Log this highly sensitive action
+  await db().execute({
+    sql: "INSERT INTO audit_log (id, actor_id, business_id, action, detail, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+    args: [crypto.randomUUID(), null, business_id, "LEDGER_TAMPERED", `Record #${seq} modified manually.`, Date.now()],
+  });
+
   return NextResponse.json({ ok: true, tampered_seq: seq });
 }

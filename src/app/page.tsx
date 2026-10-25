@@ -33,22 +33,29 @@ export default async function Home() {
           SCRIBE turns fragmented records into financial intelligence—what the evidence supports, what doesn't reconcile, and what to do next.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-16">
+        <div className="mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <Link
+              href="/signup"
+              className="bg-[#5B5BE0] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#4B4FC9] transition-colors text-center shadow-lg shadow-[#5B5BE0]/20"
+            >
+              Create your account
+            </Link>
+            <Link
+              href="/login"
+              className="bg-white text-[#14173F] border-2 border-[#E1E4F7] px-8 py-4 rounded-2xl hover:border-[#5B5BE0] transition-colors text-center font-bold"
+            >
+              Sign in
+            </Link>
+          </div>
+          
           {bizId && (
-            <>
-              <Link
-                href={`/demo/${bizId}`}
-                className="bg-[#14173F] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#2A3070] transition-colors text-center shadow-lg shadow-[#14173F]/20"
-              >
-                Open the live demo
+            <p className="text-sm text-[#5A5F8C] text-center sm:text-left">
+              Judge?{" "}
+              <Link href={`/demo/${bizId}`} className="text-[#5B5BE0] font-bold hover:underline">
+                Skip to the demo dashboard →
               </Link>
-              <Link
-                href={`/verify/${bizId}`}
-                className="bg-white text-[#14173F] border-2 border-[#E1E4F7] px-8 py-4 rounded-2xl hover:border-[#5B5BE0] transition-colors text-center font-bold"
-              >
-                Public verification
-              </Link>
-            </>
+            </p>
           )}
         </div>
 

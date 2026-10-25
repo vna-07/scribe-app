@@ -251,24 +251,24 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         {mainTab === "overview" && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-[#A9AEFF] rounded-[24px] p-5 shadow-sm">
+              <div className="animate-stagger delay-1 bg-[#A9AEFF] dark:bg-[#2A3070] rounded-[24px] p-5 shadow-sm">
                 <div className="text-xs font-bold text-[#1D2260] mb-1">Sales this week</div>
                 <div className="text-2xl font-extrabold tracking-tight tabular-nums">{rands(data.revenue.low_cents)}</div>
                 <div className="text-xs font-medium text-[#1D2260] mt-2 tabular-nums">Range to {rands(data.revenue.high_cents)}</div>
               </div>
-              <div className="bg-white/60 backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50">
+              <div className="animate-stagger delay-2 bg-white/60 dark:bg-[#1A1F52] backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50 dark:border-[#2A3070]">
                 <div className="text-xs font-bold text-[#4A4F7A] mb-1">Cash on hand</div>
                 <div className="text-2xl font-extrabold tracking-tight tabular-nums">R3 245</div>
                 <div className="text-xs font-medium text-[#4A4F7A] mt-2">Reported Friday 16:40</div>
               </div>
-              <div className="bg-white/60 backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50">
+              <div className="animate-stagger delay-3 bg-white/60 dark:bg-[#1A1F52] backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50 dark:border-[#2A3070]">
                 <div className="text-xs font-bold text-[#4A4F7A] mb-1">Stock gaps to review</div>
                 <div className="text-2xl font-extrabold tracking-tight text-[#D99A00] tabular-nums">
                   {data.lowStockCount} products
                 </div>
                 <div className="text-xs font-medium text-[#4A4F7A] mt-2">Below reorder threshold</div>
               </div>
-              <div className="bg-[#14173F] rounded-[24px] p-5 shadow-md text-white">
+              <div className="animate-stagger delay-4 bg-[#14173F] dark:bg-[#0E1130] rounded-[24px] p-5 shadow-md text-white">
                 <div className="text-xs font-bold text-[#C5C9F5] mb-1">Consistency Score</div>
                 <div className="text-2xl font-extrabold tracking-tight text-[#A9AEFF] tabular-nums">{data.score.low}–{data.score.high}</div>
                 <div className="text-xs font-medium text-[#C5C9F5] mt-2">Evidence of readiness</div>
@@ -276,7 +276,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </div>
 
             {/* ─── ACTION CENTRE ─── */}
-            <div className="bg-white dark:bg-[#1A1F52] rounded-[24px] p-6 border border-[#E1E4F7] dark:border-[#2A3070] shadow-sm mb-6">
+            <div className="animate-stagger bg-white dark:bg-[#1A1F52] rounded-[24px] p-6 border border-[#E1E4F7] dark:border-[#2A3070] shadow-sm mb-6">
               <div className="flex items-center gap-2 mb-4">
                 <span className="w-2 h-2 rounded-full bg-[#D99A00] animate-pulse"></span>
                 <h3 className="font-extrabold text-[#14173F] dark:text-white text-lg">Action Centre</h3>
@@ -315,7 +315,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               </div>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
+            <div className="animate-stagger delay-5 flex flex-col lg:flex-row gap-4 mb-6">
               <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
                 <div className="flex justify-between items-center mb-6">
                   <div>

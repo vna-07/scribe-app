@@ -36,21 +36,29 @@ export default function GlobalThembaDrawer() {
   };
 
   const executeAction = async (index: number, action: any) => {
+    // 1. OPTIMISTIC UPDATE: Instantly show success in the UI
     setApproved(prev => ({ ...prev, [index]: true }));
-    
+    playSuccessChime();
+
+    // 2. Perform the actual DB write in the background
     if (action.type === "create_task") {
-      await fetch("/api/goals", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          action: "create_goal",
-          business_id: businessId,
-          title: action.title,
-          description: action.description,
-          target_value: null
-        }),
-      });
-      playSuccessChime(); // Play the chime!
+      try {
+        await fetch("/api/goals", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            action: "create_goal",
+            business_id: businessId,
+            title: action.title,
+            description: action.description,
+            target_value: null
+          }),
+        });
+      } catch (error) {
+        // 3. ROLLBACK if the server fails
+        setApproved(prev => ({ ...prev, [index]: false }));
+        alert("Failed to save the task. Please check your connection.");
+      }
     }
   };
 

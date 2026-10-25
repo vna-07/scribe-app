@@ -453,31 +453,39 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       </main>
 
       {/* ─── MOBILE BOTTOM NAVIGATION ─── */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1A1F52] border-t border-[#E1E4F7] dark:border-[#2A3070] px-4 py-3 flex justify-between items-center z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-safe">
-        <button onClick={() => setMainTab("overview")} className={`flex flex-col items-center gap-1 w-16 ${mainTab === "overview" ? "text-[#5B5BE0] dark:text-[#A9AEFF]" : "text-[#5A5F8C]"}`}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <span className="text-[10px] font-bold">Home</span>
-        </button>
-        
-        <button onClick={() => setMainTab("records")} className={`flex flex-col items-center gap-1 w-16 ${mainTab === "records" ? "text-[#5B5BE0] dark:text-[#A9AEFF]" : "text-[#5A5F8C]"}`}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-          <span className="text-[10px] font-bold">Records</span>
-        </button>
-
-        <button onClick={() => setMainTab("stock")} className={`flex flex-col items-center gap-1 w-16 ${mainTab === "stock" ? "text-[#5B5BE0] dark:text-[#A9AEFF]" : "text-[#5A5F8C]"}`}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-          <span className="text-[10px] font-bold">Stock</span>
-        </button>
-
-        <button onClick={() => setThembaOpen(true)} className={`flex flex-col items-center gap-1 w-16 text-[#5A5F8C]`}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          <span className="text-[10px] font-bold">Themba</span>
-        </button>
-
-        <button onClick={() => setShowMore(true)} className={`flex flex-col items-center gap-1 w-16 text-[#5A5F8C]`}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
-          <span className="text-[10px] font-bold">More</span>
-        </button>
+      <div 
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#1A1F52]/90 backdrop-blur-xl border-t border-[#E1E4F7] dark:border-[#2A3070] px-2 pt-2 flex justify-around items-center z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.05)]"
+        style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+      >
+        {[
+          { id: "overview", label: "Home", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> },
+          { id: "records", label: "Records", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> },
+          { id: "stock", label: "Stock", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> },
+          { id: "themba", label: "Themba", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> },
+          { id: "more", label: "More", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg> }
+        ].map((tab) => {
+          const isActive = mainTab === tab.id || (tab.id === "more" && ["intelligence", "tasks", "reports", "opportunities"].includes(mainTab));
+          return (
+            <button 
+              key={tab.id}
+              onClick={() => {
+                if (tab.id === "themba") setThembaOpen(true);
+                else if (tab.id === "more") setShowMore(true);
+                else setMainTab(tab.id as any);
+              }} 
+              className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all duration-200 ${
+                isActive 
+                  ? "bg-[#ECEEFF] dark:bg-[#2A3070] text-[#5B5BE0] dark:text-[#A9AEFF]" 
+                  : "text-[#5A5F8C] dark:text-[#C5C9F5] hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070]"
+              }`}
+            >
+              <div className={`transition-transform ${isActive ? "scale-110" : ""}`}>
+                {tab.icon}
+              </div>
+              <span className="text-[10px] font-bold mt-1 tracking-wide">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* ─── CAPTURE FLOW MODAL ─── */}

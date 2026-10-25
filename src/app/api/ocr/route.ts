@@ -25,9 +25,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(fallbackMock);
     }
 
-    // Gemini Vision API Call
+    // GEMINI Vision API Call
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/GEMINI-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "content-type": "application/json" },

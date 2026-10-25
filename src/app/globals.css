@@ -138,3 +138,24 @@ body {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
+
+/* Typing Indicator Animation */
+@keyframes bounce-dot {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+.dot-1 { animation: bounce-dot 1.4s infinite ease-in-out both; }
+.dot-2 { animation: bounce-dot 1.4s infinite ease-in-out both; animation-delay: 0.2s; }
+.dot-3 { animation: bounce-dot 1.4s infinite ease-in-out both; animation-delay: 0.4s; }
+
+/* Pop Animation for Success State */
+@keyframes pop-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop { animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+/* Hide scrollbar for cleaner UI */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

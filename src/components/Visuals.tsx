@@ -14,7 +14,7 @@ export function BarChart({ data, height = 160 }: { data: DailySales[]; height?: 
           <line
             key={pct}
             x1="0" y1={height - height * pct} x2="100" y2={height - height * pct}
-            stroke="#E1E4F7" strokeWidth="0.5" strokeDasharray="2 2"
+            stroke="var(--border-divider)" strokeWidth="0.5" strokeDasharray="2 2"
           />
         ))}
         
@@ -28,7 +28,7 @@ export function BarChart({ data, height = 160 }: { data: DailySales[]; height?: 
                 y={height - h}
                 width={barWidth * 0.8}
                 height={h}
-                fill="#14173F"
+                fill="var(--chart-bar)"
                 rx={1}
               />
             </g>
@@ -37,7 +37,7 @@ export function BarChart({ data, height = 160 }: { data: DailySales[]; height?: 
       </svg>
       
       {/* X-Axis Labels */}
-      <div className="flex justify-between mt-2 text-[10px] text-[#5A5F8C] font-bold uppercase">
+      <div className="flex justify-between mt-2 text-[10px] text-[#5A5F8C] dark:text-[#A9AEFF] font-bold uppercase transition-colors">
         {data.filter((_, i) => i % 2 === 0).map((d) => (
           <span key={d.date}>{d.label}</span>
         ))}
@@ -48,7 +48,7 @@ export function BarChart({ data, height = 160 }: { data: DailySales[]; height?: 
 
 export function DonutChart({ data }: { data: ExpenseCategory[] }) {
   const total = data.reduce((sum, d) => sum + d.amount, 0);
-  if (total === 0) return <div className="text-sm text-[#5A5F8C]">No expenses recorded.</div>;
+  if (total === 0) return <div className="text-sm text-[#5A5F8C] dark:text-[#A9AEFF] transition-colors">No expenses recorded.</div>;
 
   let currentAngle = 0;
 
@@ -73,11 +73,12 @@ export function DonutChart({ data }: { data: ExpenseCategory[] }) {
               />
             );
           })}
-          <circle cx="21" cy="21" r="12" fill="#FFFFFF" />
+          {/* Inner circle adapts to dark mode background */}
+          <circle cx="21" cy="21" r="12" fill="var(--background, #FFFFFF)" className="dark:fill-[#14173F]" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[10px] font-bold text-[#5A5F8C] uppercase">Total</span>
-          <span className="text-xs font-extrabold text-[#14173F]">R{total.toLocaleString()}</span>
+          <span className="text-[10px] font-bold text-[#5A5F8C] dark:text-[#A9AEFF] uppercase transition-colors">Total</span>
+          <span className="text-xs font-extrabold text-[#14173F] dark:text-white transition-colors">R{total.toLocaleString()}</span>
         </div>
       </div>
       <div className="space-y-2 flex-1">
@@ -85,9 +86,9 @@ export function DonutChart({ data }: { data: ExpenseCategory[] }) {
           <div key={d.label} className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
-              <span className="text-[#4A4F7A] font-medium">{d.label}</span>
+              <span className="text-[#4A4F7A] dark:text-[#A9AEFF] font-medium transition-colors">{d.label}</span>
             </div>
-            <span className="font-bold text-[#14173F]">R{d.amount.toLocaleString()}</span>
+            <span className="font-bold text-[#14173F] dark:text-white transition-colors">R{d.amount.toLocaleString()}</span>
           </div>
         ))}
       </div>

@@ -14,7 +14,7 @@ export default function SettingsPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-[#E9EBFF] dark:bg-[#0E1130] p-6 sm:p-12 transition-colors duration-300">
+    <div className="min-h-screen bg-[#E9EBFF] p-6 sm:p-12 transition-colors duration-300">
       <div className="max-w-3xl mx-auto">
         
         {/* Header */}

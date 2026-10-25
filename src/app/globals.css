@@ -1,35 +1,102 @@
 @import "tailwindcss";
 
+:root {
+  /* DAYLIGHT (Default) */
+  --bg-page: #E9EBFF;
+  --bg-card: #FFFFFF;
+  --bg-glass: rgba(255, 255, 255, 0.5);
+  --border-glass: rgba(255, 255, 255, 0.8);
+  --bg-panel: #14173F;
+  
+  --text-main: #14173F;
+  --text-muted: #4A4F7A;
+  --border-divider: #E1E4F7;
+  
+  --primary: #5B5BE0;
+  --accent: #A9AEFF;
+  --amber: #D99A00;
+  --red: #B3261E;
+
+  /* Chart Colors */
+  --chart-bar: #14173F;
+  --chart-forecast: #A9AEFF;
+}
+
+.dark {
+  /* NIGHT */
+  --bg-page: #0E1130;
+  --bg-card: #1A1F52;
+  --bg-glass: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --bg-panel: #14173F; /* Dark panel remains navy */
+  
+  --text-main: #F1F2FF;
+  --text-muted: #C5C9F5;
+  --border-divider: #2A3070;
+  
+  --primary: #5B5BE0; /* Keep Indigo */
+  --accent: #A9AEFF;
+  --amber: #F2B84B;
+  --red: #FF8A80;
+
+  /* Chart Colors */
+  --chart-bar: #A9AEFF;
+  --chart-forecast: #5B5BE0;
+}
+
 body {
-  background-color: #E9EBFF; /* Lavender-white */
-  color: #14173F; /* Deep navy */
+  background-color: var(--bg-page);
+  color: var(--text-main);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+  
+  /* Soft violet blobs for Daylight */
+  background-image: radial-gradient(circle at 12% 8%, rgba(169, 174, 255, 0.4) 0, transparent 40%),
+                    radial-gradient(circle at 88% 75%, rgba(169, 174, 255, 0.3) 0, transparent 45%);
+  background-attachment: fixed;
+}
+
+/* Disable blobs in Dark mode */
+.dark body {
+  background-image: radial-gradient(circle at 50% 0%, rgba(91, 91, 224, 0.15) 0, transparent 50%);
 }
 
 .font-serif {
   font-family: var(--font-instrument), ui-serif, Georgia, serif !important;
 }
 
-/* --- DARK MODE SUPPORT --- */
-html.dark body {
-  background-color: #0E1130; /* Midnight navy */
-  color: #E9EBFF; /* Lavender-white text */
-}
+/* ─── MAP EXISTING TAILWIND CLASSES TO OUR TOKENS ─── */
 
-/* Force the components to adapt to Dark Mode */
-html.dark .bg-white { background-color: #14173F; }
-html.dark .bg-white\/90 { background-color: #1A1E4D; }
-html.dark .bg-white\/60 { background-color: #1A1E4D; }
-html.dark .bg-\[\#E9EBFF\] { background-color: #0E1130; }
-html.dark .bg-\[\#F1F2FF\] { background-color: #1A1E4D; }
-html.dark .bg-\[\#ECEEFF\] { background-color: #2A3070; }
+/* Backgrounds */
+.bg-\[\#E9EBFF\] { background-color: var(--bg-page) !important; }
+.bg-white { background-color: var(--bg-card) !important; }
+.bg-white\/90 { background-color: var(--bg-card) !important; }
+.bg-white\/60 { background-color: var(--bg-glass) !important; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-glass); }
+.bg-\[\#F1F2FF\] { background-color: var(--bg-card) !important; }
+.bg-\[\#ECEEFF\] { background-color: var(--bg-glass) !important; }
+.bg-\[\#14173F\] { background-color: var(--bg-panel) !important; }
 
-html.dark .text-\[\#14173F\] { color: #E9EBFF; }
-html.dark .text-\[\#4A4F7A\] { color: #A9AEFF; }
-html.dark .border-\[\#E1E4F7\] { border-color: #2A3070; }
-html.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+/* Text */
+.text-\[\#14173F\] { color: var(--text-main) !important; }
+.text-\[\#4A4F7A\] { color: var(--text-muted) !important; }
+.text-\[\#5A5F8C\] { color: var(--text-muted) !important; }
 
-/* Keep the warning yellow but dark for night mode */
-html.dark .bg-\[\#FFF0C4\] { background-color: #4A3B10; border-color: #D99A00; }
-html.dark .text-\[\#1D2260\] { color: #F5F1E8; }
+/* Borders */
+.border-\[\#E1E4F7\] { border-color: var(--border-divider) !important; }
+
+/* Primary & Accent Buttons */
+.bg-\[\#5B5BE0\] { background-color: var(--primary) !important; color: #fff !important; }
+.text-\[\#5B5BE0\] { color: var(--primary) !important; }
+.bg-\[\#A9AEFF\] { background-color: var(--accent) !important; color: var(--text-main) !important; }
+.text-\[\#A9AEFF\] { color: var(--accent) !important; }
+
+/* Status Colors */
+.bg-\[\#FFF0C4\] { background-color: rgba(217, 154, 0, 0.1) !important; border-color: var(--amber) !important; }
+.text-\[\#D99A00\] { color: var(--amber) !important; }
+.text-\[\#A94E40\] { color: var(--red) !important; }
+.bg-\[\#A94E40\] { background-color: var(--red) !important; }
+
+/* Shadows */
+.shadow-sm { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+.dark .shadow-sm { box-shadow: 0 0 0 1px var(--border-divider); }
+.dark .shadow-md { box-shadow: 0 0 0 1px var(--border-divider), 0 4px 6px rgba(0, 0, 0, 0.3); }

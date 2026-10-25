@@ -22,6 +22,8 @@ export interface DemoData {
     occurred_at: number;
     evidence_tier: string;
     status: string;
+    canonical_hash: string; // Added for forensic break UI
+    prev_hash: string;      // Added for forensic break UI
   }>;
 }
 
@@ -52,6 +54,8 @@ export async function loadDemoData(businessId: string): Promise<DemoData | null>
       occurred_at: r.occurred_at,
       evidence_tier: r.evidence_tier,
       status: r.status,
+      canonical_hash: r.canonical_hash, // Added
+      prev_hash: r.prev_hash,           // Added
     })),
   };
 }

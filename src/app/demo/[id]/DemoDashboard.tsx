@@ -84,9 +84,14 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       if (!res.ok) throw new Error("Failed");
       await refresh();
       
-      if (path === "tamper") showToast("Record tampered. The hash chain is now broken.", "error");
-      else if (path === "inject") showToast("Discrepancy injected. Variance updated.", "success");
-      else showToast("Demo reset. Chain intact.", "success");
+      if (path === "tamper") {
+        setMainTab("records");
+        showToast("Record tampered. The hash chain is broken.", "error");
+      } else if (path === "inject") {
+        showToast("Discrepancy injected. Variance updated.", "success");
+      } else {
+        showToast("Demo reset. Chain intact.", "success");
+      }
       
     } catch {
       showToast("Action failed.", "error");
@@ -380,6 +385,24 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 + Add Record
               </button>
             </div>
+
+            {/* FORENSIC BREAK BANNER */}
+            {!data.chain.ok && (
+              <div className="bg-[#A94E40] text-white rounded-2xl p-6 mb-6 shadow-lg flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-extrabold flex items-center gap-2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Cryptographic Alert: Ledger Tampered
+                  </h3>
+                  <p className="text-[#F5F1E8] mt-1 text-sm font-medium">
+                    The chain is broken at Record #{data.chain.brokenAtSeq}. The stored hash no longer matches the record's contents. All subsequent records are invalid.
+                  </p>
+                </div>
+                <button onClick={() => judgeAction("reset", "reset")} className="bg-white text-[#A94E40] font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-100 transition-colors shrink-0 ml-4">
+                  Fix Ledger
+                </button>
+              </div>
+            )}
             
             <table className="w-full text-left text-sm">
               <thead className="bg-[#F1F2FF] text-[#4A4F7A] text-xs uppercase tracking-wider">
@@ -393,29 +416,41 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E1E4F7]">
-                {data.recentRecords.map(r => (
-                  <tr 
-                    key={r.seq} 
-                    onClick={() => setSelectedRecord(r)}
-                    className="hover:bg-[#F1F2FF]/50 transition-colors cursor-pointer group"
-                  >
-                    <td className="p-4 font-bold text-[#5B5BE0] group-hover:underline">#{r.seq}</td>
-                    <td className="p-4 text-[#4A4F7A]">{fmtDate(r.occurred_at)}</td>
-                    <td className="p-4 font-medium">{r.description}</td>
-                    <td className="p-4 font-bold">{rands(r.amount_cents)}</td>
-                    <td className="p-4">
-                      <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-lg ${
-                        r.evidence_tier === "counter_signed" ? "bg-[#47745D]/10 text-[#47745D]" : 
-                        r.evidence_tier === "document_supported" ? "bg-[#A9AEFF]/20 text-[#4B4FC9]" : "bg-[#E6E8FA] text-[#4A4F7A]"
-                      }`}>
-                        {r.evidence_tier.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="p-4 text-xs font-mono text-[#5A5F8C] truncate max-w-[120px]" title="Cryptographic hash">
-                      {r.occurred_at.toString(16)}...
-                    </td>
-                  </tr>
-                ))}
+                {data.recentRecords.map(r => {
+                  const isTampered = data.chain?.brokenAtSeq === r.seq;
+                  const isAfterBreak = data.chain?.brokenAtSeq !== null && r.seq > (data.chain?.brokenAtSeq ?? Infinity);
+                  
+                  return (
+                    <tr 
+                      key={r.seq} 
+                      onClick={() => setSelectedRecord(r)}
+                      className={`cursor-pointer group transition-colors ${
+                        isTampered ? "bg-[#A94E40]/10 border-l-4 border-l-[#A94E40]" : 
+                        isAfterBreak ? "bg-red-50/30 opacity-50" : 
+                        "hover:bg-[#F1F2FF]/50"
+                      }`}
+                    >
+                      <td className={`p-4 font-bold ${isTampered ? "text-[#A94E40]" : "text-[#5B5BE0]"}`}>#{r.seq}</td>
+                      <td className="p-4 text-[#4A4F7A]">{fmtDate(r.occurred_at)}</td>
+                      <td className="p-4 font-medium">
+                        {r.description}
+                        {isTampered && <span className="ml-2 text-[10px] font-bold uppercase text-[#A94E40] bg-[#A94E40]/10 px-2 py-0.5 rounded-full">Tampered</span>}
+                      </td>
+                      <td className={`p-4 font-bold ${isTampered ? "text-[#A94E40]" : ""}`}>{rands(r.amount_cents)}</td>
+                      <td className="p-4">
+                        <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-lg ${
+                          r.evidence_tier === "counter_signed" ? "bg-[#47745D]/10 text-[#47745D]" : 
+                          r.evidence_tier === "document_supported" ? "bg-[#A9AEFF]/20 text-[#4B4FC9]" : "bg-[#E6E8FA] text-[#4A4F7A]"
+                        }`}>
+                          {r.evidence_tier.replace("_", " ")}
+                        </span>
+                      </td>
+                      <td className={`p-4 text-xs font-mono truncate max-w-[120px] ${isTampered ? "text-[#A94E40] line-through decoration-2" : "text-[#5A5F8C]"}`} title="Cryptographic hash">
+                        {r.canonical_hash ? r.canonical_hash.slice(0, 16) + "..." : "hash"}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

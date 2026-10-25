@@ -9,18 +9,9 @@ import { generateAnalytics } from "@/lib/analytics";
 import { BarChart, DonutChart } from "@/components/Visuals";
 import EvidenceWorkspace from "@/components/EvidenceWorkspace";
 import ImportWizard from "@/components/ImportWizard";
+import CaptureFlow from "@/components/CaptureFlow";
 import { useApp } from "@/context/AppContext";
 
-interface ThembaMsg {
-  role: "user" | "themba";
-  text: string;
-  refused?: boolean;
-  provider?: string;
-  sources?: string[];
-  suggestions?: string[];
-}
-
-type ThembaTab = "ask" | "insights" | "actions";
 type MainTab = "overview" | "records" | "tasks";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
@@ -43,16 +34,9 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   // Toast State
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
-  // Themba State (kept for local functionality, though UI is now global)
-  const [thembaTab, setThembaTab] = useState<ThembaTab>("ask");
-  const [history, setHistory] = useState<ThembaMsg[]>([]);
-  const [input, setInput] = useState("");
-  const [asking, setAsking] = useState(false);
-
   // Modals
   const [showExport, setShowExport] = useState(false);
   const [showCapture, setShowCapture] = useState(false);
-  const [newRecord, setNewRecord] = useState({ description: "", amount: "", kind: "sale", quantity: "" });
   const [showImport, setShowImport] = useState(false);
   
   const [showScamShield, setShowScamShield] = useState(false);
@@ -111,24 +95,6 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
     }
   };
 
-  const createTask = async (title: string, desc: string) => {
-    try {
-      const res = await fetch("/api/tasks", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ business_id: data.businessId, title, description: desc }),
-      });
-      if (!res.ok) throw new Error();
-      
-      // Refresh task list
-      const newTasks = await fetch(`/api/tasks?business_id=${data.businessId}`).then(r => r.json());
-      setTasks(newTasks);
-      showToast("Task created and saved.", "success");
-    } catch {
-      showToast("Failed to create task.", "error");
-    }
-  };
-
   const checkScam = async () => {
     if (!scamMessage.trim()) return;
     setScamLoading(true);
@@ -145,61 +111,6 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       showToast("Could not check the message.", "error");
     } finally {
       setScamLoading(false);
-    }
-  };
-
-  const submitRecord = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy("capture");
-    try {
-      const res = await fetch("/api/records", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          business_id: data.businessId,
-          kind: newRecord.kind,
-          amount_cents: Math.round(parseFloat(newRecord.amount || "0") * 100),
-          description: newRecord.description,
-          quantity: newRecord.quantity ? parseInt(newRecord.quantity) : null,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      await refresh();
-      setShowCapture(false);
-      setNewRecord({ description: "", amount: "", kind: "sale", quantity: "" });
-      showToast("Record sealed into the ledger.", "success");
-    } catch {
-      showToast("Failed to save record.", "error");
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const ask = async (q: string) => {
-    if (!q.trim() || asking) return;
-    setAsking(true);
-    setHistory((h) => [...h, { role: "user", text: q }]);
-    setInput("");
-    try {
-      const r = await fetch("/api/themba", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ business_id: data.businessId, question: q }),
-      });
-      const json = await r.json();
-      setHistory((h) => [
-        ...h,
-        { 
-          role: "themba", 
-          text: json.answer ?? "(no answer)", 
-          refused: json.refused, 
-          provider: json.provider, 
-          sources: json.sources,
-          suggestions: json.follow_up_questions 
-        },
-      ]);
-    } finally {
-      setAsking(false);
     }
   };
 
@@ -306,8 +217,8 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <button onClick={() => setShowImport(true)} className="px-4 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
               Import CSV
             </button>
-            <button onClick={() => setShowCapture(true)} className="px-5 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors">
-              Capture entry
+            <button onClick={() => setShowCapture(true)} className="px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors">
+              + Capture
             </button>
           </div>
         </header>
@@ -534,47 +445,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         )}
       </main>
 
-      {/* ─── CAPTURE MODAL ─── */}
+      {/* ─── CAPTURE FLOW MODAL ─── */}
       {showCapture && (
-        <div className="fixed inset-0 bg-[#14173F]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] p-8 max-w-md w-full shadow-2xl">
-            <h2 className="text-2xl font-extrabold mb-2 text-[#14173F]">Capture Entry</h2>
-            <p className="text-sm text-[#4A4F7A] mb-6">This record will be cryptographically sealed into the ledger.</p>
-            
-            <form onSubmit={submitRecord} className="space-y-4 mb-8">
-              <div>
-                <label className="block text-xs font-bold text-[#4A4F7A] mb-1">Description</label>
-                <input required value={newRecord.description} onChange={e => setNewRecord({...newRecord, description: e.target.value})} placeholder="e.g. Bread sales" className="w-full bg-[#F1F2FF] border border-[#E1E4F7] rounded-xl px-4 py-3 text-sm focus:border-[#5B5BE0] outline-none" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#4A4F7A] mb-1">Amount (R)</label>
-                  <input required type="number" step="0.01" value={newRecord.amount} onChange={e => setNewRecord({...newRecord, amount: e.target.value})} placeholder="0.00" className="w-full bg-[#F1F2FF] border border-[#E1E4F7] rounded-xl px-4 py-3 text-sm focus:border-[#5B5BE0] outline-none" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#4A4F7A] mb-1">Type</label>
-                  <select value={newRecord.kind} onChange={e => setNewRecord({...newRecord, kind: e.target.value})} className="w-full bg-[#F1F2FF] border border-[#E1E4F7] rounded-xl px-4 py-3 text-sm focus:border-[#5B5BE0] outline-none">
-                    <option value="sale">Sale</option>
-                    <option value="expense">Expense</option>
-                    <option value="stock_purchase">Stock Purchase</option>
-                    <option value="stock_count">Stock Count</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#4A4F7A] mb-1">Quantity (optional)</label>
-                <input type="number" value={newRecord.quantity} onChange={e => setNewRecord({...newRecord, quantity: e.target.value})} placeholder="e.g. 10" className="w-full bg-[#F1F2FF] border border-[#E1E4F7] rounded-xl px-4 py-3 text-sm focus:border-[#5B5BE0] outline-none" />
-              </div>
-              
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowCapture(false)} className="flex-1 py-3 bg-[#F1F2FF] text-[#4B4FC9] font-bold rounded-xl hover:bg-[#E6E8FA] transition-colors">Cancel</button>
-                <button type="submit" disabled={busy === "capture"} className="flex-1 py-3 bg-[#14173F] text-white font-bold rounded-xl hover:bg-[#2A3070] transition-colors shadow-md">
-                  {busy === "capture" ? "Sealing..." : "Confirm & Seal"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <CaptureFlow 
+          businessId={data.businessId} 
+          onComplete={refresh} 
+          onClose={() => setShowCapture(false)} 
+        />
       )}
 
       {/* ─── EXPORT CENTRE MODAL ─── */}

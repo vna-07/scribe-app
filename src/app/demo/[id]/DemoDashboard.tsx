@@ -14,12 +14,13 @@ import SaleModal from "@/components/SaleModal";
 import ExpenseModal from "@/components/ExpenseModal";
 import { useApp } from "@/context/AppContext";
 import StockTab from "./StockTab";
+import SuppliersTab from "./SuppliersTab";
 import IntelligenceTab from "./IntelligenceTab";
 import GrowthTab from "./GrowthTab";
 import ReportsTab from "./ReportsTab";
 import OpportunitiesTab from "./OpportunitiesTab";
 
-type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports" | "opportunities";
+type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports" | "opportunities" | "suppliers";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
   const { setBusinessId, setThembaOpen } = useApp();
@@ -167,6 +168,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             { id: "overview", label: "Overview", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> },
             { id: "records", label: "Records", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> },
             { id: "stock", label: "Stock", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> },
+            { id: "suppliers", label: "Suppliers", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> },
             { id: "intelligence", label: "Intelligence", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg> },
             { id: "tasks", label: "Growth Studio", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg> },
             { id: "opportunities", label: "Launch Studio", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg> },
@@ -175,7 +177,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <button 
               key={item.id}
               onClick={() => {
-                if (['overview', 'records', 'tasks', 'stock', 'intelligence', 'reports', 'opportunities'].includes(item.id)) setMainTab(item.id as any);
+                if (['overview', 'records', 'tasks', 'stock', 'intelligence', 'reports', 'opportunities', 'suppliers'].includes(item.id)) setMainTab(item.id as any);
                 else alert(`${item.label} module coming soon.`);
               }} 
               title={isCollapsed ? item.label : undefined}
@@ -212,7 +214,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "intelligence" ? "Business Intelligence" : mainTab === "reports" ? "Reports & Exports" : mainTab === "opportunities" ? "Launch Studio" : "Growth Studio"}
+              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "suppliers" ? "Suppliers" : mainTab === "intelligence" ? "Business Intelligence" : mainTab === "reports" ? "Reports & Exports" : mainTab === "opportunities" ? "Launch Studio" : "Growth Studio"}
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
@@ -477,6 +479,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         {mainTab === "stock" && (
           <div className="flex-1 overflow-auto">
             <StockTab businessId={data.businessId} onRefresh={refresh} />
+          </div>
+        )}
+
+        {/* ─── SUPPLIERS TAB ─── */}
+        {mainTab === "suppliers" && (
+          <div className="flex-1 overflow-auto">
+            <SuppliersTab businessId={data.businessId} />
           </div>
         )}
 

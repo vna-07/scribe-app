@@ -122,3 +122,16 @@ CREATE TABLE IF NOT EXISTS business_plans (
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'completed')),
   created_at INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS suppliers (
+  id TEXT PRIMARY KEY,
+  business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  contact_name TEXT,
+  phone TEXT,
+  email TEXT,
+  created_at INTEGER NOT NULL
+);
+
+-- Link suppliers to products (Optional, but good for the roadmap)
+ALTER TABLE products ADD COLUMN supplier_id TEXT REFERENCES suppliers(id) ON DELETE SET NULL;

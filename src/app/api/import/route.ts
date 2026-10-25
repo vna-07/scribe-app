@@ -5,27 +5,8 @@ import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    
-    // Allow demo users to import even if they don't have a session
-    // (Since the demo dashboard doesn't require login, we need this fallback)
-    if (!user) {
-      const { business_id } = await req.json();
-      
-      // Verify this is a demo business before allowing import
-      const demoCheck = await db().execute({
-        sql: `SELECT 1 FROM business_members bm 
-              JOIN users u ON u.id = bm.user_id 
-              WHERE bm.business_id = ? AND u.is_demo = 1 LIMIT 1`,
-        args: [business_id],
-      });
-      
-      if (demoCheck.rows.length === 0) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
-
-    // Parse the body again (since we might have consumed it above)
+    // Parse the body ONCE. (The original consumed it twice — the second
+    // `await req.json()` would throw "Body is unusable" in production.)
     const body = await req.json();
     const { business_id, records } = body;
 
@@ -33,11 +14,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing business_id or records" }, { status: 400 });
     }
 
+    const user = await getCurrentUser();
+
+    // Allow demo users to import even if they don't have a session.
+    // (The demo dashboard doesn't require login, so we check the business instead.)
+    if (!user) {
+      const demoCheck = await db().execute({
+        sql: `SELECT 1 FROM business_members bm
+              JOIN users u ON u.id = bm.user_id
+              WHERE bm.business_id = ? AND u.is_demo = 1 LIMIT 1`,
+        args: [business_id],
+      });
+
+      if (demoCheck.rows.length === 0) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
     const headRes = await db().execute({
       sql: "SELECT seq, canonical_hash FROM records WHERE business_id = ? ORDER BY seq DESC LIMIT 1",
       args: [business_id],
     });
-    
+
     let head = headRes.rows[0]
       ? { seq: Number(headRes.rows[0].seq), canonical_hash: String(headRes.rows[0].canonical_hash) }
       : null;
@@ -47,7 +45,7 @@ export async function POST(req: NextRequest) {
 
     for (const row of records) {
       const id = uuid();
-      
+
       const sealed = sealRecord(head, {
         id,
         business_id,
@@ -61,6 +59,7 @@ export async function POST(req: NextRequest) {
         evidence_tier: "reported",
       });
 
+      // 1. Insert financial record
       await db().execute({
         sql: `INSERT INTO records (
           id, business_id, seq, kind, amount_cents, quantity, description, occurred_at,
@@ -74,6 +73,24 @@ export async function POST(req: NextRequest) {
           sealed.signature, user ? user.id : null, now,
         ],
       });
+
+      // 2. If it's a sale with a Product ID and Quantity, deduct stock
+      if (sealed.kind === "sale" && row.product_id && row.quantity) {
+        await db().execute({
+          sql: `INSERT INTO stock_movements
+                (id, business_id, product_id, type, quantity_delta, reference_id, notes, created_at)
+                VALUES (?, ?, ?, 'sale', ?, ?, ?, ?)`,
+          args: [
+            uuid(),
+            business_id,
+            row.product_id,
+            -Math.abs(Number(row.quantity)),
+            id,
+            "Imported from CSV",
+            now,
+          ],
+        });
+      }
 
       head = { seq: sealed.seq, canonical_hash: sealed.canonical_hash };
       importedCount++;

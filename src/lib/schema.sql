@@ -111,5 +111,14 @@ CREATE TABLE IF NOT EXISTS goals (
   created_at INTEGER NOT NULL
 );
 
--- Migrations for existing databases
-ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS business_plans (
+  id TEXT PRIMARY KEY,
+  business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  type TEXT NOT NULL CHECK (type IN ('start', 'expand')),
+  goal TEXT NOT NULL,
+  location TEXT,
+  capital_available_cents INTEGER,
+  plan_data TEXT, -- JSON stringified roadmap and budget
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'completed')),
+  created_at INTEGER NOT NULL
+);

@@ -3,6 +3,7 @@ import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppProvider } from "@/context/AppContext";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import GlobalThembaDrawer from "@/components/GlobalThembaDrawer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -39,10 +40,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${instrument.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AppProvider>
-            {children}
-            <GlobalThembaDrawer />
-          </AppProvider>
+          <LanguageProvider>
+            <AppProvider>
+              {children}
+              <GlobalThembaDrawer />
+            </AppProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

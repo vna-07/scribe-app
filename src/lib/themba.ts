@@ -8,6 +8,7 @@ export interface ThembaInput {
   records: LedgerRecord[];
   businessName: string;
   history?: ConversationTurn[];
+  locale?: "en" | "xh" | "zu" | "af";
 }
 
 export interface ProposedAction {
@@ -50,6 +51,13 @@ RULES:
 - Never guarantee a loan. Never say someone is stealing.
 - If no action is needed, set proposed_action to null.
 `;
+
+const LANGUAGE_NAMES = {
+  en: "English",
+  xh: "isiXhosa",
+  zu: "isiZulu",
+  af: "Afrikaans",
+} as const;
 
 function preflight(q: string, records: LedgerRecord[]): ThembaAnswer | null {
   const lower = q.toLowerCase();
@@ -120,10 +128,15 @@ function fallbackAnswer(question: string, records: LedgerRecord[], businessName:
 }
 
 export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
-  const { question, records, businessName, history = [] } = input;
+  const { question, records, businessName, history = [], locale = "en" } = input;
 
   const refusal = preflight(question, records);
   if (refusal) return refusal;
+
+  const languageLine = locale !== "en"
+    ? `\n\nLANGUAGE INSTRUCTION: Respond in ${LANGUAGE_NAMES[locale]}. If you cannot produce a fluent response, respond in English and prefix with "[English fallback]".`
+    : "";
+  const systemPrompt = SYSTEM_PROMPT + languageLine;
 
   const context = buildRichContext(records, businessName, history);
   const contextString = JSON.stringify(context);
@@ -143,7 +156,7 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
           headers: { "content-type": "application/json" },
           signal: controller.signal,
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            systemInstruction: { parts: [{ text: systemPrompt }] },
             contents: [
               ...history.slice(-4).map(h => ({ role: h.role === 'user' ? 'user' : 'model', parts: [{ text: h.text }] })),
               { role: "user", parts: [{ text: `CONTEXT: ${contextString}\n\nUSER QUESTION: ${question}` }] }
@@ -181,7 +194,7 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
         body: JSON.stringify({
           model: "llama3-70b-8192", // Updated to current stable Groq model
           messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: systemPrompt },
             { role: "user", content: `CONTEXT: ${contextString}\n\nHISTORY:\n${historyString}\n\nUSER QUESTION: ${question}` }
           ],
           response_format: { type: "json_object" },

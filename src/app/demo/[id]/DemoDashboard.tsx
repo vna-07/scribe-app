@@ -63,13 +63,20 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   
   // Evidence Workspace State
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
-  
+
+  const refetchTasks = async () => {
+    try {
+      const r = await fetch(`/api/tasks?business_id=${data.businessId}`);
+      if (r.ok) setTasks(await r.json());
+    } catch {
+      // Silently ignore — Action Centre just stays stale rather than crashing
+    }
+  };
+
   // Fetch tasks on load
   useEffect(() => {
-    fetch(`/api/tasks?business_id=${data.businessId}`)
-      .then(r => r.json())
-      .then(d => setTasks(d))
-      .catch(() => {});
+    refetchTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.businessId]);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -80,6 +87,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const refresh = async () => {
     const r = await fetch(`/api/demo/${data.businessId}`);
     if (r.ok) setData(await r.json());
+    await refetchTasks();
   };
 
   const judgeAction = async (path: string, label: string) => {
@@ -506,7 +514,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         {/* ─── TASKS / GROWTH STUDIO TAB ─── */}
         {mainTab === "tasks" && (
           <div className="flex-1 overflow-auto">
-            <GrowthTab businessId={data.businessId} />
+            <GrowthTab businessId={data.businessId} onTasksChanged={refresh} />
           </div>
         )}
 

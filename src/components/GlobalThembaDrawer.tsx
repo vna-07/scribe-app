@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { playSuccessChime } from "@/lib/sounds";
 
 export default function GlobalThembaDrawer() {
   const { businessId, thembaOpen, setThembaOpen, history, setHistory } = useApp();
+  const { locale, t } = useLanguage();
   const [input, setInput] = useState("");
   const [asking, setAsking] = useState(false);
   const [approved, setApproved] = useState<Record<number, boolean>>({});
@@ -22,7 +24,7 @@ export default function GlobalThembaDrawer() {
       const r = await fetch("/api/themba", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ business_id: businessId, question: q, history: history.slice(-4) }),
+        body: JSON.stringify({ business_id: businessId, question: q, history: history.slice(-4), locale }),
       });
       const json = await r.json();
       setHistory((h) => [...h, {
@@ -43,7 +45,7 @@ export default function GlobalThembaDrawer() {
     // 2. Perform the actual DB write in the background
     if (action.type === "create_task") {
       try {
-        await fetch("/api/goals", {
+        const res = await fetch("/api/goals", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -54,13 +56,20 @@ export default function GlobalThembaDrawer() {
             target_value: null
           }),
         });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
       } catch (error) {
         // 3. ROLLBACK if the server fails
         setApproved(prev => ({ ...prev, [index]: false }));
-        alert("Failed to save the task. Please check your connection.");
+        alert(t("themba.saveFailed"));
       }
     }
   };
+
+  const suggestions = [
+    t("themba.suggestion.supplier"),
+    t("themba.suggestion.stock"),
+    t("themba.suggestion.score"),
+  ];
 
   return (
     <>
@@ -76,8 +85,8 @@ export default function GlobalThembaDrawer() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#5B5BE0] text-white flex items-center justify-center font-extrabold text-lg">T</div>
             <div>
-              <h2 className="font-extrabold text-lg text-[#14173F] dark:text-white">Themba</h2>
-              <p className="text-xs text-[#5A5F8C] dark:text-[#C5C9F5]">Business Operations Assistant</p>
+              <h2 className="font-extrabold text-lg text-[#14173F] dark:text-white">{t("themba.title")}</h2>
+              <p className="text-xs text-[#5A5F8C] dark:text-[#C5C9F5]">{t("themba.subtitle")}</p>
             </div>
           </div>
           <button onClick={() => setThembaOpen(false)} className="text-[#5A5F8C] hover:text-[#14173F] dark:text-[#C5C9F5] dark:hover:text-white p-2">
@@ -88,8 +97,8 @@ export default function GlobalThembaDrawer() {
         <div className="flex-1 overflow-auto p-6 space-y-6 no-scrollbar">
           {history.length === 0 && (
             <div className="space-y-3">
-              <p className="text-sm text-[#4A4F7A] dark:text-[#C5C9F5]">I can investigate your records, draft messages, and execute tasks. Try saying:</p>
-              {["Draft a message to my supplier", "Investigate my stock variance", "How can I improve my score?"].map(q => (
+              <p className="text-sm text-[#4A4F7A] dark:text-[#C5C9F5]">{t("themba.intro")}</p>
+              {suggestions.map(q => (
                 <button key={q} onClick={() => ask(q)} className="w-full text-left text-sm p-3 rounded-xl bg-white dark:bg-[#1A1F52] hover:bg-[#E8E2D5] dark:hover:bg-[#2A3070] transition-colors text-[#14173F] dark:text-white border border-[#E8E2D5] dark:border-[#2A3070]">
                   "{q}"
                 </button>
@@ -115,7 +124,7 @@ export default function GlobalThembaDrawer() {
                       <div className="bg-white dark:bg-[#2A3070] border-2 border-[#5B5BE0] rounded-xl p-4 shadow-md animate-pop">
                         <div className="flex items-center gap-2 mb-2">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B5BE0" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                          <span className="text-xs font-bold text-[#5B5BE0] uppercase tracking-wider">Proposed Action</span>
+                          <span className="text-xs font-bold text-[#5B5BE0] uppercase tracking-wider">{t("themba.proposedAction")}</span>
                         </div>
                         <p className="font-bold text-sm text-[#14173F] dark:text-white mb-1">{m.proposed_action.title}</p>
                         <p className="text-xs text-[#4A4F7A] dark:text-[#C5C9F5] mb-4 leading-relaxed whitespace-pre-wrap">{m.proposed_action.description}</p>
@@ -126,7 +135,7 @@ export default function GlobalThembaDrawer() {
                             disabled={approved[i]}
                             className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${approved[i] ? "bg-[#47745D] text-white animate-pop" : "bg-[#5B5BE0] text-white hover:bg-[#4B4FC9]"}`}
                           >
-                            {approved[i] ? "✓ Action Executed" : "Approve & Execute"}
+                            {approved[i] ? `✓ ${t("themba.executed")}` : t("themba.approve")}
                           </button>
                         </div>
                       </div>
@@ -154,7 +163,7 @@ export default function GlobalThembaDrawer() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask Themba to investigate or do something..."
+              placeholder={t("themba.placeholder")}
               disabled={asking}
               className="w-full bg-[#F5F1E8] dark:bg-[#0E1130] border border-[#E8E2D5] dark:border-[#2A3070] focus:border-[#5B5BE0] outline-none rounded-xl pl-4 pr-12 py-3 text-sm text-[#14173F] dark:text-white placeholder-[#5A5F8C] transition-colors"
             />

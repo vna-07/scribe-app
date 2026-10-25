@@ -4,8 +4,11 @@ import { loadBusinessRecords } from "@/lib/demo-seed";
 import { db } from "@/lib/db";
 import type { ConversationTurn } from "@/lib/themba-context";
 
+const SUPPORTED_LOCALES = ["en", "xh", "zu", "af"] as const;
+type Locale = (typeof SUPPORTED_LOCALES)[number];
+
 export async function POST(req: NextRequest) {
-  const { business_id, question, history = [] } = await req.json();
+  const { business_id, question, history = [], locale = "en" } = await req.json();
   if (!business_id || typeof question !== "string") {
     return NextResponse.json({ error: "business_id and question required" }, { status: 400 });
   }
@@ -21,12 +24,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "business not found" }, { status: 404 });
   }
 
+  const safeLocale: Locale = SUPPORTED_LOCALES.includes(locale) ? locale : "en";
+
   const records = await loadBusinessRecords(business_id);
   const answer = await askThemba({
     question,
     records,
     businessName: String(bizRes.rows[0].name),
     history: Array.isArray(history) ? (history as ConversationTurn[]) : [],
+    locale: safeLocale,
   });
 
   return NextResponse.json(answer);

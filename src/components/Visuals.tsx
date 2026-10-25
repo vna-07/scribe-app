@@ -1,9 +1,9 @@
 "use client";
 
-import type { DailySales, ExpenseCategory } from "@/lib/analytics";
+import type { DailyData, ExpenseCategory } from "@/lib/analytics";
 
-export function BarChart({ data, height = 160 }: { data: DailySales[]; height?: number }) {
-  const max = Math.max(...data.map((d) => d.amount), 100);
+export function BarChart({ data, height = 160 }: { data: DailyData[]; height?: number }) {
+  const max = Math.max(...data.map((d) => d.sales), 100);
   const barWidth = 100 / data.length;
 
   return (
@@ -20,7 +20,7 @@ export function BarChart({ data, height = 160 }: { data: DailySales[]; height?: 
         
         {/* Bars */}
         {data.map((d, i) => {
-          const h = (d.amount / max) * (height - 20);
+          const h = (d.sales / max) * (height - 20);
           return (
             <g key={d.date}>
               <rect
@@ -73,7 +73,6 @@ export function DonutChart({ data }: { data: ExpenseCategory[] }) {
               />
             );
           })}
-          {/* Inner circle adapts to dark mode background */}
           <circle cx="21" cy="21" r="12" fill="var(--background, #FFFFFF)" className="dark:fill-[#14173F]" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">

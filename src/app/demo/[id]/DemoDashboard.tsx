@@ -12,8 +12,9 @@ import ImportWizard from "@/components/ImportWizard";
 import CaptureFlow from "@/components/CaptureFlow";
 import { useApp } from "@/context/AppContext";
 import StockTab from "./StockTab";
+import IntelligenceTab from "./IntelligenceTab";
 
-type MainTab = "overview" | "records" | "tasks" | "stock";
+type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
   const { setBusinessId, setThembaOpen } = useApp();
@@ -28,7 +29,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [busy, setBusy] = useState<string | null>(null);
   const [mainTab, setMainTab] = useState<MainTab>("overview");
   
-  const { dailySales, expenseCategories } = generateAnalytics(
+  const { dailyData, expenseCategories } = generateAnalytics(
     data.recentRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
   );
 
@@ -167,7 +168,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <button 
               key={item.id}
               onClick={() => {
-                if (['overview', 'records', 'tasks', 'stock'].includes(item.id)) setMainTab(item.id as any);
+                if (['overview', 'records', 'tasks', 'stock', 'intelligence'].includes(item.id)) setMainTab(item.id as any);
                 else alert(`${item.label} module coming soon.`);
               }} 
               title={isCollapsed ? item.label : undefined}
@@ -194,7 +195,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : "Growth Studio"}
+              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "intelligence" ? "Business Intelligence" : "Growth Studio"}
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
@@ -256,11 +257,11 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h3 className="font-extrabold text-lg">Daily Recorded Sales</h3>
-                    <p className="text-xs font-medium text-[#4A4F7A]">Past 14 days. Hover to inspect.</p>
+                    <h3 className="font-extrabold text-lg">Daily Cash Flow</h3>
+                    <p className="text-xs font-medium text-[#4A4F7A]">Sales vs Expenses over the past 14 days.</p>
                   </div>
                 </div>
-                <BarChart data={dailySales} />
+                <BarChart data={dailyData} />
               </div>
 
               <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
@@ -416,6 +417,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         {mainTab === "stock" && (
           <div className="flex-1 overflow-auto">
             <StockTab businessId={data.businessId} onRefresh={refresh} />
+          </div>
+        )}
+
+        {/* ─── INTELLIGENCE TAB ─── */}
+        {mainTab === "intelligence" && (
+          <div className="flex-1 overflow-auto">
+            <IntelligenceTab data={data} onRefresh={refresh} />
           </div>
         )}
 
@@ -665,7 +673,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               </button>
             </div>
             <div className="space-y-2">
-              <button onClick={() => { alert("Intelligence coming soon"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
+              <button onClick={() => { setMainTab("intelligence"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg>
                 Business Intelligence
               </button>

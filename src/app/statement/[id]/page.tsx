@@ -16,7 +16,7 @@ export default async function StatementPage({
   const data = await loadDemoData(id);
   if (!data) notFound();
 
-  const { dailySales } = generateAnalytics(
+  const { dailyData } = generateAnalytics(
     data.recentRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
   );
 
@@ -103,7 +103,7 @@ export default async function StatementPage({
                 <p className="text-[10px] font-bold text-[#5A5F8C] uppercase tracking-wider mb-1">
                   Recorded Revenue Range
                 </p>
-                <p className="text-xl font-extrabold text-[#14173F]">
+                <p className="text-xl font-extrabold text-[#14173F] tabular-nums">
                   {rands(data.revenue.low_cents)} – {rands(data.revenue.high_cents)}
                 </p>
                 <p className="text-[10px] text-[#5A5F8C] mt-1">Based on {data.revenue.method}</p>
@@ -112,7 +112,7 @@ export default async function StatementPage({
                 <p className="text-[10px] font-bold text-[#5A5F8C] uppercase tracking-wider mb-1">
                   Documented Readiness
                 </p>
-                <p className="text-xl font-extrabold text-[#14173F]">
+                <p className="text-xl font-extrabold text-[#14173F] tabular-nums">
                   {data.score.low} – {data.score.high} <span className="text-sm text-[#5A5F8C]">/100</span>
                 </p>
                 <p className="text-[10px] text-[#5A5F8C] mt-1">
@@ -123,7 +123,7 @@ export default async function StatementPage({
                 <p className="text-[10px] font-bold text-[#5A5F8C] uppercase tracking-wider mb-1">
                   Stock Variance
                 </p>
-                <p className="text-xl font-extrabold text-[#14173F]">
+                <p className="text-xl font-extrabold text-[#14173F] tabular-nums">
                   {data.stock.variance === null ? "No Count" : `${data.stock.variance} units`}
                 </p>
                 <p className="text-[10px] text-[#5A5F8C] mt-1">{stockSeverity}</p>
@@ -135,7 +135,7 @@ export default async function StatementPage({
           <section>
             <h3 className="text-lg font-extrabold text-[#14173F] mb-4">Sales Performance (14 Days)</h3>
             <div className="bg-[#F8F9FF] rounded-xl p-6 border border-[#E1E4F7] print:bg-white print:border-[#14173F]">
-              <BarChart data={dailySales} height={100} />
+              <BarChart data={dailyData} height={100} />
             </div>
           </section>
 
@@ -193,7 +193,7 @@ export default async function StatementPage({
                     <td className="py-2 px-1 font-mono text-[#5B5BE0]">#{r.seq}</td>
                     <td className="py-2 px-1">{fmtDate(r.occurred_at)}</td>
                     <td className="py-2 px-1 text-[#14173F]">{r.description}</td>
-                    <td className="py-2 px-1 text-right font-bold text-[#14173F]">
+                    <td className="py-2 px-1 text-right font-bold text-[#14173F] tabular-nums">
                       {rands(r.amount_cents)}
                     </td>
                     <td className="py-2 px-1">

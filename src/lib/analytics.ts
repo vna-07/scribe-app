@@ -1,9 +1,11 @@
 import type { LedgerRecord } from "./ledger";
 
-export interface DailySales {
+export interface DailyData {
   label: string;
   date: string;
-  amount: number;
+  sales: number;
+  expenses: number;
+  net: number;
 }
 
 export interface ExpenseCategory {
@@ -16,33 +18,42 @@ export function generateAnalytics(records: LedgerRecord[]) {
   const sales = records.filter((r) => r.kind === "sale");
   const expenses = records.filter((r) => r.kind === "expense");
 
-  // 1. Group sales by day for the last 14 days
-  const dailyMap = new Map<string, number>();
-  // Initialize last 14 days with 0
+  // 1. Group by day for the last 14 days
+  const dailyMap = new Map<string, { sales: number; expenses: number }>();
   for (let i = 13; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    dailyMap.set(key, 0);
+    dailyMap.set(d.toISOString().slice(0, 10), { sales: 0, expenses: 0 });
   }
 
   for (const sale of sales) {
     const dateKey = new Date(sale.occurred_at).toISOString().slice(0, 10);
     if (dailyMap.has(dateKey)) {
-      dailyMap.set(dateKey, (dailyMap.get(dateKey) || 0) + sale.amount_cents);
+      const cur = dailyMap.get(dateKey)!;
+      cur.sales += sale.amount_cents;
     }
   }
 
-  const dailySales: DailySales[] = Array.from(dailyMap.entries()).map(([date, amount]) => {
+  for (const exp of expenses) {
+    const dateKey = new Date(exp.occurred_at).toISOString().slice(0, 10);
+    if (dailyMap.has(dateKey)) {
+      const cur = dailyMap.get(dateKey)!;
+      cur.expenses += exp.amount_cents;
+    }
+  }
+
+  const dailyData: DailyData[] = Array.from(dailyMap.entries()).map(([date, data]) => {
     const d = new Date(date);
     return {
       date,
       label: d.toLocaleDateString("en-ZA", { weekday: "short" }),
-      amount: amount / 100,
+      sales: data.sales / 100,
+      expenses: data.expenses / 100,
+      net: (data.sales - data.expenses) / 100,
     };
   });
 
-  // 2. Group expenses by category (first word of description)
+  // 2. Group expenses by category
   const expenseMap = new Map<string, number>();
   for (const exp of expenses) {
     const category = exp.description.split(" ")[0] || "Other";
@@ -58,5 +69,5 @@ export function generateAnalytics(records: LedgerRecord[]) {
     }))
     .sort((a, b) => b.amount - a.amount);
 
-  return { dailySales, expenseCategories };
+  return { dailyData, expenseCategories };
 }

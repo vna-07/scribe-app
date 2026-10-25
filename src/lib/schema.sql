@@ -135,3 +135,16 @@ CREATE TABLE IF NOT EXISTS suppliers (
 
 -- Link suppliers to products (Optional, but good for the roadmap)
 ALTER TABLE products ADD COLUMN supplier_id TEXT REFERENCES suppliers(id) ON DELETE SET NULL;
+
+-- Add observed_quantity to stock_movements so counts can carry the physical reading
+ALTER TABLE stock_movements ADD COLUMN observed_quantity INTEGER;
+
+CREATE TABLE IF NOT EXISTS demo_snapshots (
+  id TEXT PRIMARY KEY,
+  business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  records_json TEXT NOT NULL,
+  movements_json TEXT NOT NULL,
+  products_json TEXT NOT NULL,
+  suppliers_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);

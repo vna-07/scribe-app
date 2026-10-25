@@ -98,7 +98,8 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ business_id: data.businessId }),
       });
-      if (!res.ok) throw new Error("Failed");
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed");
       await refresh();
       
       if (path === "tamper") {
@@ -106,12 +107,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         showToast("Record tampered. The hash chain is broken.", "error");
       } else if (path === "inject") {
         showToast("Discrepancy injected. Variance updated.", "success");
-      } else {
-        showToast("Demo reset. Chain intact.", "success");
+      } else if (path === "reset") {
+        const n = json.restored?.records ?? 0;
+        const m = json.restored?.movements ?? 0;
+        showToast(`Restored ${n} records and ${m} stock movements.`, "success");
       }
-      
-    } catch {
-      showToast("Action failed.", "error");
+    } catch (e: any) {
+      showToast(e.message || "Action failed.", "error");
     } finally {
       setBusy(null);
     }
@@ -270,11 +272,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 <div className="text-xs font-medium text-[#4A4F7A] mt-2">Reported Friday 16:40</div>
               </div>
               <div className="animate-stagger delay-3 bg-white/60 dark:bg-[#1A1F52] backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50 dark:border-[#2A3070]">
-                <div className="text-xs font-bold text-[#4A4F7A] mb-1">Stock gaps to review</div>
-                <div className="text-2xl font-extrabold tracking-tight text-[#D99A00] tabular-nums">
-                  {data.lowStockCount} products
+                <div className="text-xs font-bold text-[#4A4F7A] dark:text-[#C5C9F5] mb-1">Stock gaps to review</div>
+                <div className={`text-2xl font-extrabold tracking-tight tabular-nums ${data.stockState.open_variances > 0 ? "text-[#D99A00]" : "text-[#47745D]"}`}>
+                  {data.stockState.open_variances} {data.stockState.open_variances === 1 ? "product" : "products"}
                 </div>
-                <div className="text-xs font-medium text-[#4A4F7A] mt-2">Below reorder threshold</div>
+                <div className="text-xs font-medium text-[#4A4F7A] dark:text-[#C5C9F5] mt-2">
+                  {data.stockState.total_products} tracked · {data.stockState.with_variance} with variance
+                </div>
               </div>
               <div className="animate-stagger delay-4 bg-[#14173F] dark:bg-[#0E1130] rounded-[24px] p-5 shadow-md text-white">
                 <div className="text-xs font-bold text-[#C5C9F5] mb-1">Consistency Score</div>
@@ -389,7 +393,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                       {busy === "tamper" ? "Working..." : "Try to Cheat"}
                     </button>
                     <button onClick={() => judgeAction("reset", "reset")} disabled={!!busy} className="px-3 py-2 bg-white border border-[#E1E4F7] text-[#4A4F7A] hover:text-[#14173F] rounded-lg text-xs font-bold transition-colors">
-                      {busy === "reset" ? "Working..." : "Reset Demo"}
+                      {busy === "reset" ? "Restoring..." : "Restore Demo"}
                     </button>
                   </div>
                 </div>
@@ -423,8 +427,8 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                     The chain is broken at Record #{data.chain.brokenAtSeq}. The stored hash no longer matches the record's contents. All subsequent records are invalid.
                   </p>
                 </div>
-                <button onClick={() => judgeAction("reset", "reset")} className="bg-white text-[#A94E40] font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-100 transition-colors shrink-0 w-full md:w-auto">
-                  Fix Ledger
+                <button onClick={() => judgeAction("reset", "reset")} disabled={!!busy} className="bg-white text-[#A94E40] font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-100 transition-colors shrink-0 w-full md:w-auto disabled:opacity-50">
+                  {busy === "reset" ? "Restoring..." : "Restore Clean State"}
                 </button>
               </div>
             )}

@@ -8,7 +8,11 @@ export interface ThembaMsg {
   refused?: boolean;
   provider?: string;
   sources?: string[];
-  suggestions?: string[];
+  proposed_action?: {
+    type: "create_task" | "draft_message" | "record_stock_count" | "none";
+    title: string;
+    description: string;
+  };
 }
 
 interface AppContextType {

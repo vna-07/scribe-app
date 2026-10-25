@@ -15,8 +15,9 @@ import StockTab from "./StockTab";
 import IntelligenceTab from "./IntelligenceTab";
 import GrowthTab from "./GrowthTab";
 import ReportsTab from "./ReportsTab";
+import OpportunitiesTab from "./OpportunitiesTab";
 
-type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports";
+type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports" | "opportunities";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
   const { setBusinessId, setThembaOpen } = useApp();
@@ -170,7 +171,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <button 
               key={item.id}
               onClick={() => {
-                if (['overview', 'records', 'tasks', 'stock', 'intelligence', 'reports'].includes(item.id)) setMainTab(item.id as any);
+                if (['overview', 'records', 'tasks', 'stock', 'intelligence', 'reports', 'opportunities'].includes(item.id)) setMainTab(item.id as any);
                 else alert(`${item.label} module coming soon.`);
               }} 
               title={isCollapsed ? item.label : undefined}
@@ -197,7 +198,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "intelligence" ? "Business Intelligence" : mainTab === "reports" ? "Reports & Exports" : "Growth Studio"}
+              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "intelligence" ? "Business Intelligence" : mainTab === "reports" ? "Reports & Exports" : mainTab === "opportunities" ? "Opportunities" : "Growth Studio"}
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
@@ -426,6 +427,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         {mainTab === "intelligence" && (
           <div className="flex-1 overflow-auto">
             <IntelligenceTab data={data} onRefresh={refresh} />
+          </div>
+        )}
+
+        {/* ─── OPPORTUNITIES TAB ─── */}
+        {mainTab === "opportunities" && (
+          <div className="flex-1 overflow-auto">
+            <OpportunitiesTab businessId={data.businessId} />
           </div>
         )}
 
@@ -662,7 +670,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                 Growth Studio
               </button>
-              <button onClick={() => { alert("Opportunities coming soon"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
+              <button onClick={() => { setMainTab("opportunities"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
                 Opportunities
               </button>

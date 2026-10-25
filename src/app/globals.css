@@ -4,8 +4,32 @@ body {
   background-color: #E9EBFF; /* Lavender-white */
   color: #14173F; /* Deep navy */
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .font-serif {
   font-family: var(--font-instrument), ui-serif, Georgia, serif !important;
 }
+
+/* Base Dark Mode Overrides */
+html.dark body {
+  background-color: #0E1130; /* Deep midnight navy */
+  color: #E9EBFF; /* Lavender-white text */
+}
+
+/* We will override specific backgrounds for the demo dashboard in dark mode */
+html.dark .bg-white { background-color: #14173F; }
+html.dark .bg-white\/90 { background-color: #1A1E4D; }
+html.dark .bg-white\/60 { background-color: #1A1E4D; }
+html.dark .bg-\[\#E9EBFF\] { background-color: #0E1130; }
+html.dark .bg-\[\#F1F2FF\] { background-color: #1A1E4D; }
+html.dark .bg-\[\#ECEEFF\] { background-color: #2A3070; }
+
+html.dark .text-\[\#14173F\] { color: #E9EBFF; }
+html.dark .text-\[\#4A4F7A\] { color: #A9AEFF; }
+html.dark .border-\[\#E1E4F7\] { border-color: #2A3070; }
+html.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+
+/* Specific UI elements */
+html.dark .bg-\[\#FFF0C4\] { background-color: #4A3B10; border-color: #D99A00; }
+html.dark .text-\[\#1D2260\] { color: #F5F1E8; }

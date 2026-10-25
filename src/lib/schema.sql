@@ -74,3 +74,26 @@ CREATE TABLE IF NOT EXISTS tasks (
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','in_progress','completed')),
   created_at INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS products (
+  id TEXT PRIMARY KEY,
+  business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  sku TEXT,
+  unit TEXT NOT NULL DEFAULT 'unit',
+  cost_price_cents INTEGER,
+  selling_price_cents INTEGER,
+  reorder_threshold INTEGER DEFAULT 0,
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS stock_movements (
+  id TEXT PRIMARY KEY,
+  business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  type TEXT NOT NULL CHECK (type IN ('delivery', 'sale', 'loss', 'count', 'adjustment')),
+  quantity_delta INTEGER NOT NULL, -- Positive for IN, Negative for OUT
+  reference_id TEXT, -- Links to the records table (e.g., a sale or a supplier invoice)
+  notes TEXT,
+  created_at INTEGER NOT NULL
+);

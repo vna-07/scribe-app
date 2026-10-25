@@ -11,8 +11,9 @@ import EvidenceWorkspace from "@/components/EvidenceWorkspace";
 import ImportWizard from "@/components/ImportWizard";
 import CaptureFlow from "@/components/CaptureFlow";
 import { useApp } from "@/context/AppContext";
+import StockTab from "./StockTab";
 
-type MainTab = "overview" | "records" | "tasks";
+type MainTab = "overview" | "records" | "tasks" | "stock";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
   const { setBusinessId, setThembaOpen } = useApp();
@@ -166,7 +167,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <button 
               key={item.id}
               onClick={() => {
-                if (item.id === 'overview' || item.id === 'records' || item.id === 'tasks') setMainTab(item.id as any);
+                if (['overview', 'records', 'tasks', 'stock'].includes(item.id)) setMainTab(item.id as any);
                 else alert(`${item.label} module coming soon.`);
               }} 
               title={isCollapsed ? item.label : undefined}
@@ -193,7 +194,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : "Growth Studio"}
+              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : "Growth Studio"}
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
@@ -411,6 +412,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           </div>
         )}
 
+        {/* ─── STOCK TAB ─── */}
+        {mainTab === "stock" && (
+          <div className="flex-1 overflow-auto">
+            <StockTab businessId={data.businessId} onRefresh={refresh} />
+          </div>
+        )}
+
         {/* ─── TASKS / GROWTH STUDIO TAB ─── */}
         {mainTab === "tasks" && (
           <div className="bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50 flex-1 overflow-auto">
@@ -459,7 +467,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           <span className="text-[10px] font-bold">Records</span>
         </button>
 
-        <button onClick={() => alert("Stock module coming soon.")} className={`flex flex-col items-center gap-1 w-16 text-[#5A5F8C]`}>
+        <button onClick={() => setMainTab("stock")} className={`flex flex-col items-center gap-1 w-16 ${mainTab === "stock" ? "text-[#5B5BE0] dark:text-[#A9AEFF]" : "text-[#5A5F8C]"}`}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
           <span className="text-[10px] font-bold">Stock</span>
         </button>

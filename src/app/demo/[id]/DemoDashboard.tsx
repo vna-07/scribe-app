@@ -241,9 +241,9 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               <div className="bg-white/60 backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50">
                 <div className="text-xs font-bold text-[#4A4F7A] mb-1">Stock gaps to review</div>
                 <div className="text-2xl font-extrabold tracking-tight text-[#D99A00] tabular-nums">
-                  {data.stock.variance === null ? "0" : "2"} products
+                  {data.lowStockCount} products
                 </div>
-                <div className="text-xs font-medium text-[#4A4F7A] mt-2">Bread and sugar differ</div>
+                <div className="text-xs font-medium text-[#4A4F7A] mt-2">Below reorder threshold</div>
               </div>
               <div className="bg-[#14173F] rounded-[24px] p-5 shadow-md text-white">
                 <div className="text-xs font-bold text-[#C5C9F5] mb-1">Consistency Score</div>

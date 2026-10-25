@@ -9,6 +9,7 @@ export interface DemoData {
   businessName: string;
   businessLocation: string;
   recordCount: number;
+  lowStockCount: number; // Added
   stock: ReturnType<typeof reconcileStock>;
   revenue: ReturnType<typeof revenueRange>;
   score: ReturnType<typeof consistencyScore>;
@@ -22,8 +23,8 @@ export interface DemoData {
     occurred_at: number;
     evidence_tier: string;
     status: string;
-    canonical_hash: string; // Added for forensic break UI
-    prev_hash: string;      // Added for forensic break UI
+    canonical_hash: string;
+    prev_hash: string;
   }>;
 }
 
@@ -36,11 +37,27 @@ export async function loadDemoData(businessId: string): Promise<DemoData | null>
 
   const records = await loadBusinessRecords(businessId);
 
+  // Calculate low stock count
+  const lowStockRes = await db().execute({
+    sql: `SELECT COUNT(*) as count FROM (
+            SELECT p.id, COALESCE(SUM(m.quantity_delta), 0) as stock
+            FROM products p
+            LEFT JOIN stock_movements m ON p.id = m.product_id
+            WHERE p.business_id = ?
+            GROUP BY p.id
+            HAVING stock <= p.reorder_threshold
+          )`,
+    args: [businessId],
+  });
+  
+  const lowStockCount = Number(lowStockRes.rows[0]?.count || 0);
+
   return {
     businessId,
     businessName: String(bizRes.rows[0].name),
     businessLocation: String(bizRes.rows[0].location),
     recordCount: records.length,
+    lowStockCount,
     stock: reconcileStock(records),
     revenue: revenueRange(records),
     score: consistencyScore(records),
@@ -54,8 +71,8 @@ export async function loadDemoData(businessId: string): Promise<DemoData | null>
       occurred_at: r.occurred_at,
       evidence_tier: r.evidence_tier,
       status: r.status,
-      canonical_hash: r.canonical_hash, // Added
-      prev_hash: r.prev_hash,           // Added
+      canonical_hash: r.canonical_hash,
+      prev_hash: r.prev_hash,
     })),
   };
 }

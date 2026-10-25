@@ -18,10 +18,12 @@ export default function StockTab({ businessId, onRefresh }: { businessId: string
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showDeliver, setShowDeliver] = useState<string | null>(null); // product_id
+  const [showCount, setShowCount] = useState<Product | null>(null);
   
   // Form states
   const [form, setForm] = useState({ name: "", sku: "", unit: "unit", cost: "" });
   const [delForm, setDelForm] = useState({ qty: "", notes: "" });
+  const [countForm, setCountForm] = useState({ actual_qty: "" });
   const [busy, setBusy] = useState(false);
 
   const fetchProducts = async () => {
@@ -77,6 +79,52 @@ export default function StockTab({ businessId, onRefresh }: { businessId: string
     setBusy(false);
   };
 
+  const handleCountSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!showCount) return;
+    setBusy(true);
+    
+    const expected = showCount.stock_on_hand;
+    const actual = parseInt(countForm.actual_qty);
+    const variance = actual - expected;
+
+    // 1. Log the physical count movement
+    await fetch("/api/stock", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        action: "log_movement",
+        business_id: businessId,
+        product_id: showCount.id,
+        type: "count",
+        quantity_delta: 0, // The count itself doesn't change the balance, it just records reality
+        notes: `Physical count: ${actual} units (Variance: ${variance > 0 ? '+' : ''}${variance})`,
+      }),
+    });
+
+    // 2. If there is a variance, we immediately log an adjustment to fix the books
+    if (variance !== 0) {
+      await fetch("/api/stock", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          action: "log_movement",
+          business_id: businessId,
+          product_id: showCount.id,
+          type: "adjustment",
+          quantity_delta: variance, // Adjusts the balance to match the physical count
+          notes: `Auto-adjustment to match physical count of ${actual}`,
+        }),
+      });
+    }
+
+    setShowCount(null);
+    setCountForm({ actual_qty: "" });
+    fetchProducts();
+    onRefresh(); // Update the dashboard variance card
+    setBusy(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -121,9 +169,12 @@ export default function StockTab({ businessId, onRefresh }: { businessId: string
                     </span>
                   </td>
                   <td className="p-4 text-right tabular-nums text-[#4A4F7A] dark:text-[#C5C9F5]">{p.cost_price_cents ? rands(p.cost_price_cents) : "—"}</td>
-                  <td className="p-4 text-right">
+                  <td className="p-4 text-right flex justify-end gap-2">
                     <button onClick={() => setShowDeliver(p.id)} className="text-xs font-bold text-[#5B5BE0] hover:underline bg-[#F1F2FF] dark:bg-[#2A3070] px-3 py-1.5 rounded-lg">
                       + Receive
+                    </button>
+                    <button onClick={() => { setShowCount(p); setCountForm({ actual_qty: p.stock_on_hand.toString() }); }} className="text-xs font-bold text-[#D99A00] hover:underline bg-[#FFF0C4] dark:bg-[#4A3B10] px-3 py-1.5 rounded-lg">
+                      Count
                     </button>
                   </td>
                 </tr>
@@ -183,8 +234,43 @@ export default function StockTab({ businessId, onRefresh }: { businessId: string
               </div>
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={() => setShowDeliver(null)} className="flex-1 py-3 bg-[#F1F2FF] dark:bg-[#2A3070] text-[#4B4FC9] dark:text-[#AEFF] font-bold rounded-xl">Cancel</button>
+              <button type="button" onClick={() => setShowDeliver(null)} className="flex-1 py-3 bg-[#F1F2FF] dark:bg-[#2A3070] text-[#4B4FC9] dark:text-[#A9AEFF] font-bold rounded-xl">Cancel</button>
               <button type="submit" disabled={busy} className="flex-1 py-3 bg-[#5B5BE0] text-white font-bold rounded-xl hover:bg-[#4B4FC9] disabled:opacity-50">Log Delivery</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ─── STOCK COUNT MODAL ─── */}
+      {showCount && (
+        <div className="fixed inset-0 bg-[#14173F]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <form onSubmit={handleCountSubmit} className="bg-white dark:bg-[#1A1F52] rounded-[28px] p-8 max-w-sm w-full shadow-2xl">
+            <h2 className="text-2xl font-extrabold text-[#14173F] dark:text-white mb-2">Stock Count</h2>
+            <p className="text-sm text-[#4A4F7A] dark:text-[#C5C9F5] mb-6">
+              System says you have <strong className="text-[#14173F] dark:text-white">{showCount.stock_on_hand} {showCount.unit}s</strong>. What is the actual physical count?
+            </p>
+            <div className="space-y-4 mb-8">
+              <div>
+                <label className="block text-xs font-bold text-[#4A4F7A] dark:text-[#C5C9F5] mb-1">Actual Quantity on Shelf</label>
+                <input required type="number" min="0" value={countForm.actual_qty} onChange={e => setCountForm({ actual_qty: e.target.value })} className="w-full bg-[#F1F2FF] dark:bg-[#2A3070] border border-[#E1E4F7] dark:border-[#3A4080] rounded-xl px-4 py-3 text-sm text-[#14173F] dark:text-white focus:border-[#5B5BE0] outline-none" />
+              </div>
+              {countForm.actual_qty && parseInt(countForm.actual_qty) !== showCount.stock_on_hand && (
+                <div className="bg-[#FFF0C4] dark:bg-[#4A3B10] p-3 rounded-lg border border-[#D99A00]">
+                  <p className="text-xs font-bold text-[#D99A00] dark:text-[#F2B84B]">
+                    Variance detected: {parseInt(countForm.actual_qty) - showCount.stock_on_hand > 0 ? "+" : ""}
+                    {parseInt(countForm.actual_qty) - showCount.stock_on_hand} units
+                  </p>
+                  <p className="text-[10px] text-[#1D2260] dark:text-[#C5C9F5] mt-1">
+                    Confirming this will log a stock adjustment to fix your books and record the audit trail.
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setShowCount(null)} className="flex-1 py-3 bg-[#F1F2FF] dark:bg-[#2A3070] text-[#4B4FC9] dark:text-[#A9AEFF] font-bold rounded-xl">Cancel</button>
+              <button type="submit" disabled={busy} className="flex-1 py-3 bg-[#D99A00] text-white font-bold rounded-xl hover:bg-[#C28A00] disabled:opacity-50">
+                {busy ? "Recording..." : "Confirm Count"}
+              </button>
             </div>
           </form>
         </div>

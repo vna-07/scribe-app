@@ -35,6 +35,11 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [showExport, setShowExport] = useState(false);
   const [showCapture, setShowCapture] = useState(false);
   const [newRecord, setNewRecord] = useState({ description: "", amount: "", kind: "sale", quantity: "" });
+  
+  const [showScamShield, setShowScamShield] = useState(false);
+  const [scamMessage, setScamMessage] = useState("");
+  const [scamResult, setScamResult] = useState<any>(null);
+  const [scamLoading, setScamLoading] = useState(false);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
     setToast({ msg, type });
@@ -65,6 +70,25 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       showToast("Action failed.", "error");
     } finally {
       setBusy(null);
+    }
+  };
+
+  const checkScam = async () => {
+    if (!scamMessage.trim()) return;
+    setScamLoading(true);
+    setScamResult(null);
+    try {
+      const res = await fetch("/api/scam-shield", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ message: scamMessage }),
+      });
+      const json = await res.json();
+      setScamResult(json);
+    } catch {
+      showToast("Could not check the message.", "error");
+    } finally {
+      setScamLoading(false);
     }
   };
 
@@ -178,6 +202,9 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               <span className={`w-2 h-2 rounded-full ${data.chain.ok ? "bg-[#5B5BE0]" : "bg-white"}`}></span>
               {data.chain.ok ? `Ledger intact: ${data.chain.total} records` : `Tampered at #${data.chain.brokenAtSeq}`}
             </span>
+            <button onClick={() => setShowScamShield(true)} className="px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
+              Scam Shield
+            </button>
             <button onClick={() => setShowExport(true)} className="px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
               Share statement
             </button>
@@ -514,6 +541,122 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </div>
             
             <button onClick={() => setShowExport(false)} className="w-full py-3 bg-[#F1F2FF] text-[#4B4FC9] font-bold rounded-xl hover:bg-[#E6E8FA] transition-colors">Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── SCAM SHIELD MODAL ─── */}
+      {showScamShield && (
+        <div className="fixed inset-0 bg-[#14173F]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-2xl font-extrabold text-[#14173F] flex items-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z" />
+                  <path d="M12 9v4M12 16h.01" />
+                </svg>
+                Scam Shield
+              </h2>
+            </div>
+            <p className="text-sm text-[#4A4F7A] mb-6">
+              Paste a suspicious WhatsApp, SMS or email message. I'll flag risk signals — not judge the sender.
+            </p>
+
+            <textarea
+              value={scamMessage}
+              onChange={(e) => { setScamMessage(e.target.value); setScamResult(null); }}
+              placeholder="e.g. URGENT: New banking details. Please pay the R2 500 deposit to this account before delivery today."
+              rows={5}
+              className="w-full bg-[#F1F2FF] border border-[#E1E4F7] rounded-xl p-4 text-sm text-[#14173F] focus:border-[#5B5BE0] outline-none resize-none mb-4"
+            />
+
+            <button
+              onClick={checkScam}
+              disabled={scamLoading || !scamMessage.trim()}
+              className="w-full py-3 bg-[#14173F] text-white font-bold rounded-xl hover:bg-[#2A3070] transition-colors disabled:opacity-50 mb-4"
+            >
+              {scamLoading ? "Analysing…" : "Check message"}
+            </button>
+
+            {scamResult && (
+              <div className="space-y-4">
+                <div
+                  className={`rounded-xl p-4 border-2 ${
+                    scamResult.risk === "high"
+                      ? "bg-[#A94E40]/10 border-[#A94E40]"
+                      : scamResult.risk === "medium"
+                      ? "bg-[#FFF0C4] border-[#D99A00]"
+                      : "bg-[#47745D]/10 border-[#47745D]"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs uppercase font-bold tracking-wider text-[#14173F]">
+                      Risk: {scamResult.risk}
+                    </span>
+                    <span className="text-xs font-bold text-[#4A4F7A]">
+                      Score: {scamResult.score}/100
+                    </span>
+                  </div>
+                  <p className="text-sm text-[#14173F] font-semibold leading-relaxed">
+                    {scamResult.summary}
+                  </p>
+                </div>
+
+                {scamResult.signals.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-[#5A5F8C] uppercase tracking-wider mb-2">
+                      Signals detected
+                    </p>
+                    <div className="space-y-2">
+                      {scamResult.signals.map((s: any, i: number) => (
+                        <div key={i} className="bg-[#F1F2FF] rounded-lg p-3 border border-[#E1E4F7]">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                s.severity === "high"
+                                  ? "bg-[#A94E40]"
+                                  : s.severity === "medium"
+                                  ? "bg-[#D99A00]"
+                                  : "bg-[#5A5F8C]"
+                              }`}
+                            />
+                            <span className="text-xs font-bold text-[#14173F]">{s.signal}</span>
+                          </div>
+                          <p className="text-xs text-[#4A4F7A] leading-relaxed">{s.evidence}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {scamResult.advice.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-[#5A5F8C] uppercase tracking-wider mb-2">
+                      What to do
+                    </p>
+                    <ul className="space-y-1.5">
+                      {scamResult.advice.map((a: string, i: number) => (
+                        <li key={i} className="text-sm text-[#14173F] leading-relaxed flex gap-2">
+                          <span className="text-[#5B5BE0] font-bold shrink-0">•</span>
+                          <span>{a}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <p className="text-xs text-[#5A5F8C] leading-relaxed italic border-t border-[#E1E4F7] pt-3">
+                  {scamResult.disclaimer}
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={() => { setShowScamShield(false); setScamMessage(""); setScamResult(null); }}
+              className="w-full mt-4 py-3 bg-[#F1F2FF] text-[#4B4FC9] font-bold rounded-xl hover:bg-[#E6E8FA] transition-colors"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}

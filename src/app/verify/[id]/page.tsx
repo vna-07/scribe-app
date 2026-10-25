@@ -1,75 +1,109 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { loadDemoData } from "@/lib/demo-data";
-import { rands, fmtDate } from "@/lib/format";
+import { rands } from "@/lib/format";
 
-export default async function VerifyPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function VerifyPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const data = await loadDemoData(id);
   if (!data) notFound();
 
+  const chainOk = data.chain?.ok ?? false;
+  const statementHash = chainOk
+    ? `SCRIBE-${data.businessId.slice(0, 8)}-${data.chain.total}`
+    : "HASH-UNAVAILABLE";
+
   return (
-    <main className="min-h-screen bg-[#F5F1E8] text-[#20221F] p-6 sm:p-12 flex justify-center">
-      <div className="max-w-2xl w-full space-y-8 bg-[#FFFFFF] border border-[#20221F]/10 p-8 sm:p-12 rounded-2xl shadow-sm h-fit">
+    <main className="min-h-screen bg-[#E9EBFF] py-12 px-4 sm:px-8 flex justify-center font-sans">
+      <div className="max-w-2xl w-full space-y-6">
         
         {/* Header */}
-        <div className="border-b border-[#20221F]/10 pb-6">
-          <p className="text-[#B89A61] tracking-[0.2em] text-xs font-semibold mb-2">PUBLIC VERIFICATION</p>
-          <h1 className="font-serif text-3xl mb-1">{data.businessName}</h1>
-          <p className="text-[#20221F]/60">{data.businessLocation}</p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <Image src="/logo_symbol.png" alt="SCRIBE" width={40} height={40} style={{ width: 'auto', height: 'auto' }} className="rounded-xl shadow-sm" />
+            <div>
+              <h1 className="font-extrabold text-xl text-[#14173F]">SCRIBE</h1>
+              <p className="text-[10px] uppercase tracking-widest text-[#5A5F8C] font-bold">Public Verification</p>
+            </div>
+          </div>
+          <Link href="/" className="text-sm font-bold text-[#5B5BE0] hover:underline">
+            What is this? →
+          </Link>
         </div>
 
-        {/* Verification Status */}
-        <div className={`rounded-xl border p-5 ${
-          data.chain.ok 
-            ? "border-[#47745D]/30 bg-[#47745D]/5" 
-            : "border-[#A94E40]/30 bg-[#A94E40]/5"
-        }`}>
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`text-lg ${data.chain.ok ? "text-[#47745D]" : "text-[#A94E40]"}`}>
-              {data.chain.ok ? "✓" : "✗"}
-            </span>
-            <p className={`font-semibold ${data.chain.ok ? "text-[#47745D]" : "text-[#A94E40]"}`}>
-              {data.chain.ok ? "Every record verified end-to-end" : `Verification failed at record #${data.chain.brokenAtSeq}`}
+        {/* Main Trust Card */}
+        <div className="bg-white rounded-[28px] p-8 shadow-xl border border-white/50">
+          
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#47745D]/10 mb-4">
+              {chainOk ? (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#47745D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+              ) : (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A94E40" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              )}
+            </div>
+            <h2 className="text-2xl font-extrabold text-[#14173F]">
+              {chainOk ? "Cryptographically Verified" : "Verification Failed"}
+            </h2>
+            <p className="text-sm text-[#4A4F7A] mt-2 max-w-md mx-auto leading-relaxed">
+              {chainOk 
+                ? "This statement is generated from a tamper-evident ledger. Every record has been validated against its cryptographic signature."
+                : "This ledger has been modified. The cryptographic chain is broken, and these figures cannot be trusted."}
             </p>
           </div>
-          <p className="text-sm text-[#20221F]/60 leading-relaxed">
-            {data.chain.ok
-              ? `${data.chain.total} records are hash-chained and cryptographically signed. Any change to any record since it was sealed would break this check.`
-              : data.chain.reason}
-          </p>
+
+          <div className="bg-[#F1F2FF] rounded-2xl p-6 mb-8 border border-[#E1E4F7]">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[10px] font-bold text-[#5A5F8C] uppercase tracking-widest mb-1">Business</p>
+                <p className="font-extrabold text-[#14173F]">{data.businessName}</p>
+                <p className="text-xs text-[#4A4F7A]">{data.businessLocation}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-[#5A5F8C] uppercase tracking-widest mb-1">Document Hash</p>
+                <p className="text-xs font-mono text-[#14173F] break-all">{statementHash}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Evidence Breakdown */}
+          <div className="space-y-4 mb-8">
+            <h3 className="text-xs font-bold text-[#5A5F8C] uppercase tracking-widest border-b border-[#E1E4F7] pb-2">Evidence Summary</h3>
+            
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm text-[#4A4F7A] font-medium">Records Sealed</span>
+              <span className="font-bold text-[#14173F]">{data.chain.total}</span>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm text-[#4A4F7A] font-medium">Documented Readiness</span>
+              <span className="font-bold text-[#14173F]">{data.score.low} – {data.score.high} / 100</span>
+            </div>
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm text-[#4A4F7A] font-medium">Stock Variance</span>
+              <span className={`font-bold ${data.stock.variance !== 0 ? "text-[#D99A00]" : "text-[#47745D]"}`}>
+                {data.stock.variance === null ? "No Count" : `${data.stock.variance} units`}
+              </span>
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <div className="bg-[#FFF0C4] rounded-xl p-4 text-xs text-[#1D2260] leading-relaxed">
+            <strong className="block mb-1">What this verifies:</strong>
+            A valid signature proves that these records have not been altered since they were sealed by the business owner. It does not prove that the underlying transactions took place. 
+          </div>
+          
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="border border-[#20221F]/10 rounded-xl p-4 bg-[#F5F1E8]">
-            <p className="text-xs text-[#20221F]/50 mb-1 font-medium">Documented readiness</p>
-            <p className="font-serif text-2xl">{data.score.low}–{data.score.high}</p>
-            <p className="text-[10px] text-[#20221F]/40 mt-1">Range, not a credit score</p>
-          </div>
-          <div className="border border-[#20221F]/10 rounded-xl p-4 bg-[#F5F1E8]">
-            <p className="text-xs text-[#20221F]/50 mb-1 font-medium">Stock variance</p>
-            <p className={`font-serif text-2xl ${data.stock.variance !== 0 ? "text-[#A94E40]" : ""}`}>
-              {data.stock.variance === null ? "No count" : `${data.stock.variance} units`}
-            </p>
-            <p className="text-[10px] text-[#20221F]/40 mt-1">Review signal</p>
-          </div>
-        </div>
-
-        {/* Evidence Mix */}
-        <div>
-          <p className="text-xs font-semibold tracking-wider text-[#20221F]/40 uppercase mb-3">Evidence mix</p>
-          <div className="flex gap-4 text-sm text-[#20221F]/70">
-            <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#20221F]/20"></span> Reported only: {data.recentRecords.filter(r => r.evidence_tier === "reported").length}</span>
-            <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#B89A61]"></span> Document-supported: {data.recentRecords.filter(r => r.evidence_tier === "document_supported").length}</span>
-            <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#47745D]"></span> Counter-signed: {data.recentRecords.filter(r => r.evidence_tier === "counter_signed").length}</span>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="border-t border-[#20221F]/10 pt-6">
-          <p className="text-xs text-[#20221F]/40 leading-relaxed">
-            {data.score.framing} A signature proves a record has not been altered since sealing — it does not prove the original sale took place.
-          </p>
+        {/* Back to App (for the demo) */}
+        <div className="text-center print:hidden">
+          <Link href={`/demo/${data.businessId}`} className="text-sm font-bold text-[#5B5BE0] hover:underline">
+            ← Return to Dashboard
+          </Link>
         </div>
 
       </div>

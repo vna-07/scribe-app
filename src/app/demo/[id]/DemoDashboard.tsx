@@ -273,6 +273,18 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               Scam Shield
             </button>
             <button
+              aria-label="Restore demo state"
+              onClick={() => judgeAction("reset", "reset")}
+              disabled={!!busy}
+              className="hidden md:flex px-4 py-2.5 rounded-xl bg-[#FFF0C4] dark:bg-[#4A3B10] text-[#D99A00] dark:text-[#F2B84B] font-bold text-sm shadow-sm hover:shadow-md transition-shadow disabled:opacity-50 items-center gap-2"
+            >
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+              </svg>
+              {busy === "reset" ? "Restoring..." : "Restore"}
+            </button>
+            <button
               aria-label="Share statement"
               onClick={() => setShowExport(true)}
               className="px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow"

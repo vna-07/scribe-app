@@ -3,6 +3,8 @@ import { db, nowMs, uuid } from "@/lib/db";
 import { sealRecord } from "@/lib/ledger";
 import { getCurrentUser } from "@/lib/auth";
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
   try {
     // Parse the body ONCE. (The original consumed it twice — the second

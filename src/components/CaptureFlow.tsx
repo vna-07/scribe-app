@@ -121,6 +121,7 @@ export default function CaptureFlow({ businessId, onComplete, onClose }: Capture
         amount_cents: Math.round((Number(extractedData.total) || 0) * 100),
         description: `Receipt: ${extractedData.merchant || "Document"} (${extractedData.items.length} items)`,
         occurred_at: Number.isFinite(occurredAt) ? occurredAt : Date.now(),
+        evidence_tier: "document_supported", // scanned receipts are document-backed
       };
       const res = await fetch("/api/records", {
         method: "POST",

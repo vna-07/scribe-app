@@ -79,7 +79,11 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#E9EBFF] dark:bg-[#0E1130] p-6">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="min-h-screen bg-[#E9EBFF] dark:bg-[#0E1130] p-6 outline-none"
+    >
       <div className="max-w-xl mx-auto">
         {/* Progress bar */}
         <div className="flex items-center gap-2 mb-8">

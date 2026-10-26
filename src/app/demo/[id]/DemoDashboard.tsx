@@ -27,7 +27,7 @@ type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "re
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
   const { setBusinessId, setThembaOpen, setActiveTab } = useApp();
-  
+
   // Set the global context when this page mounts
   useEffect(() => {
     setBusinessId(initialData.businessId);
@@ -42,7 +42,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   useEffect(() => {
     setActiveTab(mainTab);
   }, [mainTab, setActiveTab]);
-  
+
   const { dailyData, expenseCategories } = generateAnalytics(
     data.recentRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
   );
@@ -60,7 +60,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [showImport, setShowImport] = useState(false);
   const [showSale, setShowSale] = useState(false);
   const [showExpense, setShowExpense] = useState(false);
-  
+
   const [showScamShield, setShowScamShield] = useState(false);
   const [scamMessage, setScamMessage] = useState("");
   const [scamResult, setScamResult] = useState<any>(null);
@@ -69,7 +69,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
   // Tasks State (kept for legacy support, though GrowthTab handles its own now)
   const [tasks, setTasks] = useState<any[]>([]);
-  
+
   // Evidence Workspace State
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
@@ -110,7 +110,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed");
       await refresh();
-      
+
       if (path === "tamper") {
         setMainTab("records");
         showToast("Record tampered. The hash chain is broken.", "error");
@@ -148,9 +148,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   };
 
   const weakestComponent = [...data.score.components].sort((a,b) => a.value - b.value)[0];
-  const completeness = calculateCompleteness(data.recentRecords as any); // recentRecords carries the fields calculateCompleteness needs
-  // ProductState.reorder_threshold is now formally typed (see lib/stock-state.ts),
-  // so no cast is needed. p.expected is the on-hand quantity derived from movements.
+  const completeness = calculateCompleteness(data.recentRecords as any);
   const lowStockProducts = data.stockState.products.filter(p => {
     const threshold = p.reorder_threshold ?? 0;
     return threshold > 0 && p.expected <= threshold;
@@ -158,24 +156,28 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#E9EBFF] text-[#14173F] font-sans relative">
-      
+
       {/* ─── TOAST NOTIFICATION ─── */}
       {toast && (
-        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl font-bold text-sm shadow-xl flex items-center gap-2 ${toast.type === "success" ? "bg-[#14173F] text-white" : "bg-[#A94E40] text-white"}`}>
+        <div role="status" aria-live="polite" className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl font-bold text-sm shadow-xl flex items-center gap-2 ${toast.type === "success" ? "bg-[#14173F] text-white" : "bg-[#A94E40] text-white"}`}>
           {toast.msg}
         </div>
       )}
 
       {/* ─── SIDEBAR ─── */}
-      <aside className={`hidden md:flex ${isCollapsed ? "w-[80px]" : "w-[260px]"} m-4 mr-0 bg-white rounded-[28px] shadow-sm flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out`}>
-        
+      <aside aria-label="Main navigation" className={`hidden md:flex ${isCollapsed ? "w-[80px]" : "w-[260px]"} m-4 mr-0 bg-white rounded-[28px] shadow-sm flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out`}>
+
         <div className={`p-6 pb-2 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
           <div className="flex items-center gap-3">
             <Image src="/logo_symbol.png" alt="S" width={36} height={36} style={{ width: 'auto', height: 'auto' }} className="rounded-xl shadow-sm shrink-0" />
             {!isCollapsed && <span className="font-extrabold text-xl tracking-wide text-[#14173F] dark:text-white whitespace-nowrap">SCRIBE</span>}
           </div>
           {!isCollapsed && (
-            <button onClick={() => setIsCollapsed(true)} className="text-[#5A5F8C] hover:text-[#14173F] dark:text-[#A9AEFF]">
+            <button
+              aria-label="Collapse sidebar"
+              onClick={() => setIsCollapsed(true)}
+              className="text-[#5A5F8C] hover:text-[#14173F] dark:text-[#A9AEFF]"
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
           )}
@@ -183,29 +185,34 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
         {/* Expand button when collapsed */}
         {isCollapsed && (
-          <button onClick={() => setIsCollapsed(false)} className="mx-auto mb-4 text-[#5A5F8C] hover:text-[#14173F] dark:text-[#A9AEFF]">
+          <button
+            aria-label="Expand sidebar"
+            onClick={() => setIsCollapsed(false)}
+            className="mx-auto mb-4 text-[#5A5F8C] hover:text-[#14173F] dark:text-[#A9AEFF]"
+          >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
           </button>
         )}
-        
+
         <nav className="flex-1 p-4 space-y-1 text-sm font-semibold text-[#5A5F8C] dark:text-[#C5C9F5] overflow-y-auto overflow-x-hidden">
           {/* Navigation Items */}
           {[
-            { id: "overview", label: "Overview", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> },
-            { id: "records", label: "Records", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> },
-            { id: "stock", label: "Stock", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> },
-            { id: "suppliers", label: "Suppliers", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> },
-            { id: "intelligence", label: "Intelligence", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg> },
-            { id: "tasks", label: "Growth Studio", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg> },
-            { id: "opportunities", label: "Launch Studio", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg> },
-            { id: "reports", label: "Reports", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> },
+            { id: "overview", label: "Overview", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> },
+            { id: "records", label: "Records", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> },
+            { id: "stock", label: "Stock", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> },
+            { id: "suppliers", label: "Suppliers", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> },
+            { id: "intelligence", label: "Intelligence", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg> },
+            { id: "tasks", label: "Growth Studio", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg> },
+            { id: "opportunities", label: "Launch Studio", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg> },
+            { id: "reports", label: "Reports", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> },
           ].map(item => (
-            <button 
+            <button
               key={item.id}
+              aria-current={mainTab === item.id ? "page" : undefined}
               onClick={() => {
                 if (['overview', 'records', 'tasks', 'stock', 'intelligence', 'reports', 'opportunities', 'suppliers'].includes(item.id)) setMainTab(item.id as any);
                 else alert(`${item.label} module coming soon.`);
-              }} 
+              }}
               title={isCollapsed ? item.label : undefined}
               className={`w-full flex items-center ${isCollapsed ? "justify-center" : "gap-3"} px-4 py-2.5 rounded-xl transition-colors ${mainTab === item.id ? "bg-[#ECEEFF] dark:bg-[#2A3070] text-[#4B4FC9] dark:text-[#A9AEFF]" : "hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070]"}`}
             >
@@ -216,26 +223,25 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         </nav>
 
         <div className={`p-4 border-t border-[#E1E4F7] dark:border-[#2A3070] space-y-1`}>
-          {/* Only show to demo/admin users for the hackathon */}
           <Link
             href="/admin"
             title={isCollapsed ? "Trust Centre" : undefined}
             className={`w-full flex items-center ${isCollapsed ? "justify-center" : "gap-3"} px-4 py-2.5 rounded-xl hover:bg-[#FFF0C4] dark:hover:bg-[#4A3B10] transition-colors text-left text-[#D99A00] font-bold`}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             {!isCollapsed && <span className="whitespace-nowrap">Trust Centre</span>}
           </Link>
 
           <Link href="/settings" title={isCollapsed ? "Settings" : undefined} className={`w-full flex items-center ${isCollapsed ? "justify-center" : "gap-3"} px-4 py-2.5 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] transition-colors text-left text-[#5A5F8C] dark:text-[#A9AEFF]`}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             {!isCollapsed && <span className="whitespace-nowrap">Settings</span>}
           </Link>
         </div>
       </aside>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="flex-1 flex flex-col min-w-0 m-2 md:m-4 pb-24 md:pb-0 overflow-y-auto">
-        
+      <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-w-0 m-2 md:m-4 pb-24 md:pb-0 overflow-y-auto outline-none">
+
         {/* Top Header */}
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
@@ -248,26 +254,50 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <span className={`hidden sm:flex px-4 py-2 rounded-xl text-xs font-bold items-center gap-2 ${
               data.chain.ok ? "bg-white text-[#14173F] shadow-sm" : "bg-[#A94E40] text-white"
             }`}>
-              <span className={`w-2 h-2 rounded-full ${data.chain.ok ? "bg-[#5B5BE0]" : "bg-white"}`}></span>
+              <span aria-hidden="true" className={`w-2 h-2 rounded-full ${data.chain.ok ? "bg-[#5B5BE0]" : "bg-white"}`}></span>
               {data.chain.ok ? `Ledger intact: ${data.chain.total} records` : `Tampered at #${data.chain.brokenAtSeq}`}
             </span>
-            <button onClick={() => setThembaOpen(true)} className="px-4 py-2.5 rounded-xl bg-[#5B5BE0] text-white font-bold text-sm shadow-sm hover:brightness-110 transition-all flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <button
+              aria-label="Ask Themba"
+              onClick={() => setThembaOpen(true)}
+              className="px-4 py-2.5 rounded-xl bg-[#5B5BE0] text-white font-bold text-sm shadow-sm hover:brightness-110 transition-all flex items-center gap-2"
+            >
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
               <span className="hidden sm:inline">Ask Themba</span>
             </button>
-            <button onClick={() => setShowScamShield(true)} className="hidden sm:flex px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
+            <button
+              aria-label="Open Scam Shield"
+              onClick={() => setShowScamShield(true)}
+              className="hidden sm:flex px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow"
+            >
               Scam Shield
             </button>
-            <button onClick={() => setShowExport(true)} className="px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
+            <button
+              aria-label="Share statement"
+              onClick={() => setShowExport(true)}
+              className="px-5 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow"
+            >
               Share
             </button>
-            <button onClick={() => setShowImport(true)} className="hidden sm:flex px-4 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow">
+            <button
+              aria-label="Import CSV file"
+              onClick={() => setShowImport(true)}
+              className="hidden sm:flex px-4 py-2.5 rounded-xl bg-white text-[#14173F] font-bold text-sm shadow-sm hover:shadow-md transition-shadow"
+            >
               Import CSV
             </button>
-            <button onClick={() => setShowSale(true)} className="hidden md:flex px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors">
+            <button
+              aria-label="Record Sale — new entry"
+              onClick={() => setShowSale(true)}
+              className="hidden md:flex px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors"
+            >
               + Record Sale
             </button>
-            <button onClick={() => setShowExpense(true)} className="hidden md:flex px-4 py-2.5 rounded-xl bg-white text-[#D99A00] font-bold text-sm shadow-sm hover:shadow-md transition-shadow border border-[#E1E4F7] dark:border-[#2A3070] dark:bg-[#1A1F52]">
+            <button
+              aria-label="Record Expense — new entry"
+              onClick={() => setShowExpense(true)}
+              className="hidden md:flex px-4 py-2.5 rounded-xl bg-white text-[#D99A00] font-bold text-sm shadow-sm hover:shadow-md transition-shadow border border-[#E1E4F7] dark:border-[#2A3070] dark:bg-[#1A1F52]"
+            >
               - Record Expense
             </button>
           </div>
@@ -309,7 +339,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             {lowStockProducts.length > 0 && (
               <div className="animate-stagger bg-[#FFF0C4] dark:bg-[#4A3B10] border border-[#D99A00] rounded-[24px] p-5 mb-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D99A00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D99A00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                   <h3 className="font-extrabold text-[#1D2260] dark:text-[#F2B84B] text-sm uppercase tracking-wider">Low Stock Alert</h3>
                 </div>
                 <div className="space-y-2">
@@ -322,7 +352,8 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                           {p.supplier_name && <> · supplier {p.supplier_name}</>}
                         </p>
                       </div>
-                      <button 
+                      <button
+                        aria-label={`Draft purchase order for ${p.name}`}
                         onClick={() => setReorderProduct(p)}
                         className="px-3 py-1.5 bg-[#D99A00] text-white text-xs font-bold rounded-lg hover:bg-[#C28A00] transition-colors"
                       >
@@ -337,10 +368,10 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             {/* ─── ACTION CENTRE ─── */}
             <div className="animate-stagger bg-white dark:bg-[#1A1F52] rounded-[24px] p-6 border border-[#E1E4F7] dark:border-[#2A3070] shadow-sm mb-6">
               <div className="flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full bg-[#D99A00] animate-pulse"></span>
+                <span aria-hidden="true" className="w-2 h-2 rounded-full bg-[#D99A00] animate-pulse"></span>
                 <h3 className="font-extrabold text-[#14173F] dark:text-white text-lg">Action Centre</h3>
               </div>
-              
+
               <div className="space-y-3">
                 {data.stockState.products.filter(p => p.status === "open").map(p => (
                   <div key={p.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-[#FFF0C4] dark:bg-[#4A3B10] border border-[#D99A00]">
@@ -352,7 +383,11 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                         Expected {p.expected} · Counted {p.counted}
                       </p>
                     </div>
-                    <button onClick={() => setThembaOpen(true)} className="mt-3 sm:mt-0 px-4 py-2 bg-[#14173F] text-white text-xs font-bold rounded-lg hover:bg-[#2A3070]">
+                    <button
+                      aria-label={`Ask Themba about ${p.name} variance`}
+                      onClick={() => setThembaOpen(true)}
+                      className="mt-3 sm:mt-0 px-4 py-2 bg-[#14173F] text-white text-xs font-bold rounded-lg hover:bg-[#2A3070]"
+                    >
                       Ask Themba
                     </button>
                   </div>
@@ -372,7 +407,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
                 {data.stockState.open_variances === 0 && tasks.filter(t => t.status === 'pending').length === 0 && (
                   <div className="p-4 rounded-xl bg-[#47745D]/10 border border-[#47745D]/20 text-center">
-                    <p className="text-sm font-bold text-[#47745D] dark:text-[#A9AEFF]">You're all caught up! No outstanding actions.</p>
+                    <p className="text-sm font-bold text-[#47745D] dark:text-[#A9AEFF]">You&apos;re all caught up! No outstanding actions.</p>
                   </div>
                 )}
               </div>
@@ -410,7 +445,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="mt-6 border-t border-[#E1E4F7] pt-6">
                   <h3 className="font-extrabold text-sm mb-3">Expense Breakdown</h3>
                   <DonutChart data={expenseCategories} />
@@ -442,7 +477,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="border-t border-[#E1E4F7] pt-4 mt-4">
                   <p className="text-xs font-bold text-[#14173F] mb-2 uppercase tracking-wider">Judge Mode</p>
                   <div className="flex flex-wrap gap-2">
@@ -477,14 +512,14 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
             {/* FORENSIC BREAK BANNER */}
             {!data.chain.ok && (
-              <div className="bg-[#A94E40] text-white rounded-2xl p-4 md:p-6 mb-6 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div role="alert" className="bg-[#A94E40] text-white rounded-2xl p-4 md:p-6 mb-6 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-extrabold flex items-center gap-2">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                     Cryptographic Alert: Ledger Tampered
                   </h3>
                   <p className="text-[#F5F1E8] mt-1 text-sm font-medium">
-                    The chain is broken at Record #{data.chain.brokenAtSeq}. The stored hash no longer matches the record's contents. All subsequent records are invalid.
+                    The chain is broken at Record #{data.chain.brokenAtSeq}. The stored hash no longer matches the record&apos;s contents. All subsequent records are invalid.
                   </p>
                 </div>
                 <button onClick={() => judgeAction("reset", "reset")} disabled={!!busy} className="bg-white text-[#A94E40] font-bold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-100 transition-colors shrink-0 w-full md:w-auto disabled:opacity-50">
@@ -492,7 +527,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 </button>
               </div>
             )}
-            
+
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm min-w-[600px]">
                 <thead className="bg-[#F1F2FF] text-[#4A4F7A] text-xs uppercase tracking-wider">
@@ -509,14 +544,14 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                   {data.recentRecords.map(r => {
                     const isTampered = data.chain?.brokenAtSeq === r.seq;
                     const isAfterBreak = data.chain?.brokenAtSeq !== null && r.seq > (data.chain?.brokenAtSeq ?? Infinity);
-                    
+
                     return (
-                      <tr 
-                        key={r.seq} 
+                      <tr
+                        key={r.seq}
                         onClick={() => setSelectedRecord(r)}
                         className={`cursor-pointer group transition-colors ${
-                          isTampered ? "bg-[#A94E40]/10 border-l-4 border-l-[#A94E40]" : 
-                          isAfterBreak ? "bg-red-50/30 opacity-50" : 
+                          isTampered ? "bg-[#A94E40]/10 border-l-4 border-l-[#A94E40]" :
+                          isAfterBreak ? "bg-red-50/30 opacity-50" :
                           "hover:bg-[#F1F2FF]/50"
                         }`}
                       >
@@ -529,7 +564,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                         <td className={`p-4 font-bold tabular-nums ${isTampered ? "text-[#A94E40]" : ""}`}>{rands(r.amount_cents)}</td>
                         <td className="p-4">
                           <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded-lg ${
-                            r.evidence_tier === "counter_signed" ? "bg-[#47745D]/10 text-[#47745D]" : 
+                            r.evidence_tier === "counter_signed" ? "bg-[#47745D]/10 text-[#47745D]" :
                             r.evidence_tier === "document_supported" ? "bg-[#A9AEFF]/20 text-[#4B4FC9]" : "bg-[#E6E8FA] text-[#4A4F7A]"
                           }`}>
                             {r.evidence_tier.replace("_", " ")}
@@ -591,29 +626,29 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       </main>
 
       {/* ─── MOBILE BOTTOM NAVIGATION ─── */}
-      <div 
-        className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#1A1F52]/90 backdrop-blur-xl border-t border-[#E1E4F7] dark:border-[#2A3070] px-2 pt-2 flex justify-around items-center z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.05)]"
+      <nav aria-label="Mobile navigation" className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#1A1F52]/90 backdrop-blur-xl border-t border-[#E1E4F7] dark:border-[#2A3070] px-2 pt-2 flex justify-around items-center z-40 shadow-[0_-4px_24px_rgba(0,0,0,0.05)]"
         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
       >
         {[
-          { id: "overview", label: "Home", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> },
-          { id: "records", label: "Records", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> },
-          { id: "stock", label: "Stock", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> },
-          { id: "themba", label: "Themba", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> },
-          { id: "more", label: "More", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg> }
+          { id: "overview", label: "Home", icon: <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> },
+          { id: "records", label: "Records", icon: <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> },
+          { id: "stock", label: "Stock", icon: <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> },
+          { id: "themba", label: "Themba", icon: <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> },
+          { id: "more", label: "More", icon: <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg> }
         ].map((tab) => {
           const isActive = mainTab === tab.id || (tab.id === "more" && ["intelligence", "tasks", "reports", "opportunities"].includes(mainTab));
           return (
-            <button 
+            <button
               key={tab.id}
+              aria-current={isActive ? "page" : undefined}
               onClick={() => {
                 if (tab.id === "themba") setThembaOpen(true);
                 else if (tab.id === "more") setShowMore(true);
                 else setMainTab(tab.id as any);
-              }} 
+              }}
               className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all duration-200 ${
-                isActive 
-                  ? "bg-[#ECEEFF] dark:bg-[#2A3070] text-[#5B5BE0] dark:text-[#A9AEFF]" 
+                isActive
+                  ? "bg-[#ECEEFF] dark:bg-[#2A3070] text-[#5B5BE0] dark:text-[#A9AEFF]"
                   : "text-[#5A5F8C] dark:text-[#C5C9F5] hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070]"
               }`}
             >
@@ -624,59 +659,59 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </button>
           );
         })}
-      </div>
+      </nav>
 
       {/* ─── CAPTURE FLOW MODAL ─── */}
       {showCapture && (
-        <CaptureFlow 
-          businessId={data.businessId} 
-          onComplete={refresh} 
-          onClose={() => setShowCapture(false)} 
+        <CaptureFlow
+          businessId={data.businessId}
+          onComplete={refresh}
+          onClose={() => setShowCapture(false)}
         />
       )}
 
       {/* ─── SALE MODAL ─── */}
       {showSale && (
-        <SaleModal 
-          businessId={data.businessId} 
-          onComplete={refresh} 
-          onClose={() => setShowSale(false)} 
+        <SaleModal
+          businessId={data.businessId}
+          onComplete={refresh}
+          onClose={() => setShowSale(false)}
         />
       )}
 
       {/* ─── EXPENSE MODAL ─── */}
       {showExpense && (
-        <ExpenseModal 
-          businessId={data.businessId} 
-          onComplete={refresh} 
-          onClose={() => setShowExpense(false)} 
+        <ExpenseModal
+          businessId={data.businessId}
+          onComplete={refresh}
+          onClose={() => setShowExpense(false)}
         />
       )}
 
       {/* ─── EXPORT CENTRE MODAL ─── */}
       {showExport && (
         <div className="fixed inset-0 bg-[#14173F]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] p-8 max-w-md w-full shadow-2xl">
-            <h2 className="text-2xl font-extrabold mb-2 text-[#14173F]">Export Centre</h2>
+          <div role="dialog" aria-modal="true" aria-labelledby="export-title" className="bg-white rounded-[28px] p-8 max-w-md w-full shadow-2xl">
+            <h2 id="export-title" className="text-2xl font-extrabold mb-2 text-[#14173F]">Export Centre</h2>
             <p className="text-sm text-[#4A4F7A] mb-6">Share verified statements with lenders, accountants, or suppliers.</p>
-            
+
             <div className="space-y-3 mb-8">
               <button onClick={() => { showToast("CSV downloading...", "success"); setShowExport(false); }} className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-[#E1E4F7] hover:border-[#5B5BE0] transition-colors text-left group">
                 <div>
                   <div className="font-bold text-[#14173F]">Download CSV Data</div>
                   <div className="text-xs text-[#4A4F7A]">All sealed transactions and evidence tiers.</div>
                 </div>
-                <span className="text-[#5B5BE0] text-xl group-hover:translate-x-1 transition-transform">↓</span>
+                <span aria-hidden="true" className="text-[#5B5BE0] text-xl group-hover:translate-x-1 transition-transform">↓</span>
               </button>
               <Link href={`/statement/${data.businessId}`} className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-[#E1E4F7] hover:border-[#5B5BE0] transition-colors text-left group">
                 <div>
                   <div className="font-bold text-[#14173F]">Lender PDF Statement</div>
                   <div className="text-xs text-[#4A4F7A]">Evidence-backed summary with public QR code.</div>
                 </div>
-                <span className="text-[#5B5BE0] text-xl group-hover:translate-x-1 transition-transform">→</span>
+                <span aria-hidden="true" className="text-[#5B5BE0] text-xl group-hover:translate-x-1 transition-transform">→</span>
               </Link>
             </div>
-            
+
             <button onClick={() => setShowExport(false)} className="w-full py-3 bg-[#F1F2FF] text-[#4B4FC9] font-bold rounded-xl hover:bg-[#E6E8FA] transition-colors">Cancel</button>
           </div>
         </div>
@@ -685,10 +720,10 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       {/* ─── SCAM SHIELD MODAL ─── */}
       {showScamShield && (
         <div className="fixed inset-0 bg-[#14173F]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div role="dialog" aria-modal="true" aria-labelledby="scam-title" className="bg-white rounded-[28px] p-8 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-2xl font-extrabold text-[#14173F] flex items-center gap-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <h2 id="scam-title" className="text-2xl font-extrabold text-[#14173F] flex items-center gap-2">
+                <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z" />
                   <path d="M12 9v4M12 16h.01" />
                 </svg>
@@ -696,13 +731,14 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               </h2>
             </div>
             <p className="text-sm text-[#4A4F7A] mb-6">
-              Paste a suspicious WhatsApp, SMS or email message. I'll flag risk signals — not judge the sender.
+              Paste a suspicious WhatsApp, SMS or email message. We&apos;ll flag risk signals — not judge the sender.
             </p>
 
             <textarea
               value={scamMessage}
               onChange={(e) => { setScamMessage(e.target.value); setScamResult(null); }}
               placeholder="e.g. URGENT: New banking details. Please pay the R2 500 deposit to this account before delivery today."
+              aria-label="Message to analyse for scam signals"
               rows={5}
               className="w-full bg-[#F1F2FF] border border-[#E1E4F7] rounded-xl p-4 text-sm text-[#14173F] focus:border-[#5B5BE0] outline-none resize-none mb-4"
             />
@@ -748,7 +784,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                       {scamResult.signals.map((s: any, i: number) => (
                         <div key={i} className="bg-[#F1F2FF] rounded-lg p-3 border border-[#E1E4F7]">
                           <div className="flex items-center gap-2 mb-1">
-                            <span
+                            <span aria-hidden="true"
                               className={`w-2 h-2 rounded-full ${
                                 s.severity === "high"
                                   ? "bg-[#A94E40]"
@@ -774,7 +810,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                     <ul className="space-y-1.5">
                       {scamResult.advice.map((a: string, i: number) => (
                         <li key={i} className="text-sm text-[#14173F] leading-relaxed flex gap-2">
-                          <span className="text-[#5B5BE0] font-bold shrink-0">•</span>
+                          <span aria-hidden="true" className="text-[#5B5BE0] font-bold shrink-0">•</span>
                           <span>{a}</span>
                         </li>
                       ))}
@@ -800,18 +836,18 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
       {/* ─── EVIDENCE WORKSPACE ─── */}
       {selectedRecord && (
-        <EvidenceWorkspace 
-          record={selectedRecord} 
-          onClose={() => setSelectedRecord(null)} 
+        <EvidenceWorkspace
+          record={selectedRecord}
+          onClose={() => setSelectedRecord(null)}
         />
       )}
 
       {/* ─── IMPORT WIZARD ─── */}
       {showImport && (
-        <ImportWizard 
-          businessId={data.businessId} 
-          onComplete={refresh} 
-          onClose={() => setShowImport(false)} 
+        <ImportWizard
+          businessId={data.businessId}
+          onComplete={refresh}
+          onClose={() => setShowImport(false)}
         />
       )}
 
@@ -831,34 +867,38 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       {/* ─── MOBILE MORE MENU ─── */}
       {showMore && (
         <div className="md:hidden fixed inset-0 bg-[#14173F]/50 backdrop-blur-sm z-50 flex items-end justify-center pb-16">
-          <div className="bg-white dark:bg-[#1A1F52] w-full max-w-sm rounded-t-[28px] p-6 shadow-2xl animate-in slide-in-from-bottom duration-200">
+          <div role="dialog" aria-modal="true" aria-labelledby="more-title" className="bg-white dark:bg-[#1A1F52] w-full max-w-sm rounded-t-[28px] p-6 shadow-2xl animate-in slide-in-from-bottom duration-200">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-extrabold text-[#14173F] dark:text-white">More</h2>
-              <button onClick={() => setShowMore(false)} className="text-[#5A5F8C] hover:text-[#14173F] dark:text-[#A9AEFF]">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <h2 id="more-title" className="text-lg font-extrabold text-[#14173F] dark:text-white">More</h2>
+              <button
+                aria-label="Close menu"
+                onClick={() => setShowMore(false)}
+                className="text-[#5A5F8C] hover:text-[#14173F] dark:text-[#A9AEFF]"
+              >
+                <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
             <div className="space-y-2">
               <button onClick={() => { setMainTab("intelligence"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg>
                 Business Intelligence
               </button>
               <button onClick={() => { setMainTab("tasks"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                 Growth Studio
               </button>
               <button onClick={() => { setMainTab("opportunities"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
                 Launch Studio
               </button>
               <button onClick={() => { setMainTab("reports"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                 Reports
               </button>
             </div>
             <div className="border-t border-[#E1E4F7] dark:border-[#2A3070] mt-4 pt-4">
               <Link href="/settings" className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#5A5F8C] dark:text-[#A9AEFF] transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 Settings
               </Link>
             </div>

@@ -19,7 +19,7 @@ export default function GlobalThembaDrawer() {
     setAsking(true);
     setHistory((h) => [...h, { role: "user", text: q }]);
     setInput("");
-    
+
     try {
       const r = await fetch("/api/themba", {
         method: "POST",
@@ -44,11 +44,9 @@ export default function GlobalThembaDrawer() {
   };
 
   const executeAction = async (index: number, action: any) => {
-    // 1. OPTIMISTIC UPDATE: Instantly show success in the UI
     setApproved(prev => ({ ...prev, [index]: true }));
     playSuccessChime();
 
-    // 2. Perform the actual DB write in the background
     if (action.type === "create_task") {
       try {
         const res = await fetch("/api/goals", {
@@ -64,7 +62,6 @@ export default function GlobalThembaDrawer() {
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
       } catch (error) {
-        // 3. ROLLBACK if the server fails
         setApproved(prev => ({ ...prev, [index]: false }));
         alert(t("themba.saveFailed"));
       }
@@ -80,13 +77,17 @@ export default function GlobalThembaDrawer() {
   return (
     <>
       {!thembaOpen && (
-        <button onClick={() => setThembaOpen(true)} className="fixed bottom-24 md:bottom-8 right-4 md:right-8 w-16 h-16 bg-[#14173F] dark:bg-[#5B5BE0] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform z-40 border-2 border-white/20 print:hidden">
+        <button
+          aria-label="Open Themba assistant"
+          onClick={() => setThembaOpen(true)}
+          className="fixed bottom-24 md:bottom-8 right-4 md:right-8 w-16 h-16 bg-[#14173F] dark:bg-[#5B5BE0] text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform z-40 border-2 border-white/20 print:hidden"
+        >
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         </button>
       )}
 
       <aside className={`fixed top-0 right-0 h-screen w-full sm:w-[420px] bg-[#F5F1E8] dark:bg-[#14173F] border-l border-[#E8E2D5] dark:border-[#2A3070] shadow-2xl flex flex-col z-50 transition-transform duration-300 ease-in-out print:hidden ${thembaOpen ? "translate-x-0" : "translate-x-full"}`}>
-        
+
         <div className="p-6 bg-white dark:bg-[#1A1F52] border-b border-[#E8E2D5] dark:border-[#2A3070] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#5B5BE0] text-white flex items-center justify-center font-extrabold text-lg">T</div>
@@ -95,7 +96,11 @@ export default function GlobalThembaDrawer() {
               <p className="text-xs text-[#5A5F8C] dark:text-[#C5C9F5]">{t("themba.subtitle")}</p>
             </div>
           </div>
-          <button onClick={() => setThembaOpen(false)} className="text-[#5A5F8C] hover:text-[#14173F] dark:text-[#C5C9F5] dark:hover:text-white p-2">
+          <button
+            aria-label="Close Themba assistant"
+            onClick={() => setThembaOpen(false)}
+            className="text-[#5A5F8C] hover:text-[#14173F] dark:text-[#C5C9F5] dark:hover:text-white p-2"
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
@@ -106,7 +111,7 @@ export default function GlobalThembaDrawer() {
               <p className="text-sm text-[#4A4F7A] dark:text-[#C5C9F5]">{t("themba.intro")}</p>
               {suggestions.map(q => (
                 <button key={q} onClick={() => ask(q)} className="w-full text-left text-sm p-3 rounded-xl bg-white dark:bg-[#1A1F52] hover:bg-[#E8E2D5] dark:hover:bg-[#2A3070] transition-colors text-[#14173F] dark:text-white border border-[#E8E2D5] dark:border-[#2A3070]">
-                  "{q}"
+                  &quot;{q}&quot;
                 </button>
               ))}
             </div>
@@ -125,7 +130,7 @@ export default function GlobalThembaDrawer() {
                     <div className="text-[#14173F] dark:text-[#F5F1E8] leading-relaxed text-sm bg-white dark:bg-[#1A1F52] border border-[#E8E2D5] dark:border-[#2A3070] p-4 rounded-xl rounded-tl-sm shadow-sm animate-pop">
                       {m.text}
                     </div>
-                    
+
                     {m.proposed_action && (
                       <div className="bg-white dark:bg-[#2A3070] border-2 border-[#5B5BE0] rounded-xl p-4 shadow-md animate-pop">
                         <div className="flex items-center gap-2 mb-2">
@@ -134,9 +139,9 @@ export default function GlobalThembaDrawer() {
                         </div>
                         <p className="font-bold text-sm text-[#14173F] dark:text-white mb-1">{m.proposed_action.title}</p>
                         <p className="text-xs text-[#4A4F7A] dark:text-[#C5C9F5] mb-4 leading-relaxed whitespace-pre-wrap">{m.proposed_action.description}</p>
-                        
+
                         <div className="flex gap-2">
-                          <button 
+                          <button
                             onClick={() => executeAction(i, m.proposed_action)}
                             disabled={approved[i]}
                             className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${approved[i] ? "bg-[#47745D] text-white animate-pop" : "bg-[#5B5BE0] text-white hover:bg-[#4B4FC9]"}`}
@@ -151,7 +156,7 @@ export default function GlobalThembaDrawer() {
               )}
             </div>
           ))}
-          
+
           {asking && (
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-[#5B5BE0] flex shrink-0 items-center justify-center text-xs font-extrabold text-white">T</div>
@@ -170,10 +175,16 @@ export default function GlobalThembaDrawer() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={t("themba.placeholder")}
+              aria-label={t("themba.placeholder")}
               disabled={asking}
               className="w-full bg-[#F5F1E8] dark:bg-[#0E1130] border border-[#E8E2D5] dark:border-[#2A3070] focus:border-[#5B5BE0] outline-none rounded-xl pl-4 pr-12 py-3 text-sm text-[#14173F] dark:text-white placeholder-[#5A5F8C] transition-colors"
             />
-            <button type="submit" disabled={asking || !input.trim()} className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-[#5B5BE0] text-white rounded-lg hover:bg-[#4B4FC9] disabled:opacity-50 transition-colors font-bold">
+            <button
+              type="submit"
+              aria-label="Send message"
+              disabled={asking || !input.trim()}
+              className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-[#5B5BE0] text-white rounded-lg hover:bg-[#4B4FC9] disabled:opacity-50 transition-colors font-bold"
+            >
               ↑
             </button>
           </form>

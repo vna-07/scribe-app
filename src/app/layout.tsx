@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppProvider } from "@/context/AppContext";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import GlobalThembaDrawer from "@/components/GlobalThembaDrawer";
+import InstallPrompt from "@/components/InstallPrompt";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const instrument = Instrument_Serif({ 
@@ -39,11 +40,20 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${instrument.variable} antialiased`}>
+        {/* Skip-to-content — visible only on keyboard focus */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-[#5B5BE0] focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:font-bold focus:shadow-lg"
+        >
+          Skip to content
+        </a>
+
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <LanguageProvider>
             <AppProvider>
               {children}
               <GlobalThembaDrawer />
+              <InstallPrompt />
             </AppProvider>
           </LanguageProvider>
         </ThemeProvider>

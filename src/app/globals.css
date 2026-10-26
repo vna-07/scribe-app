@@ -281,3 +281,40 @@ body {
     opacity: 0.6;
   }
 }
+
+/* ─── ACCESSIBILITY: FOCUS STATES ─── */
+/* No border-radius override here — outlines follow the element's existing
+   border-radius in modern browsers, so a `rounded-xl` button keeps its
+   corners when focused. Forcing a uniform radius caused rounded buttons to
+   visually snap on focus. */
+*:focus-visible {
+  outline: 2px solid #5B5BE0;
+  outline-offset: 2px;
+}
+
+html.dark *:focus-visible {
+  outline-color: #A9AEFF;
+}
+
+/* Screen-reader only utility (fallback in case Tailwind's is missing) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+/* Fallback for Tailwind's focus:not-sr-only — no padding/margin here, so the
+   skip link's own focus:px-4 focus:py-2 utilities control its size. */
+.focus\:not-sr-only:focus {
+  position: fixed;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}

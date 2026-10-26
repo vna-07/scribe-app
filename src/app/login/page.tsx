@@ -54,8 +54,10 @@ export default function LoginPage() {
   return (
     <>
       <main
+        id="main-content"
+        tabIndex={-1}
         aria-hidden={egg ? true : undefined}
-        className="min-h-screen flex items-center justify-center p-6 bg-[#E9EBFF] dark:bg-[#0E1130]"
+        className="min-h-screen flex items-center justify-center p-6 bg-[#E9EBFF] dark:bg-[#0E1130] outline-none"
       >
         <div className="w-full max-w-md bg-white dark:bg-[#1A1F52] rounded-[28px] p-8 shadow-xl border border-[#E1E4F7] dark:border-[#2A3070]">
           <div className="flex items-center gap-3 mb-8">

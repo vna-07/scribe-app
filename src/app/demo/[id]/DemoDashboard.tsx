@@ -732,6 +732,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
       {showVoice && (
         <VoiceCapture
           businessId={data.businessId}
+          products={data.stockState.products}
           onComplete={refresh}
           onClose={() => setShowVoice(false)}
         />

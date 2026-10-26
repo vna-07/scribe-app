@@ -37,6 +37,7 @@ export default function GlobalThembaDrawer() {
         role: "themba",
         text: json.answer ?? "(no answer)",
         proposed_action: json.proposed_action,
+        provider: json.provider,
       }]);
     } finally {
       setAsking(false);
@@ -130,6 +131,17 @@ export default function GlobalThembaDrawer() {
                     <div className="text-[#14173F] dark:text-[#F5F1E8] leading-relaxed text-sm bg-white dark:bg-[#1A1F52] border border-[#E8E2D5] dark:border-[#2A3070] p-4 rounded-xl rounded-tl-sm shadow-sm animate-pop">
                       {m.text}
                     </div>
+
+                    {m.provider && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#5A5F8C] dark:text-[#C5C9F5]">
+                        <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${
+                          m.provider === "gemini" ? "bg-[#5B5BE0]" :
+                          m.provider === "groq" ? "bg-[#D99A00]" :
+                          "bg-[#47745D]"
+                        }`} />
+                        {m.provider === "gemini" ? "Gemini" : m.provider === "groq" ? "Groq" : "Deterministic"}
+                      </span>
+                    )}
 
                     {m.proposed_action && (
                       <div className="bg-white dark:bg-[#2A3070] border-2 border-[#5B5BE0] rounded-xl p-4 shadow-md animate-pop">

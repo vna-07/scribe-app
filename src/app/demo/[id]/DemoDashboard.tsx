@@ -43,8 +43,9 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
     setActiveTab(mainTab);
   }, [mainTab, setActiveTab]);
 
+  // ─── FIX: chart now reads chartRecords (500 records by date), not recentRecords (15 by seq) ───
   const { dailyData, expenseCategories } = generateAnalytics(
-    data.recentRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
+    data.chartRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
   );
 
   // Sidebar & Mobile Nav State

@@ -4,70 +4,101 @@ import type { DailyData, ExpenseCategory } from "@/lib/analytics";
 
 export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: number }) {
   const barWidth = 100 / data.length;
-  // Compute max across both series so bars scale to the taller of sales/expenses.
-  // `?? 0` guards against days where one series is undefined — otherwise
-  // Math.max(x, undefined) = NaN poisons the entire chart.
+  // `?? 0` guards: a single missing field would produce NaN and poison the whole chart.
   const maxVal = Math.max(
     ...data.map((x) => Math.max(x.sales ?? 0, x.expenses ?? 0)),
     1,
   );
 
+  // Plot area is 24px shorter than the SVG — that band holds the x-axis labels
+  // below. Grid lines AND Y-axis labels both span this same plotHeight region,
+  // so they align with each other and with bar tops.
+  const plotHeight = height - 24;
+
+  const formatValue = (val: number) => {
+    if (val >= 1_000_000) return `R${(val / 1_000_000).toFixed(1)}M`;
+    if (val >= 1_000) return `R${(val / 1_000).toFixed(0)}k`;
+    return `R${val.toFixed(0)}`;
+  };
+
   return (
     <div className="w-full">
-      <svg
-        viewBox={`0 0 100 ${height}`}
-        className="w-full"
-        style={{ height: `${height}px` }}
-        preserveAspectRatio="none"
-      >
-        {/* Grid lines */}
-        {[0.25, 0.5, 0.75, 1].map((pct) => (
-          <line
-            key={pct}
-            x1="0"
-            y1={height - height * pct}
-            x2="100"
-            y2={height - height * pct}
-            stroke="currentColor"
-            className="text-[#E1E4F7] dark:text-[#2A3070]"
-            strokeWidth="0.3"
-            strokeDasharray="1 1"
-          />
-        ))}
+      <div className="flex gap-3">
+        {/* Y-axis labels — pt-6 aligns them with the 24px-inset gridlines */}
+        <div
+          className="flex flex-col justify-between text-[10px] text-[#5A5F8C] dark:text-[#C5C9F5] font-bold tabular-nums text-right shrink-0 pt-6"
+          style={{ height: `${height}px` }}
+        >
+          <span>{formatValue(maxVal)}</span>
+          <span>{formatValue(maxVal * 0.75)}</span>
+          <span>{formatValue(maxVal * 0.5)}</span>
+          <span>{formatValue(maxVal * 0.25)}</span>
+          <span>R0</span>
+        </div>
 
-        {/* Bars — sales (left half of slot) + expenses (right half) */}
-        {data.map((d, i) => {
-          const salesH = ((d.sales ?? 0) / maxVal) * (height - 24);
-          const expH = ((d.expenses ?? 0) / maxVal) * (height - 24);
-
-          return (
-            <g key={d.date}>
-              <rect
-                x={i * barWidth + barWidth * 0.1}
-                y={height - salesH}
-                width={barWidth * 0.38}
-                height={Math.max(1, salesH)}
-                fill="var(--chart-bar)"
-                rx={0.5}
+        <div className="flex-1 min-w-0">
+          <svg
+            viewBox={`0 0 100 ${height}`}
+            className="w-full"
+            style={{ height: `${height}px` }}
+            preserveAspectRatio="none"
+          >
+            {/* Grid lines — span the plot area, not the full SVG height */}
+            {[0.25, 0.5, 0.75, 1].map((pct) => (
+              <line
+                key={pct}
+                x1="0"
+                y1={height - plotHeight * pct}
+                x2="100"
+                y2={height - plotHeight * pct}
+                stroke="currentColor"
+                className="text-[#E1E4F7] dark:text-[#2A3070]"
+                strokeWidth="0.3"
+                strokeDasharray="1 1"
               />
-              <rect
-                x={i * barWidth + barWidth * 0.52}
-                y={height - expH}
-                width={barWidth * 0.38}
-                height={Math.max(1, expH)}
-                className="fill-[#E1E4F7] dark:fill-[#2A3070]"
-                rx={0.5}
-              />
-            </g>
-          );
-        })}
-      </svg>
+            ))}
 
-      {/* X-Axis Labels */}
-      <div className="flex justify-between mt-2 text-[10px] text-[#5A5F8C] dark:text-[#C5C9F5] font-bold uppercase">
-        {data.filter((_, i) => i % 2 === 0).map((d) => (
-          <span key={d.date}>{d.label}</span>
-        ))}
+            {/* Bars — sales (left half) + expenses (right half) */}
+            {data.map((d, i) => {
+              const salesH = ((d.sales ?? 0) / maxVal) * plotHeight;
+              const expH = ((d.expenses ?? 0) / maxVal) * plotHeight;
+              const renderedSalesH = Math.max(1, salesH);
+              const renderedExpH = Math.max(1, expH);
+
+              return (
+                <g key={d.date}>
+                  <rect
+                    x={i * barWidth + barWidth * 0.1}
+                    y={height - renderedSalesH}
+                    width={barWidth * 0.38}
+                    height={renderedSalesH}
+                    fill="var(--chart-bar)"
+                    rx={0.5}
+                  >
+                    <title>{`${d.label}: Sales R${(d.sales ?? 0).toFixed(2)}`}</title>
+                  </rect>
+                  <rect
+                    x={i * barWidth + barWidth * 0.52}
+                    y={height - renderedExpH}
+                    width={barWidth * 0.38}
+                    height={renderedExpH}
+                    className="fill-[#E1E4F7] dark:fill-[#2A3070]"
+                    rx={0.5}
+                  >
+                    <title>{`${d.label}: Expenses R${(d.expenses ?? 0).toFixed(2)}`}</title>
+                  </rect>
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* X-Axis Labels */}
+          <div className="flex justify-between mt-2 text-[10px] text-[#5A5F8C] dark:text-[#C5C9F5] font-bold uppercase">
+            {data.filter((_, i) => i % 2 === 0).map((d) => (
+              <span key={d.date}>{d.label}</span>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

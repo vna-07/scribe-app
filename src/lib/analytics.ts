@@ -18,14 +18,20 @@ export function generateAnalytics(records: LedgerRecord[]) {
   const sales = records.filter((r) => r.kind === "sale");
   const expenses = records.filter((r) => r.kind === "expense");
 
-  // ─── ANCHOR THE CHART TO THE LATEST RECORD ───
-  // Siyanda's data ends in the past. If we used today's date,
-  // the chart would be empty. So we anchor to the last transaction.
-  let maxTime = Date.now();
-  if (records.length > 0) {
-    maxTime = Math.max(...records.map((r) => r.occurred_at));
+  // ─── SMART ANCHOR: prefer the last SALE, so we always see sales bars ───
+  const lastSaleTime = sales.length > 0 ? Math.max(...sales.map((s) => s.occurred_at)) : 0;
+  const lastExpenseTime = expenses.length > 0 ? Math.max(...expenses.map((e) => e.occurred_at)) : 0;
+
+  let anchorTime: number;
+  if (lastSaleTime > 0 && lastExpenseTime > 0) {
+    // If the last expense is within 30 days of the last sale, use the later date
+    const gapDays = (lastExpenseTime - lastSaleTime) / (1000 * 60 * 60 * 24);
+    anchorTime = Math.abs(gapDays) > 30 ? lastSaleTime : Math.max(lastSaleTime, lastExpenseTime);
+  } else {
+    anchorTime = lastSaleTime || lastExpenseTime || Date.now();
   }
-  const anchorDate = new Date(maxTime);
+
+  const anchorDate = new Date(anchorTime);
 
   // ─── BUILD A 14-DAY WINDOW ENDING ON THE ANCHOR DATE ───
   const dailyMap = new Map<string, { sales: number; expenses: number }>();
@@ -56,7 +62,7 @@ export function generateAnalytics(records: LedgerRecord[]) {
     const d = new Date(date);
     return {
       date,
-      label: d.toLocaleDateString("en-ZA", { weekday: "short" }),
+      label: d.toLocaleDateString("en-ZA", { weekday: "short", day: "numeric" }),
       sales: data.sales / 100,
       expenses: data.expenses / 100,
       net: (data.sales - data.expenses) / 100,
@@ -70,7 +76,7 @@ export function generateAnalytics(records: LedgerRecord[]) {
     expenseMap.set(category, (expenseMap.get(category) || 0) + exp.amount_cents);
   }
 
-  const colors = ["#5B5BE0", "#A9AEFF", "#14173F", "#D99A00", "#47745D"];
+  const colors = ["#5B5BE0", "#A9AEFF", "#14173F", "#D99A00", "#47745D", "#B89A61"];
   const expenseCategories: ExpenseCategory[] = Array.from(expenseMap.entries())
     .map(([label, amount], i) => ({
       label,

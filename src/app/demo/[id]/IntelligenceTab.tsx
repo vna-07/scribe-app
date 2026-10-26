@@ -8,15 +8,19 @@ import ScoreExplainer from "@/components/ScoreExplainer";
 
 export default function IntelligenceTab({ data, onRefresh }: { data: DemoData; onRefresh: () => void }) {
   const [showExplainer, setShowExplainer] = useState(false);
+  // FIX: chart reads chartRecords (500 recent by date), not recentRecords (15 by seq).
+  // recentRecords is the Records-tab projection and never contains the 15k sales rows.
   const { dailyData, expenseCategories } = generateAnalytics(
-    data.recentRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
+    data.chartRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any
   );
 
-  const totalSales = dailyData.reduce((s, d) => s + d.sales, 0);
-  const totalExpenses = dailyData.reduce((s, d) => s + d.expenses, 0);
+  // ?? 0 guards: a single missing field would propagate NaN through the whole sum
+  // and render the KPI tile as "RNaN".
+  const totalSales = dailyData.reduce((s, d) => s + (d.sales ?? 0), 0);
+  const totalExpenses = dailyData.reduce((s, d) => s + (d.expenses ?? 0), 0);
   const netCashFlow = totalSales - totalExpenses;
 
-  const maxVal = Math.max(...dailyData.map(d => Math.max(d.sales, d.expenses)), 100);
+  const maxVal = Math.max(...dailyData.map(d => Math.max(d.sales ?? 0, d.expenses ?? 0)), 100);
 
   return (
     <div className="space-y-6">
@@ -64,12 +68,12 @@ export default function IntelligenceTab({ data, onRefresh }: { data: DemoData; o
               <div key={d.date} className="flex-1 flex flex-col items-center gap-1 group relative">
                 {/* Tooltip */}
                 <div className="absolute -top-16 bg-[#14173F] text-white text-[10px] p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
-                  Sales: {rands(d.sales * 100)}<br/>Exp: {rands(d.expenses * 100)}
+                  Sales: {rands((d.sales ?? 0) * 100)}<br/>Exp: {rands((d.expenses ?? 0) * 100)}
                 </div>
                 
                 <div className="w-full flex justify-center gap-[2px] h-full items-end">
-                  <div className="w-1/2 bg-[#5B5BE0] dark:bg-[#A9AEFF] rounded-t-sm" style={{ height: `${(d.sales / maxVal) * 100}%` }} />
-                  <div className="w-1/2 bg-[#E1E4F7] dark:bg-[#2A3070] rounded-t-sm" style={{ height: `${(d.expenses / maxVal) * 100}%` }} />
+                  <div className="w-1/2 bg-[#5B5BE0] dark:bg-[#A9AEFF] rounded-t-sm" style={{ height: `${((d.sales ?? 0) / maxVal) * 100}%` }} />
+                  <div className="w-1/2 bg-[#E1E4F7] dark:bg-[#2A3070] rounded-t-sm" style={{ height: `${((d.expenses ?? 0) / maxVal) * 100}%` }} />
                 </div>
                 <span className="text-[9px] font-bold text-[#5A5F8C] dark:text-[#C5C9F5] uppercase">{d.label}</span>
               </div>

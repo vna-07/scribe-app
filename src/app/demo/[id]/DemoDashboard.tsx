@@ -21,6 +21,7 @@ import ReportsTab from "./ReportsTab";
 import OpportunitiesTab from "./OpportunitiesTab";
 import { calculateCompleteness } from "@/lib/completeness";
 import CompletenessCard from "@/components/CompletenessCard";
+import ReorderModal from "@/components/ReorderModal";
 
 type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports" | "opportunities" | "suppliers";
 
@@ -64,6 +65,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [scamMessage, setScamMessage] = useState("");
   const [scamResult, setScamResult] = useState<any>(null);
   const [scamLoading, setScamLoading] = useState(false);
+  const [reorderProduct, setReorderProduct] = useState<any>(null);
 
   // Tasks State (kept for legacy support, though GrowthTab handles its own now)
   const [tasks, setTasks] = useState<any[]>([]);
@@ -147,6 +149,12 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
 
   const weakestComponent = [...data.score.components].sort((a,b) => a.value - b.value)[0];
   const completeness = calculateCompleteness(data.recentRecords as any); // recentRecords carries the fields calculateCompleteness needs
+  // ProductState.reorder_threshold is now formally typed (see lib/stock-state.ts),
+  // so no cast is needed. p.expected is the on-hand quantity derived from movements.
+  const lowStockProducts = data.stockState.products.filter(p => {
+    const threshold = p.reorder_threshold ?? 0;
+    return threshold > 0 && p.expected <= threshold;
+  });
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#E9EBFF] text-[#14173F] font-sans relative">
@@ -296,6 +304,35 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </div>
 
             <CompletenessCard data={completeness} />
+
+            {/* ─── LOW STOCK ALERT ─── */}
+            {lowStockProducts.length > 0 && (
+              <div className="animate-stagger bg-[#FFF0C4] dark:bg-[#4A3B10] border border-[#D99A00] rounded-[24px] p-5 mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D99A00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                  <h3 className="font-extrabold text-[#1D2260] dark:text-[#F2B84B] text-sm uppercase tracking-wider">Low Stock Alert</h3>
+                </div>
+                <div className="space-y-2">
+                  {lowStockProducts.map(p => (
+                    <div key={p.id} className="flex justify-between items-center bg-white/50 dark:bg-[#14173F]/50 rounded-lg p-3">
+                      <div>
+                        <p className="font-bold text-[#14173F] dark:text-white text-sm">{p.name}</p>
+                        <p className="text-xs text-[#4A4F7A] dark:text-[#C5C9F5]">
+                          {p.expected} left · threshold {p.reorder_threshold}
+                          {p.supplier_name && <> · supplier {p.supplier_name}</>}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => setReorderProduct(p)}
+                        className="px-3 py-1.5 bg-[#D99A00] text-white text-xs font-bold rounded-lg hover:bg-[#C28A00] transition-colors"
+                      >
+                        Draft Order
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* ─── ACTION CENTRE ─── */}
             <div className="animate-stagger bg-white dark:bg-[#1A1F52] rounded-[24px] p-6 border border-[#E1E4F7] dark:border-[#2A3070] shadow-sm mb-6">
@@ -775,6 +812,19 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           businessId={data.businessId} 
           onComplete={refresh} 
           onClose={() => setShowImport(false)} 
+        />
+      )}
+
+      {/* ─── REORDER MODAL ─── */}
+      {reorderProduct && (
+        <ReorderModal
+          businessId={data.businessId}
+          product={reorderProduct}
+          onClose={() => setReorderProduct(null)}
+          onComplete={async () => {
+            setReorderProduct(null);
+            await refresh();
+          }}
         />
       )}
 

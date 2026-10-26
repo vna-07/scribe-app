@@ -8,6 +8,7 @@ export interface ProductState {
   sell_price_cents: number;
   cost_price_cents: number | null;
   reorder_threshold: number;
+  supplier_name?: string | null;
   expected: number;
   counted: number | null;
   variance: number | null;
@@ -25,7 +26,10 @@ export interface BusinessStockState {
 
 export async function getBusinessStockState(businessId: string): Promise<BusinessStockState> {
   const productsRes = await db().execute({
-    sql: "SELECT id, name, sku, unit, selling_price_cents, cost_price_cents, reorder_threshold FROM products WHERE business_id = ? ORDER BY name ASC",
+    sql: `SELECT p.id, p.name, p.sku, p.unit, p.selling_price_cents, p.cost_price_cents, p.reorder_threshold, s.name as supplier_name
+          FROM products p
+          LEFT JOIN suppliers s ON p.supplier_id = s.id
+          WHERE p.business_id = ? ORDER BY p.name ASC`,
     args: [businessId],
   });
 
@@ -73,6 +77,7 @@ export async function getBusinessStockState(businessId: string): Promise<Busines
       sell_price_cents: Number(p.selling_price_cents) || 0,
       cost_price_cents: p.cost_price_cents ? Number(p.cost_price_cents) : null,
       reorder_threshold: Number(p.reorder_threshold) || 0,
+      supplier_name: p.supplier_name ? String(p.supplier_name) : null,
       expected: runningExpected,
       counted,
       variance,

@@ -94,9 +94,18 @@ export default async function VerifyPage({
           </div>
 
           {/* Disclaimer */}
-          <div className="bg-[#FFF0C4] rounded-xl p-4 text-xs text-[#1D2260] leading-relaxed">
-            <strong className="block mb-1">What this verifies:</strong>
-            A valid signature proves that these records have not been altered since they were sealed by the business owner. It does not prove that the underlying transactions took place. 
+          <div className="bg-[#FFF0C4] rounded-xl p-5 space-y-3">
+            <p className="text-[10px] font-bold text-[#D99A00] uppercase tracking-widest">What this proves</p>
+            <p className="text-xs text-[#1D2260] leading-relaxed">
+              Every record has been <strong>hash-chained and digitally signed</strong>. If any record was altered after it was sealed, verification would fail. The chain reflects exactly what was written.
+            </p>
+            <p className="text-[10px] font-bold text-[#D99A00] uppercase tracking-widest pt-2">What this does NOT prove</p>
+            <p className="text-xs text-[#1D2260] leading-relaxed">
+              A signature confirms the record has not been changed since sealing. It does not confirm that the underlying transaction occurred, that a receipt is authentic, or that automated extraction read the document correctly. Those require external corroboration — supplier invoices, counter-signatures, or bank verification.
+            </p>
+            <p className="text-xs text-[#5A5F8C] italic pt-2">
+              SCRIBE does not approve credit. It makes a trader assessable.
+            </p>
           </div>
           
         </div>

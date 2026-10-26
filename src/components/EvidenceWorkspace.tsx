@@ -164,6 +164,15 @@ export default function EvidenceWorkspace({
                   Request Counter-signature
                 </button>
               </div>
+
+              <div className="bg-[#FFF0C4] dark:bg-[#4A3B10] border border-[#D99A00] rounded-xl p-3">
+                <p className="text-[10px] font-bold text-[#D99A00] dark:text-[#F2B84B] uppercase tracking-wider mb-1">
+                  What the seal proves
+                </p>
+                <p className="text-xs text-[#1D2260] dark:text-[#C5C9F5] leading-relaxed">
+                  The signature confirms this record has not been altered since it was sealed. It does <strong>not</strong> confirm the underlying transaction is genuine or that extraction was accurate. Always verify against the original document.
+                </p>
+              </div>
             </div>
           </div>
 

@@ -23,6 +23,7 @@ import { calculateCompleteness } from "@/lib/completeness";
 import CompletenessCard from "@/components/CompletenessCard";
 import ReorderModal from "@/components/ReorderModal";
 import SpotlightCard from "@/components/SpotlightCard";
+import VoiceCapture from "@/components/VoiceCapture";
 
 type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports" | "opportunities" | "suppliers";
 
@@ -62,6 +63,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [showImport, setShowImport] = useState(false);
   const [showSale, setShowSale] = useState(false);
   const [showExpense, setShowExpense] = useState(false);
+  const [showVoice, setShowVoice] = useState(false);
 
   const [showScamShield, setShowScamShield] = useState(false);
   const [scamMessage, setScamMessage] = useState("");
@@ -301,13 +303,23 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               Import CSV
             </button>
             <button
+              onClick={() => setShowVoice(true)}
+              aria-label="Record transaction by voice"
+              className="hidden md:flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#5B5BE0] text-white font-bold text-sm shadow-md hover:bg-[#4B4FC9] transition-colors"
+            >
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="3" width="6" height="12" rx="3" />
+                <path d="M5 11a7 7 0 0 0 14 0" />
+                <line x1="12" y1="18" x2="12" y2="23" />
+              </svg>
+              Voice
+            </button>
+            <button
               aria-label="Record Sale — new entry"
               onClick={() => setShowSale(true)}
-              className="hidden md:flex px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors"
+              className="btn-tactile hidden md:flex px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors"
             >
-              <button className="btn-tactile px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070]">
               + Record Sale
-              </button>
             </button>
             <button
               aria-label="Record Expense — new entry"
@@ -713,6 +725,15 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           businessId={data.businessId}
           onComplete={refresh}
           onClose={() => setShowExpense(false)}
+        />
+      )}
+
+      {/* ─── VOICE CAPTURE MODAL ─── */}
+      {showVoice && (
+        <VoiceCapture
+          businessId={data.businessId}
+          onComplete={refresh}
+          onClose={() => setShowVoice(false)}
         />
       )}
 

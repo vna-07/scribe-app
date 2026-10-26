@@ -19,6 +19,8 @@ import IntelligenceTab from "./IntelligenceTab";
 import GrowthTab from "./GrowthTab";
 import ReportsTab from "./ReportsTab";
 import OpportunitiesTab from "./OpportunitiesTab";
+import { calculateCompleteness } from "@/lib/completeness";
+import CompletenessCard from "@/components/CompletenessCard";
 
 type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports" | "opportunities" | "suppliers";
 
@@ -139,6 +141,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   };
 
   const weakestComponent = [...data.score.components].sort((a,b) => a.value - b.value)[0];
+  const completeness = calculateCompleteness(data.recentRecords as any); // recentRecords carries the fields calculateCompleteness needs
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#E9EBFF] text-[#14173F] font-sans relative">
@@ -286,6 +289,8 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 <div className="text-xs font-medium text-[#C5C9F5] mt-2">Evidence of readiness</div>
               </div>
             </div>
+
+            <CompletenessCard data={completeness} />
 
             {/* ─── ACTION CENTRE ─── */}
             <div className="animate-stagger bg-white dark:bg-[#1A1F52] rounded-[24px] p-6 border border-[#E1E4F7] dark:border-[#2A3070] shadow-sm mb-6">

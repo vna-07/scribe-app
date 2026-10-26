@@ -207,7 +207,7 @@ body {
     rgba(255, 255, 255, 0) 0,
     rgba(255, 255, 255, 0.4) 20%,
     rgba(255, 255, 255, 0.4) 60%,
-    rgba(255, 255, 255, 0)
+    rgba(255, 255, 255, 0) 100%
   );
   animation: shimmer 1.5s infinite;
 }
@@ -217,7 +217,7 @@ body {
     rgba(255, 255, 255, 0) 0,
     rgba(255, 255, 255, 0.05) 20%,
     rgba(255, 255, 255, 0.05) 60%,
-    rgba(255, 255, 255, 0)
+    rgba(255, 255, 255, 0) 100%
   );
 }
 
@@ -225,4 +225,59 @@ body {
 .btn-press:active {
   transform: scale(0.96);
   transition: transform 0.1s;
+}
+
+/* ─── DOCUMENT SCANNER ANIMATIONS ─── */
+@keyframes scan-beam {
+  0%   { top: 16px; opacity: 0.9; }
+  50%  { top: calc(100% - 19px); opacity: 1; }
+  100% { top: 16px; opacity: 0.9; }
+}
+
+.scan-beam {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #A9AEFF 20%, #5B5BE0 50%, #A9AEFF 80%, transparent);
+  box-shadow: 0 0 24px 6px rgba(91, 91, 224, 0.55);
+  animation: scan-beam 2.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes corner-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+.corner-bracket {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: #5B5BE0;
+  opacity: 0.7;
+  animation: corner-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes progress-indeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.progress-indeterminate {
+  animation: progress-indeterminate 2s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fade-in-up 0.4s ease-out; }
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .scan-beam,
+  .corner-bracket,
+  .progress-indeterminate {
+    animation: none !important;
+    opacity: 0.6;
+  }
 }

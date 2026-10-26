@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { rands } from "@/lib/format";
+import StartBusinessFlow from "@/components/StartBusinessFlow";
 
 export default function OpportunitiesTab({ businessId }: { businessId: string }) {
   const [activeTab, setActiveTab] = useState<"start" | "expand" | "funding">("expand");
+  const [showStartFlow, setShowStartFlow] = useState(false);
 
   // ─── FINANCIAL LAB STATE ───
   const [income, setIncome] = useState(12000);
@@ -28,7 +30,7 @@ export default function OpportunitiesTab({ businessId }: { businessId: string })
 
       {/* 3 Mode Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <button onClick={() => setActiveTab("start")} className={`p-6 rounded-2xl border-2 text-left transition-all ${activeTab === "start" ? "border-[#5B5BE0] bg-[#F1F2FF] dark:bg-[#2A3070]" : "border-[#E1E4F7] dark:border-[#2A3070] hover:border-[#A9AEFF]"}`}>
+        <button onClick={() => setShowStartFlow(true)} className={`p-6 rounded-2xl border-2 text-left transition-all ${activeTab === "start" ? "border-[#5B5BE0] bg-[#F1F2FF] dark:bg-[#2A3070]" : "border-[#E1E4F7] dark:border-[#2A3070] hover:border-[#A9AEFF]"}`}>
           <div className="w-10 h-10 rounded-xl bg-[#5B5BE0] text-white flex items-center justify-center mb-3">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
           </div>
@@ -52,6 +54,10 @@ export default function OpportunitiesTab({ businessId }: { businessId: string })
           <p className="text-xs text-[#4A4F7A] dark:text-[#C5C9F5]">Discover grants and youth programmes.</p>
         </button>
       </div>
+
+      {showStartFlow && (
+        <StartBusinessFlow onClose={() => setShowStartFlow(false)} />
+      )}
 
       {/* ─── EXPAND MODE: THE FINANCIAL LAB ─── */}
       {activeTab === "expand" && (

@@ -5,6 +5,8 @@ import type { DailyData, ExpenseCategory } from "@/lib/analytics";
 export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: number }) {
   const barWidth = 100 / data.length;
   // `?? 0` guards: a single missing field would produce NaN and poison the whole chart.
+  // Floor of 1 (not 100) — the floor exists only to prevent divide-by-zero on empty
+  // datasets; a 100-rand floor would shrink real small-value charts by 100x.
   const maxVal = Math.max(
     ...data.map((x) => Math.max(x.sales ?? 0, x.expenses ?? 0)),
     1,
@@ -24,7 +26,8 @@ export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: n
   return (
     <div className="w-full">
       <div className="flex gap-3">
-        {/* Y-axis labels — pt-6 aligns them with the 24px-inset gridlines */}
+        {/* Y-axis labels — pt-6 aligns them with the 24px-inset gridlines.
+            pb-6 would push them 24px ABOVE their corresponding gridlines. */}
         <div
           className="flex flex-col justify-between text-[10px] text-[#5A5F8C] dark:text-[#C5C9F5] font-bold tabular-nums text-right shrink-0 pt-6"
           style={{ height: `${height}px` }}
@@ -58,12 +61,17 @@ export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: n
               />
             ))}
 
-            {/* Bars — sales (left half) + expenses (right half) */}
+            {/* Bars — sales (left half) + expenses (right half).
+                Colors are hardcoded via Tailwind fill-[...] utilities instead of
+                fill="var(--chart-bar)" because var() in the SVG presentation
+                attribute doesn't reliably resolve in every toolchain. The
+                generated CSS rule `.fill-\[\#5B5BE0\] { fill: #5B5BE0 }` sets the
+                fill as a real CSS declaration, which works everywhere. */}
             {data.map((d, i) => {
               const salesH = ((d.sales ?? 0) / maxVal) * plotHeight;
               const expH = ((d.expenses ?? 0) / maxVal) * plotHeight;
-              const renderedSalesH = Math.max(1, salesH);
-              const renderedExpH = Math.max(1, expH);
+              const renderedSalesH = Math.max(2, salesH);
+              const renderedExpH = Math.max(2, expH);
 
               return (
                 <g key={d.date}>
@@ -72,7 +80,7 @@ export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: n
                     y={height - renderedSalesH}
                     width={barWidth * 0.38}
                     height={renderedSalesH}
-                    fill="var(--chart-bar)"
+                    className="fill-[#5B5BE0] dark:fill-[#A9AEFF]"
                     rx={0.5}
                   >
                     <title>{`${d.label}: Sales R${(d.sales ?? 0).toFixed(2)}`}</title>
@@ -82,7 +90,7 @@ export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: n
                     y={height - renderedExpH}
                     width={barWidth * 0.38}
                     height={renderedExpH}
-                    className="fill-[#E1E4F7] dark:fill-[#2A3070]"
+                    className="fill-[#D99A00] dark:fill-[#F2B84B] opacity-60"
                     rx={0.5}
                   >
                     <title>{`${d.label}: Expenses R${(d.expenses ?? 0).toFixed(2)}`}</title>

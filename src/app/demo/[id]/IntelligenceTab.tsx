@@ -6,6 +6,7 @@ import { rands } from "@/lib/format";
 import { generateAnalytics } from "@/lib/analytics";
 import { BarChart, DonutChart } from "@/components/Visuals";
 import ScoreExplainer from "@/components/ScoreExplainer";
+import RecommendationCards from "@/components/Recommendations";
 
 export default function IntelligenceTab({ data }: { data: DemoData; onRefresh?: () => void }) {
   const [showExplainer, setShowExplainer] = useState(false);
@@ -95,6 +96,16 @@ export default function IntelligenceTab({ data }: { data: DemoData; onRefresh?: 
           <DonutChart data={expenseCategories} />
         </div>
       </div>
+
+      {/* ─── THEMBA'S RECOMMENDATIONS ─── */}
+      <RecommendationCards
+        stockState={data.stockState}
+        chartRecords={data.chartRecords.map((r) => ({
+          kind: r.kind,
+          description: r.description,
+          amount_cents: r.amount_cents,
+        }))}
+      />
 
       {/* Business Decisions panel */}
       {(lowStock.length > 0 || openVariances.length > 0) && (

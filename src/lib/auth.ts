@@ -43,26 +43,28 @@ export async function readSession(): Promise<string | null> {
   }
 }
 
-export function setSessionCookie(token: string) {
-  // Next.js 16 requires awaiting cookies() before setting
-  import("next/headers").then(({ cookies }) => {
-    cookies().then((cookieStore) => {
-      cookieStore.set(COOKIE, token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7,
-        path: "/",
-      });
-    });
+// ─── THE FIX: async + await cookies() ───
+// The previous version used a fire-and-forget `.then()` chain, so the route
+// handler returned before `cookieStore.set()` executed and the browser never
+// received the Set-Cookie header. Making the function async and having callers
+// `await` it guarantees the header is attached before the response is sent.
+export async function setSessionCookie(token: string) {
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
   });
 }
 
-export function clearSessionCookie() {
-  import("next/headers").then(({ cookies }) => {
-    cookies().then((cookieStore) => {
-      cookieStore.set(COOKIE, "", { httpOnly: true, maxAge: 0, path: "/" });
-    });
+export async function clearSessionCookie() {
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE, "", {
+    httpOnly: true,
+    maxAge: 0,
+    path: "/",
   });
 }
 
@@ -103,7 +105,7 @@ export async function getUserBusinesses(userId: string) {
           ORDER BY b.created_at ASC`,
     args: [userId],
   });
-  return res.rows.map(r => ({
+  return res.rows.map((r) => ({
     id: String(r.id),
     name: String(r.name),
     business_type: String(r.business_type),

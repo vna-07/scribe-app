@@ -40,7 +40,7 @@ export async function POST(
       args: [userId, String(name).trim(), normalized, hashPassword(password), nowMs(), nowMs()],
     });
     const token = await createSession(userId);
-    setSessionCookie(token);
+    await setSessionCookie(token);
     return NextResponse.json({ ok: true });
   }
 
@@ -57,13 +57,13 @@ export async function POST(
     }
     const userId = String(res.rows[0].id);
     const token = await createSession(userId);
-    setSessionCookie(token);
+    await setSessionCookie(token);
     return NextResponse.json({ ok: true });
   }
 
   // ─── LOGOUT ───
   if (route === "logout") {
-    clearSessionCookie();
+    await clearSessionCookie();
     return NextResponse.json({ ok: true });
   }
 

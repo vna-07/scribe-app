@@ -19,10 +19,11 @@ SCRIBE turns fragmented business records into structured, tamper-evident financi
 ![Turso](https://img.shields.io/badge/Turso-libSQL-4ff8d2?logo=turso&logoColor=black)
 ![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?logo=vercel&logoColor=white)
 ![Gemini](https://img.shields.io/badge/AI-Gemini%20%2B%20Groq-8e75b2?logo=googlegemini&logoColor=white)
+![Version](https://img.shields.io/badge/Version-0.9.0-6366f1)
 ![Track](https://img.shields.io/badge/Track-Youth%20Entrepreneurship%20%26%20Small--Business%20Growth-16a34a)
 ![Status](https://img.shields.io/badge/Status-Working%20MVP-f59e0b)
 
-**[At a glance](#at-a-glance)** · **[Try it](#try-scribe)** · **[Problem](#the-problem)** · **[Solution](#the-solution)** · **[Features](#what-works-today)** · **[Ledger](#data-integrity-the-tamper-evident-ledger)** · **[Themba](#themba-the-business-copilot)** · **[Architecture](#architecture)** · **[Evidence](#testing-and-validation)** · **[Roadmap](#roadmap)** · **[Setup](#setup-and-environment)** · **[Contact](#team-and-contact)**
+**[At a glance](#at-a-glance)** · **[Try it](#try-scribe)** · **[Demo scripts](#demo-scripts-60-seconds-each)** · **[Problem](#the-problem)** · **[Solution](#the-solution)** · **[Features](#what-works-today)** · **[Ledger](#data-integrity-the-tamper-evident-ledger)** · **[Themba](#themba-the-business-copilot)** · **[Architecture](#architecture)** · **[Evidence](#testing-and-validation)** · **[Cost](#running-cost)** · **[Roadmap](#roadmap)** · **[Setup](#setup-and-environment)** · **[Contact](#team-and-contact)**
 
 </div>
 
@@ -38,6 +39,7 @@ SCRIBE turns fragmented business records into structured, tamper-evident financi
 | **Core idea** | *A business should not need perfect records before it can begin improving them.* |
 | **Design principle** | *AI reads, code decides, the trader confirms, the ledger remembers.* |
 | **Built for** | FNB App of the Year Hackathon 2026, Youth Entrepreneurship & Small-Business Growth track. |
+| **Version** | 0.9.0 (see [Version history](#version-history)) |
 | **Status** | Working MVP, live and deployed, running on a real (anonymised) spaza shop dataset. Not a finished product, and this README says where the limits are. |
 
 > *Most tools record what a business says happened. SCRIBE shows what the evidence supports, what doesn't reconcile, and what still needs to be verified.*
@@ -47,28 +49,35 @@ SCRIBE turns fragmented business records into structured, tamper-evident financi
 ## Table of contents
 
 1. [Try SCRIBE](#try-scribe)
-2. [Screenshots](#screenshots)
-3. [The problem](#the-problem)
-4. [Why this track](#why-this-track)
-5. [The solution](#the-solution)
-6. [What makes SCRIBE different](#what-makes-scribe-different)
-7. [What works today](#what-works-today)
-8. [Data integrity: the tamper-evident ledger](#data-integrity-the-tamper-evident-ledger)
-9. [Reconciliation and the financial engine](#reconciliation-and-the-financial-engine)
-10. [Themba, the business copilot](#themba-the-business-copilot)
-11. [Document intelligence](#document-intelligence)
-12. [Business Launch Studio and Growth Studio](#business-launch-studio-and-growth-studio)
-13. [Architecture](#architecture)
-14. [Data model](#data-model)
-15. [Security and privacy](#security-and-privacy)
-16. [Testing and validation](#testing-and-validation)
-17. [Development story and real-world engagement](#development-story-and-real-world-engagement)
-18. [Impact, limitations and responsible AI](#impact-limitations-and-responsible-ai)
-19. [Roadmap](#roadmap)
-20. [Setup and environment](#setup-and-environment)
-21. [API reference](#api-reference)
-22. [FAQ for reviewers](#faq-for-reviewers)
-23. [Team and contact](#team-and-contact)
+2. [Demo scripts (60 seconds each)](#demo-scripts-60-seconds-each)
+3. [Screenshots](#screenshots)
+4. [The problem](#the-problem)
+5. [Why this track](#why-this-track)
+6. [The solution](#the-solution)
+7. [What makes SCRIBE different](#what-makes-scribe-different)
+8. [What works today](#what-works-today)
+9. [Data integrity: the tamper-evident ledger](#data-integrity-the-tamper-evident-ledger)
+10. [Reconciliation and the financial engine](#reconciliation-and-the-financial-engine)
+11. [Themba's recommendation engine](#thembas-recommendation-engine)
+12. [Themba, the business copilot](#themba-the-business-copilot)
+13. [Document intelligence and voice capture](#document-intelligence-and-voice-capture)
+14. [Business Launch Studio and Growth Studio](#business-launch-studio-and-growth-studio)
+15. [Architecture](#architecture)
+16. [Data model](#data-model)
+17. [Security and privacy](#security-and-privacy)
+18. [Testing and validation](#testing-and-validation)
+19. [Running cost](#running-cost)
+20. [Development story and real-world engagement](#development-story-and-real-world-engagement)
+21. [Impact, limitations and responsible AI](#impact-limitations-and-responsible-ai)
+22. [Roadmap](#roadmap)
+23. [Setup and environment](#setup-and-environment)
+24. [Browser support](#browser-support)
+25. [Deployment and rollback](#deployment-and-rollback)
+26. [API reference](#api-reference)
+27. [Version history](#version-history)
+28. [Troubleshooting](#troubleshooting)
+29. [FAQ for reviewers](#faq-for-reviewers)
+30. [Team and contact](#team-and-contact)
 
 ---
 
@@ -78,6 +87,9 @@ SCRIBE turns fragmented business records into structured, tamper-evident financi
 
 The app opens onto a pre-seeded demo business built from real, anonymised spaza shop records. If you want a guided login or a walkthrough, [contact the team](#team-and-contact).
 
+**Demo login** (case-sensitive): `demo@scribe.co.za` / `DemoTrader2026!`
+If login fails, see [Troubleshooting](#troubleshooting).
+
 <details>
 <summary><b>A 3-minute tour for reviewers</b></summary>
 
@@ -86,11 +98,109 @@ The app opens onto a pre-seeded demo business built from real, anonymised spaza 
 | Minute | Where to look | What to notice |
 |---|---|---|
 | **0:00** | Dashboard | Revenue shown as a **range** tied to evidence quality, not a single confident number. A Consistency Score with its components. A data-completeness indicator. |
-| **0:45** | Stock | Per-product reconciliation. One seeded variance (Albany Bread, −8 units) is flagged with the expected versus counted figures. |
-| **1:15** | Themba | Ask *"Why is my bread stock off?"* Every figure in the answer comes from the deterministic engine. Ask for a loan decision and watch it refuse. |
-| **1:45** | Import | Upload a CSV or photo. Nothing is saved until you review and confirm the extracted rows. |
-| **2:15** | Reports | Open the printable A4 financial statement. It carries a cryptographic hash and a QR code that points to the public verification page. |
-| **2:45** | Launch Studio | Try the Reinvestment Simulator and the South African funding directory. |
+| **0:45** | Intelligence | **Themba's Recommendations**: deterministic, evidence-backed, with severity badges. |
+| **1:15** | Stock | Per-product reconciliation. One seeded variance (Albany Bread, −8 units) is flagged with the expected versus counted figures. |
+| **1:30** | Themba | Ask *"Why is my bread stock off?"* Every figure comes from the deterministic engine. Ask for a loan decision and watch it refuse. |
+| **1:50** | Judge Mode | Click **Try to Cheat** and watch the hash chain break, then **Restore**. |
+| **2:15** | Import and Voice | Upload a CSV or photo, or speak a transaction. Nothing is saved until you review and confirm. |
+| **2:40** | Reports and Verify | Open the printable A4 statement with hash and QR code, then the public verification page. |
+
+</details>
+
+---
+
+## Demo scripts (60 seconds each)
+
+Click-by-click maps to the features a judge is most likely to miss.
+
+<details>
+<summary><b>🎯 Show the recommendation engine (the signature feature)</b></summary>
+
+<br/>
+
+1. Click **Intelligence** in the sidebar.
+2. Scroll past the chart and donut.
+3. Look for **"Themba's Recommendations · 5 items"**.
+4. Notice the severity badges: 🔴 Action, 🔵 Monitor, 🟡 Variance.
+5. Expand any card with **Show evidence** to see the exact numbers.
+6. Click **Investigate** on a card to save it as a Growth Studio task.
+7. When nothing is flagged, the dashboard shows a quiet green state. This is deliberately honest.
+
+**What this proves:** every recommendation is computed deterministically from real records, with evidence, impact, downside and confidence labels. Not LLM-generated.
+
+</details>
+
+<details>
+<summary><b>🔐 Show the cryptographic tamper detection</b></summary>
+
+<br/>
+
+1. On the dashboard, scroll to the **Judge Mode** section.
+2. Click **Try to Cheat**.
+3. The header badge turns red: *"Chain broken at record #2"*.
+4. A red forensic banner appears.
+5. The tampered record is highlighted with a struck-through hash.
+6. Every subsequent record is faded, because the chain is invalid.
+7. Click **Restore** in the red banner.
+8. A green toast appears: *"Restored 21,093 records and 15,045 stock movements"*.
+9. The chain is green again.
+
+**What this proves:** the hash chain and Ed25519 signatures are real, and recovery is instant.
+
+</details>
+
+<details>
+<summary><b>🎤 Show voice capture</b></summary>
+
+<br/>
+
+1. Click the **Voice** button in the dashboard header.
+2. Tap the large microphone button.
+3. Say: *"I bought 12 bottles of cooking oil for 240 rand"*.
+4. The transcript appears live with a real waveform (not a fake animation).
+5. Click **Review transaction →**.
+6. See the extracted fields: Type = Expense, Amount = 240.00, Quantity = 12.
+7. Notice the **stock-impact preview** if a matching product exists.
+8. Confirm to seal the record.
+
+**Try the ambiguous cases:** *"I bought oil for 240 and sold it for 300"* → the parser refuses. *"I bought 12 bottles for R24 each"* → it multiplies correctly.
+
+**What this proves:** a real pipeline, a deterministic parser and honest failure modes.
+
+</details>
+
+<details>
+<summary><b>🧠 Show Themba's refusals</b></summary>
+
+<br/>
+
+1. Click **Ask Themba** in the dashboard header.
+2. Ask: *"Will I get a loan?"* → it refuses and offers an honest alternative.
+3. Ask: *"Was I robbed?"* → it refuses to accuse anyone.
+4. Ask: *"Should I invest in stocks?"* → it refuses regulated advice.
+5. Ask: *"Why is my bread stock short?"* → it answers from the deterministic engine, cites records and offers an approval card.
+
+**What this proves:** pre-flight safety gates, grounded answers and consent before action.
+
+</details>
+
+<details>
+<summary><b>💳 Show the public verification page</b></summary>
+
+<br/>
+
+1. From any dashboard, click **Share** or open the printable statement.
+2. Copy the QR code URL, or visit:
+   `https://scribe-app-xi.vercel.app/verify/851ffbcf-8694-4194-8df6-7ed51846dc96`
+3. No login is required.
+4. The page shows:
+   - ✓ Chain integrity status
+   - Business identity
+   - Documented readiness range
+   - A **"What this proves" / "What this does NOT prove"** section
+   - Evidence mix (reported / document-supported / counter-signed)
+
+**What this proves:** a lender can independently verify the record without an account, and the page is honest about what the seal does not prove.
 
 </details>
 
@@ -115,6 +225,10 @@ The app opens onto a pre-seeded demo business built from real, anonymised spaza 
   <tr>
     <td width="50%"><img src="docs/screenshots/verify-page.png" alt="Public ledger verification page"/><br/><sub><b>Public verification.</b> No login needed for a lender to check integrity.</sub></td>
     <td width="50%"><img src="docs/screenshots/financial-statement.png" alt="Printable A4 financial statement with hash and QR code"/><br/><sub><b>Financial statement.</b> Printable, hashed, with QR code.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/judge-mode.png" alt="Judge Mode showing a broken hash chain and forensic banner"/><br/><sub><b>Judge Mode.</b> Tamper detection and instant restore.</sub></td>
+    <td width="50%"><img src="docs/screenshots/voice-capture.png" alt="Voice capture with live transcript and waveform"/><br/><sub><b>Voice capture.</b> Live transcript, review before sealing.</sub></td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/launch-studio.png" alt="Business Launch Studio reinvestment simulator"/><br/><sub><b>Launch Studio.</b> Reinvestment simulator and funding directory.</sub></td>
@@ -186,12 +300,12 @@ SCRIBE connects the whole journey from an everyday record to an actionable resul
 
 | Step | What happens | Why it matters |
 |---|---|---|
-| **1. Capture** | The owner photographs a receipt, uploads a CSV, XLSX or PDF, enters a sale by hand, or sends a record through the Telegram channel. | No one has to rebuild their record-keeping before getting value. |
-| **2. Extract** | Fields are pulled out of messy sources and structured into transactions. | Turns paper and spreadsheets into data. |
+| **1. Capture** | The owner photographs a receipt, uploads a CSV, XLSX or PDF, speaks a transaction, enters a sale by hand, or sends a record through the Telegram channel. | No one has to rebuild their record-keeping before getting value. |
+| **2. Extract** | Fields are pulled out of messy sources and structured into transactions. | Turns paper, speech and spreadsheets into data. |
 | **3. Review** | The owner sees what was read, corrects uncertain fields and confirms. **Nothing is saved before this step.** | Keeps the human in charge and keeps errors out of the books. |
 | **4. Reconcile** | Sales, expenses, purchases and stock movements are compared per product. Variances are flagged. | Shows what the evidence supports and what does not add up. |
 | **5. Seal** | Each confirmed record is canonicalised, hashed, chained to the previous record and signed. | Any later change is detectable. |
-| **6. Understand** | Revenue ranges, a Consistency Score, completeness tracking and plain-language explanations from Themba. | Turns numbers into decisions. |
+| **6. Understand** | Revenue ranges, a Consistency Score, completeness tracking, deterministic recommendations and plain-language explanations from Themba. | Turns numbers into decisions. |
 | **7. Grow** | Guided tasks, purchase orders, reinvestment scenarios and a funding directory. Exportable, verifiable statements for lenders. | Moves from "what happened" to "what next". |
 
 ```mermaid
@@ -199,6 +313,7 @@ journey
     title A trader's week with SCRIBE
     section Everyday records
       Photograph a supplier receipt: 4: Owner
+      Say a purchase out loud: 5: Owner
       Upload last month's stock sheet: 3: Owner
       Record a sale at the till: 5: Owner
     section Trust the numbers
@@ -220,12 +335,15 @@ SCRIBE is not an OCR demo and not a ledger demo. The differentiator is how the p
 | Differentiator | What it means in practice | Status |
 |---|---|---|
 | **Reconciliation, not just extraction** | Per-product stock math flags variances instead of simply displaying what was read from a document. | ✅ Working |
-| **Traceable, tamper-evident records** | SHA-256 hash chain with Ed25519 signatures and a public verification page. | ✅ Working |
+| **Deterministic recommendations** | Themba's Recommendations are computed from records with evidence, impact, downside and confidence. Not LLM-generated. | ✅ Working |
+| **Traceable, tamper-evident records** | SHA-256 hash chain with Ed25519 signatures, a public verification page and a live Judge Mode tamper demo. | ✅ Working |
 | **Honest uncertainty** | Revenue is a range that reflects evidence quality. The tool says what it cannot confirm. | ✅ Working |
 | **Explainable readiness insight** | A 5-component Consistency Score with transparent counterfactuals ("what would change this score"). | ✅ Working |
-| **Review-first imports** | CSV, XLSX, PDF and photo imports all stop for confirmation. | ✅ Working |
+| **Review-first imports** | CSV, XLSX, PDF, photo and voice captures all stop for confirmation. | ✅ Working |
+| **Voice capture** | Speak a transaction. A deterministic parser extracts it and refuses ambiguous input. | ✅ Working (browser-dependent) |
 | **Themba, a grounded copilot** | Context-aware, refuses unsafe requests, proposes actions that need approval. | ✅ Working |
 | **Planning and funding preparation** | Start, Expand and Find Funding modes, a reinvestment simulator, a South African funding directory. | ✅ Working |
+| **Trust Centre** | A single place explaining integrity, privacy and what the seal does and does not prove. | ✅ Working |
 | **Telegram capture channel** | Send records through a chat app people already use. | 🧪 Prototype |
 | **Adaptive record structures** | Business-specific columns and vocabulary, learned per business. | 🧭 Planned (UI mockup built) |
 | **WhatsApp Business integration** | The channel most traders actually live in. | 🧭 Planned |
@@ -243,6 +361,7 @@ SCRIBE is not an OCR demo and not a ledger demo. The differentiator is how the p
 - Every record is canonicalised, SHA-256 hashed, chained to the previous record and Ed25519-signed.
 - Any modification breaks the chain and is detectable on verification.
 - A public page at `/verify/[business-id]` lets a lender or auditor confirm integrity without logging in.
+- **Judge Mode** lets a reviewer deliberately tamper with a record, watch the chain break, and restore it.
 - Append-only by design. Corrections are new records, not silent overwrites.
 
 </details>
@@ -259,24 +378,35 @@ SCRIBE is not an OCR demo and not a ledger demo. The differentiator is how the p
 </details>
 
 <details>
+<summary><b>🎯 Recommendation engine</b></summary>
+
+- Computed deterministically from real records.
+- Each card carries a severity badge (Action, Monitor, Variance), an evidence panel, impact, downside and a confidence label.
+- **Investigate** turns a recommendation into a Growth Studio task.
+- Shows a quiet "nothing flagged" state rather than inventing issues.
+
+</details>
+
+<details>
 <summary><b>📊 Deterministic financial engine</b></summary>
 
 - Per-product stock reconciliation rather than aggregate math.
 - Revenue **ranges** that reflect evidence quality.
 - 5-component Consistency Score with counterfactuals.
 - Data-completeness tracking: how much activity is backed by evidence.
-- Pure SVG charts with no third-party chart library.
+- Pure SVG charts with no third-party chart library. Charts anchor to the latest transaction date in the dataset.
 
 </details>
 
 <details>
-<summary><b>📥 Document intelligence</b></summary>
+<summary><b>📥 Document intelligence and 🎤 voice</b></summary>
 
 - CSV import with column mapping (PapaParse).
 - XLSX and XLS import (SheetJS).
 - PDF extraction through Gemini's native PDF reading.
 - Photo scanning with an animated scan beam, corner brackets and a consent gate.
-- Review-first workflow on every import.
+- Voice capture with a live transcript, a real waveform and a deterministic parser.
+- Review-first workflow on every import, with a stock-impact preview.
 
 </details>
 
@@ -307,6 +437,7 @@ SCRIBE is not an OCR demo and not a ledger demo. The differentiator is how the p
 - CSV transaction ledger export.
 - Printable A4 financial statement with its cryptographic hash and a QR code.
 - Evidence workspace: a split view of the original receipt next to the extracted data.
+- Trust Centre explaining what the seal proves and does not prove.
 
 </details>
 
@@ -314,7 +445,7 @@ SCRIBE is not an OCR demo and not a ledger demo. The differentiator is how the p
 <summary><b>🎨 Experience</b></summary>
 
 - Three themes: Daylight, Night and Sunlight (high contrast).
-- Installable PWA, offline banner with auto-recovery detection.
+- Installable PWA with an install prompt, offline banner and auto-recovery detection.
 - Spring-physics animation, skeleton loaders, cursor-tracking spotlight cards.
 - Glassmorphic mobile bottom navigation.
 
@@ -327,17 +458,20 @@ mindmap
       Photo OCR
       CSV and XLSX
       PDF
+      Voice
       Manual entry
       Telegram prototype
     Trust
       SHA-256 hash chain
       Ed25519 signatures
       Public verification
+      Judge Mode
       Review first
     Understand
       Per-product reconciliation
       Revenue ranges
       Consistency Score
+      Recommendations
       Completeness
     Act
       Themba copilot
@@ -348,6 +482,7 @@ mindmap
       Printable statement
       QR and hash
       Evidence workspace
+      Trust Centre
 ```
 
 ---
@@ -411,7 +546,7 @@ An illustrative, simplified record shape (not the exact production schema):
 | The order of records has not been rearranged. | That the amounts were entered honestly. |
 | The server signed the record. | That a supplier or customer agrees with it. |
 
-That second column is why SCRIBE has **evidence tiers** and a data-completeness measure, and why counter-signing and a consented bank-feed tier are on the roadmap. A tamper-evident record is not automatically a genuine transaction, and SCRIBE says so on its own verification page and statements.
+That second column is why SCRIBE has **evidence tiers** (reported, document-supported, counter-signed) and a data-completeness measure, and why counter-signing and a consented bank-feed tier are on the roadmap. A tamper-evident record is not automatically a genuine transaction, and SCRIBE says so on its own verification page and statements.
 
 ---
 
@@ -439,6 +574,20 @@ flowchart TD
 **Revenue as a range.** When some sales are backed by evidence and some are only claimed, a single revenue number would overstate certainty. SCRIBE shows a range whose width reflects how much of the activity is evidence-backed.
 
 **Consistency Score.** A 5-component score, with transparent counterfactuals that show what would raise or lower it. It is an explainable indicator of how consistent the records are. It is **not** a credit score and has not been validated against lender decisions (see [Testing and validation](#testing-and-validation)).
+
+---
+
+## Themba's recommendation engine
+
+The recommendation engine is the signature feature of the Intelligence view. It is separate from the chat copilot and does not use a language model to decide what to flag.
+
+| Property | How it works |
+|---|---|
+| **Source** | Computed from sealed records, stock movements and reconciliation results. |
+| **Severity** | 🔴 Action, 🔵 Monitor, 🟡 Variance. |
+| **Explainability** | Every card has **Show evidence** with the exact numbers, plus impact, downside and a confidence label. |
+| **Follow-through** | **Investigate** saves the item as a Growth Studio task. |
+| **Honest quiet** | When nothing is flagged, the view shows a calm green state instead of manufacturing advice. |
 
 ---
 
@@ -476,11 +625,11 @@ flowchart TD
 
 ---
 
-## Document intelligence
+## Document intelligence and voice capture
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Uploaded: photo, CSV, XLSX or PDF
+    [*] --> Uploaded: photo, CSV, XLSX, PDF or voice
     Uploaded --> Extracting: consent gate for photos
     Extracting --> InReview: fields extracted
     Extracting --> Failed: unreadable or unsupported
@@ -500,6 +649,7 @@ stateDiagram-v2
 | XLSX / XLS | SheetJS | Sheet and column mapping before import. |
 | PDF | Gemini native PDF reading | Output is a draft until confirmed. |
 | Photo | Gemini vision with a consent gate | Scan animation, corner brackets, review screen. |
+| Voice | Browser Web Speech API plus a deterministic parser | Live transcript and waveform. Refuses ambiguous statements. Chrome, Edge and Safari only. |
 | Manual | Sale and expense forms | Auto-deducts stock and updates cash flow. |
 
 The original document stays linked to what was extracted from it. The evidence workspace shows them side by side so a reviewer, or a lender, can see where a number came from.
@@ -525,6 +675,7 @@ flowchart LR
         TASKS["Goals, tasks, milestones"]
     end
     TH["Themba proposes tasks"] -. "owner approves" .-> TASKS
+    REC["Recommendations: Investigate"] -.-> TASKS
 ```
 
 Projections rest on **explicit assumptions and the records the business actually has**. They are scenarios to think with, not guaranteed outcomes, and SCRIBE does not promise that funding will be granted.
@@ -554,6 +705,7 @@ flowchart TB
         E2["Consistency Score"]
         E3["Revenue ranges"]
         E4["Completeness"]
+        E5["Recommendations"]
     end
     subgraph LED["Cryptographic ledger"]
         L1["Canonicalise"]
@@ -594,8 +746,8 @@ Every request passes the same gates, in the same order:
 | Database | Turso (libSQL, serverless SQLite) | Cheap, fast, simple to back up and reason about. |
 | Auth | Custom JWT with `jose`, scrypt hashing, httpOnly cookies | Small attack surface, no third-party session store. |
 | Cryptography | Node `crypto` (SHA-256, Ed25519) | Standard, audited primitives instead of anything custom. |
-| AI | Gemini (primary), Groq Llama 3.3 (fallback) | Resilience and cost control across providers. |
-| Parsing | PapaParse, SheetJS, Gemini vision | Cover the formats traders really have. |
+| AI | Gemini (primary), Groq Llama 3.3 (fallback) | Resilience and cost control across providers, swappable without product changes. |
+| Parsing | PapaParse, SheetJS, Gemini vision, Web Speech API | Cover the formats traders really have. |
 | Charts | Pure SVG | No external chart libraries to load or audit. |
 | Hosting | Vercel | Automatic deployments from `main`. |
 
@@ -666,12 +818,49 @@ The schema lives in `src/lib/schema.sql` and is applied idempotently by `scripts
 | **Secrets** | Configuration through environment variables. `.env.local` is gitignored. |
 | **AI processing** | External AI processing is disclosed to users. Photo scanning is behind a consent gate. |
 
+> **MVP caveat:** in this MVP the password-reset token is returned in the API response instead of being emailed, so the flow can be tested without an email provider. This must be replaced with email delivery before any real-world use (see [Roadmap](#roadmap)).
+
 ### POPIA
 
 - A Privacy Policy is published at `/privacy`.
 - The demo dataset comes from a real shop whose owner **consented** to anonymised use. Customer names, personal identifiers and sensitive items were anonymised or removed.
 - No customer personal information appears in the demo.
 - Data deletion is available on request.
+
+### Data retention and deletion
+
+| Data type | Retention | Deletion trigger |
+|---|---|---|
+| **Account (name, email, hashed password)** | Until the user requests deletion | Hard delete on request |
+| **Business profile** | Until the user requests deletion | Hard delete on request |
+| **Business records (sealed)** | Until the user requests deletion | Deleted from the ledger. Statements already issued remain valid but are marked superseded. |
+| **Uploaded documents** | Until the user requests deletion | Deleted from storage. Extraction results remain, with the evidence reference marked `[removed]`. |
+| **Audit log** | 6 months | Automatic sweep |
+| **Password reset tokens** | 30 minutes | Automatic expiry |
+
+**How to request deletion:** email the team using the [contact details](#team-and-contact) below. Account deletion is a manual process in this MVP. Automated self-service deletion is on the roadmap.
+
+**What is not deleted:** the last hash and signature for a business remain verifiable against its business ID after records are deleted. This is by design, because the chain proves what existed at a point in time. It contains hashes only, not record contents.
+
+### What we track (and what we don't)
+
+**We track product events, not business data:**
+
+- `signup_completed`, `login_completed` (user ID only)
+- `sale_recorded`, `expense_recorded` (business ID and user ID, no amounts)
+- `csv_import_completed`, `csv_import_failed` (row count only, no content)
+- `ledger_tampered`, `ledger_restored` (business ID, event only)
+- `themba_message_sent`, `themba_action_approved` (provider name, no content)
+
+**We do not track:**
+
+- Transaction descriptions or amounts
+- Receipt images or OCR text
+- AI prompt contents or responses
+- Email addresses in analytics events
+- Any customer personal information
+
+Analytics events are used only to improve the product. They are not shared with advertisers or unrelated third parties.
 
 ---
 
@@ -699,21 +888,60 @@ npx tsx --env-file=.env.local scripts/test-score.ts
 |---|---|---|
 | **Demo dataset** | Real, anonymised spaza records loaded into the live workspace | 21,093 transactions (2021–2026), 44 products, 15,045 stock movements |
 | **Reconciliation detection** | Whether a known, seeded discrepancy is surfaced | Seeded Albany Bread −8 variance is flagged. This is a demonstration test, **not** an accuracy benchmark. |
-| **Ledger tamper detection** | Whether altering a sealed record is detected | Detected by chain verification (covered by `test-ledger.ts`). Published pass counts: *not yet compiled in this README.* |
+| **Ledger tamper detection** | Whether altering a sealed record is detected | Detected by chain verification (`test-ledger.ts`) and demonstrable live in Judge Mode. Published pass counts: *not yet compiled in this README.* |
+| **Voice parser behaviour** | Whether ambiguous statements are refused and unit prices multiplied correctly | Verified on the example phrases in the demo script. **No systematic accuracy benchmark yet.** |
 | **OCR accuracy** | Field-level accuracy on manually verified sample documents | **Not yet evaluated** |
 | **Human correction rate** | How often extracted fields need correcting | **Not yet evaluated** |
 | **Handwriting and format coverage** | Performance across handwriting styles and document layouts | **Not yet evaluated** |
 | **Business-owner usefulness** | Structured feedback from owners, with permission | **Not yet evaluated.** Early conversations only (see below). |
 | **Lender usefulness** | Whether external lenders find the statements and verification page useful | **Not yet evaluated** |
 | **Consistency Score validity** | Whether the score tracks real business health | **Not yet validated.** Method is transparent, outcomes are unproven. |
+| **Load performance** | Dashboard load time with 21,093 records | **Target: under 2 seconds on a mobile connection. Not yet formally benchmarked.** |
+
+### What happens when things fail
+
+| Failure | Behaviour | Recovery |
+|---|---|---|
+| **Gemini rate limit (429)** | Automatic fallback to Groq Llama 3.3 | None needed. The user sees a normal response. |
+| **Groq rate limit** | Automatic fallback to the deterministic engine | Response is shorter but still grounded. |
+| **Both AI providers down** | Deterministic fallback answers from engine data | Same as above. |
+| **Turso database unreachable** | Error toast, form preserved, retry available | Retry re-sends the exact request. |
+| **Voice recognition failure** | Transcript preserved, error shown, retry button | Edit the transcript or switch to manual entry. |
+| **Browser doesn't support voice** | Clear message and manual entry fallback | **+ Record Sale** / **− Record Expense**. |
+| **OCR extraction fails** | Original photo preserved, error shown | Retake or manual entry. |
+| **Password reset token expired** | Clear error message | Request a new reset link. |
+| **Session expired mid-action** | Redirected to login, work preserved in form | Log in and re-submit. |
+| **Tamper detected** | Red forensic banner, chain-broken state, later records faded | Judge Mode **Restore** button. |
+| **Deployment fails** | Vercel blocks the deploy and the previous version stays live | No action needed for the demo. |
 
 ### What we plan to measure next
 
 1. Field-level OCR accuracy on a manually labelled sample of receipts, stock sheets and handwritten notes.
 2. Correction rate during review, per field type.
-3. Time to first useful insight for a new owner.
-4. Structured feedback sessions with consenting owners.
-5. A short review of the printable statement and verification page with a lender or support-programme officer.
+3. Voice parser accuracy across accents and phrasings, including isiXhosa and isiZulu code-switching.
+4. Time to first useful insight for a new owner.
+5. Structured feedback sessions with consenting owners.
+6. A short review of the printable statement and verification page with a lender or support-programme officer.
+
+---
+
+## Running cost
+
+The demo runs on free tiers. The table below shows what a pilot would plausibly cost.
+
+| Component | Free tier (what the demo uses) | At pilot scale (about 10 businesses, estimate) |
+|---|---|---|
+| **Vercel** | Hobby (free) | Pro: about $20/month |
+| **Turso** | Free tier (generous storage and row-read allowance) | Developer plan: about $29/month |
+| **Gemini API** | Free tier with rate limits | Pay-as-you-go, low at this volume |
+| **Groq API** | Free tier | Minimal (fallback only) |
+| **Total** | **$0 / month** | **about $50 / month** |
+
+At roughly 100 businesses, the team estimates hosting plus AI at **about $200–300/month**. A planned pilot price of **R2,500/month per lender pilot** would cover this with margin; that pricing is an assumption that has not been tested with any lender.
+
+> Provider pricing and free-tier limits change. Treat these figures as estimates and check each provider's current pricing page before relying on them.
+
+AI providers sit behind one gateway, so if a free tier ends, the product switches to another provider or a paid tier without code changes to the features themselves.
 
 ---
 
@@ -741,6 +969,7 @@ This engagement is **a starting point, not proof of broad adoption or financial 
 - **Real records are messy.** That is why imports are review-first and why revenue is a range.
 - **A number without a source is a liability.** That is why every record is sealed and every extraction is linked to its evidence.
 - **Owners need explanations, not dashboards.** That is why Themba exists, and why it is grounded in the engine.
+- **Spoken is faster than typed.** That is why voice capture exists, and why its parser refuses to guess.
 - **Trust comes from admitting limits.** That is why this README has a limitations section.
 
 ---
@@ -773,17 +1002,20 @@ This engagement is **a starting point, not proof of broad adoption or financial 
 - The import wizard does not yet detect duplicates through idempotency keys.
 - Forecasts beyond 14 days use simplified assumptions.
 - OCR quality across handwriting styles and layouts has not been measured.
+- Voice capture depends on the browser's speech recognition and is unavailable on Firefox.
 - The Consistency Score is explainable but unvalidated against outcomes.
+- Password-reset emails are not yet sent (see the MVP caveat above).
+- Account deletion is manual.
 - Multi-language support (isiXhosa, isiZulu, Afrikaans) has infrastructure in place, but translations are awaiting native-speaker review.
 
 ### Responsible AI principles
 
 1. **Make assumptions visible.** Ranges, counterfactuals and completeness measures exist so uncertainty is shown, not hidden.
 2. **Keep humans in control.** Review-first imports and approval cards mean nothing important happens silently.
-3. **Ground every figure.** The model explains numbers computed by code.
+3. **Ground every figure.** The model explains numbers computed by code, and recommendations are deterministic.
 4. **Refuse what it should refuse.** No credit decisions, no accusations, no regulated advice.
 5. **Fail safely.** If AI is unavailable, deterministic answers still work.
-6. **Respect people's data.** Consent, anonymisation, disclosure of external processing, deletion on request.
+6. **Respect people's data.** Consent, anonymisation, disclosure of external processing, minimal telemetry, deletion on request.
 
 ---
 
@@ -794,16 +1026,18 @@ flowchart LR
     subgraph NOW["Now: working MVP"]
         N1["Hash-chained, signed ledger"]
         N2["Per-product reconciliation"]
-        N3["Themba copilot"]
-        N4["Review-first imports"]
+        N3["Themba copilot and recommendations"]
+        N4["Review-first imports and voice"]
         N5["Launch and Growth Studios"]
     end
     subgraph NEXT["Next: validate and harden"]
-        X1["OCR accuracy study"]
+        X1["OCR and voice accuracy study"]
         X2["Duplicate detection on import"]
         X3["Owner feedback sessions"]
         X4["Native-reviewed isiXhosa, isiZulu, Afrikaans"]
-        X5["Full PDF invoice export"]
+        X5["Email delivery for password reset"]
+        X6["Self-service account deletion"]
+        X7["Full PDF invoice export"]
     end
     subgraph LATER["Later: reach and trust"]
         L1["WhatsApp Business integration"]
@@ -842,6 +1076,8 @@ cp .env.example .env.local
 # apply the schema to Turso (idempotent)
 node --env-file=.env.local scripts/push-schema.mjs
 ```
+
+To (re)create the demo business and its dataset, see `scripts/import-siyanda.ts`.
 
 ### Run
 
@@ -884,11 +1120,31 @@ NEXT_PUBLIC_APP_URL=https://scribe-app-xi.vercel.app
 |---|---|
 | `scripts/push-schema.mjs` | Idempotently applies the schema to Turso |
 | `scripts/gen-keys.mjs` | Generates an Ed25519 key pair |
+| `scripts/import-siyanda.ts` | Recreates the demo business, dataset and demo account |
 | `scripts/test-ledger.ts` | Tests hash chain and signature integrity |
 | `scripts/test-reconcile.ts` | Tests stock reconciliation math |
 | `scripts/test-score.ts` | Tests readiness scoring |
 
-### Deployment
+---
+
+## Browser support
+
+**Minimum requirements:** Node 20+ on the server and a modern browser (2023 or newer) on the client. No IE11 and no legacy Edge.
+
+| Browser | Core app | Voice capture | PWA install | Notes |
+|---|---|---|---|---|
+| **Chrome (desktop)** | ✅ | ✅ | ✅ | Full support |
+| **Chrome (Android)** | ✅ | ✅ | ✅ | Install prompt available |
+| **Safari (desktop)** | ✅ | ✅ | ✅ | Full support |
+| **Safari (iOS)** | ✅ | ✅ | ✅ | Voice may need a tap to enable. Install via Share → Add to Home Screen. |
+| **Edge (desktop)** | ✅ | ✅ | ✅ | Full support |
+| **Firefox** | ✅ | ❌ | ❌ | Voice capture unsupported. Manual entry fallback is shown. |
+
+Charts are pure SVG, so no chart library is loaded. The dashboard load-time target is covered under [Testing and validation](#testing-and-validation).
+
+---
+
+## Deployment and rollback
 
 Deployed on Vercel with automatic deployments from the `main` branch.
 
@@ -902,6 +1158,18 @@ Production checklist:
 - ✅ Turso database configured with the schema
 - ✅ Ed25519 keys generated and stored securely
 - ✅ Domain: `scribe-app-xi.vercel.app`
+
+### Rollback procedure
+
+If a deployment breaks production:
+
+1. Open **Vercel → Deployments**.
+2. Find the last known-good deployment.
+3. Open its three-dot menu and choose **Promote to Production**.
+4. Vercel swaps the domain to the previous build, typically within seconds.
+5. No database migration rollback is needed, because the schema is idempotent and additive.
+
+The database is protected by Turso's backup and point-in-time recovery features. Confirm the retention window for your Turso plan in the Turso dashboard and test a restore before relying on it for production data.
 
 ---
 
@@ -930,6 +1198,68 @@ All routes require a valid session cookie except `/api/auth/*`.
 | POST | `/api/themba` | AI assistant gateway |
 | POST | `/api/scam-shield` | Rule-based scam detection |
 | GET | `/api/ledger/verify` | Chain integrity check |
+| GET | `/verify/[business-id]` | Public verification page (no login) |
+
+---
+
+## Version history
+
+| Version | Date | Status | Highlights |
+|---|---|---|---|
+| **0.9.0** | 2026-10-26 | Current | Voice capture, recommendation engine, Trust Centre, PWA install prompt, Judge Mode, all P0 fixes from the security audit |
+| **0.8.0** | 2026-10-25 | Superseded | Real Siyanda dataset integration, adaptive onboarding |
+| **0.7.0** | 2026-10-25 | Superseded | Cryptographic ledger, deterministic reconciliation |
+| **0.6.0** | 2026-10-24 | Superseded | Core dashboard, Themba AI gateway |
+| **0.5.0** | 2026-10-24 | Superseded | Initial Next.js scaffold, auth, schema |
+
+---
+
+## Troubleshooting
+
+<details>
+<summary><b>Login says "Incorrect email or password"</b></summary>
+
+<br/>
+
+The demo credentials are `demo@scribe.co.za` / `DemoTrader2026!` and are case-sensitive. If the password was changed through the reset flow, the demo credentials no longer work. Run `scripts/import-siyanda.ts` to recreate the demo account.
+
+</details>
+
+<details>
+<summary><b>Voice capture says "not supported"</b></summary>
+
+<br/>
+
+You are probably on Firefox. The Web Speech API works on Chrome, Edge and Safari. Use manual entry or switch browsers. On iOS Safari, you may need to tap to enable the microphone.
+
+</details>
+
+<details>
+<summary><b>The chart shows no bars</b></summary>
+
+<br/>
+
+The chart anchors to the **latest transaction date in the dataset**, not today's date. A business with no recent records shows an empty chart by design. The demo business (Siyanda's Spaza) has records through October 2026.
+
+</details>
+
+<details>
+<summary><b>Password reset token doesn't work</b></summary>
+
+<br/>
+
+The token expires after 30 minutes and works once. Request a new one via `/login` → "Forgot password". In this MVP the token is returned in the API response, not emailed, so the flow can be tested. Email delivery is on the roadmap.
+
+</details>
+
+<details>
+<summary><b>The chain shows as broken and I didn't click "Try to Cheat"</b></summary>
+
+<br/>
+
+Open Judge Mode on the dashboard and click **Restore**. If the chain is still broken afterwards, run `scripts/test-ledger.ts` and contact the team.
+
+</details>
 
 ---
 
@@ -940,7 +1270,7 @@ All routes require a valid session cookie except `/api/auth/*`.
 
 <br/>
 
-Yes. The demo workspace runs on real transaction records from a Western Cape spaza shop, anonymised with the owner's consent. Customer names, personal identifiers and sensitive items were removed. One variance was seeded deliberately to demonstrate reconciliation.
+Yes. The demo workspace runs on real transaction records from a spaza shop, anonymised with the owner's consent. Customer names, personal identifiers and sensitive items were removed. One variance was seeded deliberately to demonstrate reconciliation.
 
 </details>
 
@@ -958,7 +1288,7 @@ No, and the product says so. It proves a record has not been altered since seali
 
 <br/>
 
-Figures come from the deterministic engine, not the model. If every AI provider is down, a deterministic fallback still answers. Themba also refuses credit decisions, theft accusations and regulated financial advice, and any action it proposes needs the owner's approval.
+Figures come from the deterministic engine, not the model, and the recommendation engine does not use a language model at all. If every AI provider is down, a deterministic fallback still answers. Themba also refuses credit decisions, theft accusations and regulated financial advice, and any action it proposes needs the owner's approval.
 
 </details>
 
@@ -986,6 +1316,24 @@ See [What makes SCRIBE different](#what-makes-scribe-different) for status flags
 <br/>
 
 Every API route calls `authorizeBusiness(business_id)` before reading or writing. Unauthorised requests get a 404 rather than a 403 so business IDs cannot be probed.
+
+</details>
+
+<details>
+<summary><b>What does it cost to run?</b></summary>
+
+<br/>
+
+$0 per month for the demo on free tiers, and an estimated $50 per month for a 10-business pilot. See [Running cost](#running-cost) for the breakdown and caveats.
+
+</details>
+
+<details>
+<summary><b>What happens to my data if I ask for deletion?</b></summary>
+
+<br/>
+
+Your account, business profile, records and uploaded documents are deleted. Previously issued statements are marked superseded, and only the final hash and signature remain verifiable. See [Data retention and deletion](#data-retention-and-deletion).
 
 </details>
 
@@ -1019,6 +1367,7 @@ With thanks to **Mr Lungiswa**, who trusted us with five years of real business 
 | **Hash chain** | Records linked so that each one contains the hash of the one before it. |
 | **Ed25519** | A modern digital signature scheme. |
 | **Tamper-evident** | Changes cannot be made without being detectable. Not the same as tamper-proof. |
+| **Judge Mode** | A demo control that deliberately tampers with a record so reviewers can watch detection and recovery. |
 | **POPIA** | South Africa's Protection of Personal Information Act. |
 | **NYDA / SEDFA / DSBD** | National Youth Development Agency, Small Enterprise Development and Finance Agency, Department of Small Business Development. |
 
@@ -1035,8 +1384,4 @@ Built for educational and demonstration purposes as part of the FNB App of the Y
 
 **Better records. Clearer decisions. More informed growth.**
 
-<<<<<<< HEAD
 </div>
-=======
-</div>
->>>>>>> 48237f2 (Docs: Comprehensive README + supporting docs)

@@ -18,12 +18,22 @@ export function generateAnalytics(records: LedgerRecord[]) {
   const sales = records.filter((r) => r.kind === "sale");
   const expenses = records.filter((r) => r.kind === "expense");
 
-  // 1. Group by day for the last 14 days
+  // ─── ANCHOR THE CHART TO THE LATEST RECORD ───
+  // Siyanda's data ends in the past. If we used today's date,
+  // the chart would be empty. So we anchor to the last transaction.
+  let maxTime = Date.now();
+  if (records.length > 0) {
+    maxTime = Math.max(...records.map((r) => r.occurred_at));
+  }
+  const anchorDate = new Date(maxTime);
+
+  // ─── BUILD A 14-DAY WINDOW ENDING ON THE ANCHOR DATE ───
   const dailyMap = new Map<string, { sales: number; expenses: number }>();
   for (let i = 13; i >= 0; i--) {
-    const d = new Date();
+    const d = new Date(anchorDate);
     d.setDate(d.getDate() - i);
-    dailyMap.set(d.toISOString().slice(0, 10), { sales: 0, expenses: 0 });
+    const key = d.toISOString().slice(0, 10);
+    dailyMap.set(key, { sales: 0, expenses: 0 });
   }
 
   for (const sale of sales) {
@@ -53,7 +63,7 @@ export function generateAnalytics(records: LedgerRecord[]) {
     };
   });
 
-  // 2. Group expenses by category
+  // ─── EXPENSE BREAKDOWN ───
   const expenseMap = new Map<string, number>();
   for (const exp of expenses) {
     const category = exp.description.split(" ")[0] || "Other";

@@ -57,6 +57,16 @@ export const dictionary = {
       actionCentre: "Action Centre",
       allCaughtUp: "You're all caught up.",
     },
+    settings: {
+      title: "Settings",
+      subtitle: "Manage your preferences and account.",
+      appearance: "Appearance",
+      language: "Language",
+      light: "Daylight",
+      dark: "Night",
+      sunlight: "Sunlight",
+      system: "System",
+    },
   },
   xh: {
     nav: {
@@ -101,6 +111,16 @@ export const dictionary = {
       scoreLabel: "Inqaku Lokungaguquguquki",
       actionCentre: "Iziko Lwentshukumo",
       allCaughtUp: "Awukho umsebenzi osalayo.",
+    },
+    settings: {
+      title: "Izicwangciso",
+      subtitle: "Lawula izinto ozikhethelayo neakhawunti yakho.",
+      appearance: "Inkangeleko",
+      language: "Ulwimi",
+      light: "Ukukhanya kwemini",
+      dark: "Ubusuku",
+      sunlight: "Ilanga",
+      system: "Isistim",
     },
   },
   zu: {
@@ -147,6 +167,16 @@ export const dictionary = {
       actionCentre: "Isikhungo Sezenzo",
       allCaughtUp: "Awukho umsebenzi osele.",
     },
+    settings: {
+      title: "Izilungiselelo",
+      subtitle: "Phatha izintandokazi zakho ne-akhawunti yakho.",
+      appearance: "Ukubukeka",
+      language: "Ulimi",
+      light: "Ukukhanya kwemini",
+      dark: "Ubusuku",
+      sunlight: "Ilanga",
+      system: "Isistimu",
+    },
   },
   af: {
     nav: {
@@ -191,6 +221,16 @@ export const dictionary = {
       scoreLabel: "Konsekwentheidstelling",
       actionCentre: "Aksiesentrum",
       allCaughtUp: "Jy is op datum.",
+    },
+    settings: {
+      title: "Instellings",
+      subtitle: "Bestuur jou voorkeure en rekening.",
+      appearance: "Voorkoms",
+      language: "Taal",
+      light: "Daglig",
+      dark: "Nag",
+      sunlight: "Sonlig",
+      system: "Stelsel",
     },
   },
 } as const;

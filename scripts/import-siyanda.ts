@@ -75,16 +75,62 @@ async function main() {
     }
   }
 
-  // 4. Process Sales (Ledger + Stock Movements)
-  console.log(`Processing ${salesData.length} sales...`);
-  let head: { seq: number; canonical_hash: string } | null = null;
-  
-  // Sort by timestamp
-  salesData.sort((a, b) => new Date(a.Timestamp).getTime() - new Date(b.Timestamp).getTime());
-
-  // Batch inserts for speed
+  // Batch inserts for speed (declared here so opening stock can push into them)
   const recordBatches: any[] = [];
   const movementBatches: any[] = [];
+
+  // Single chain head threaded through opening stock → sales → expenses
+  let head: { seq: number; canonical_hash: string } | null = null;
+
+  // 4. Seed Opening Stock
+  // Without this, every product's expected quantity is negative on day one, and the
+  // Dashboard's "Stock gaps" KPI lights up red for every product from the start.
+  console.log("Seeding opening stock...");
+
+  const totalSalesQty = new Map<string, number>();
+  for (const row of salesData) {
+    const sku = row["Product_SKU"];
+    const qty = parseInt(row["Quantity"]) || 0;
+    totalSalesQty.set(sku, (totalSalesQty.get(sku) || 0) + qty);
+  }
+
+  const earliestTimestamp = salesData.length > 0
+    ? Math.min(...salesData.map((r) => new Date(r.Timestamp).getTime()))
+    : Date.now();
+  const openingDate = earliestTimestamp - 86_400_000; // One day before first sale
+
+  for (const [sku, pid] of productMap.entries()) {
+    const totalSold = totalSalesQty.get(sku) || 0;
+    // Opening stock = 1.5x total sales (buffer so expected stays positive across all sales)
+    const openingQty = Math.ceil(totalSold * 1.5);
+
+    const recId = uuid();
+    const sealed = sealRecord(head, {
+      id: recId, business_id: bizId, kind: "stock_purchase",
+      amount_cents: 0, quantity: openingQty,
+      description: `Opening stock — ${sku} (${openingQty} units)`,
+      occurred_at: openingDate,
+      source_channel: "web", status: "saved", evidence_tier: "document_supported",
+    });
+
+    recordBatches.push({
+      sql: `INSERT INTO records (id, business_id, seq, kind, amount_cents, quantity, description, occurred_at, source_channel, status, idempotency_key, evidence_tier, prev_hash, canonical_hash, signature, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [recId, bizId, sealed.seq, sealed.kind, sealed.amount_cents, sealed.quantity, sealed.description, sealed.occurred_at, sealed.source_channel, sealed.status, null, sealed.evidence_tier, sealed.prev_hash, sealed.canonical_hash, sealed.signature, userId, now]
+    });
+
+    movementBatches.push({
+      sql: `INSERT INTO stock_movements (id, business_id, product_id, type, quantity_delta, observed_quantity, reference_id, notes, created_at) VALUES (?, ?, ?, 'delivery', ?, null, ?, ?, ?)`,
+      args: [uuid(), bizId, pid, openingQty, recId, `Opening stock for ${sku}`, openingDate]
+    });
+
+    head = { seq: sealed.seq, canonical_hash: sealed.canonical_hash };
+  }
+
+  // 5. Process Sales (Ledger + Stock Movements)
+  console.log(`Processing ${salesData.length} sales...`);
+
+  // Sort by timestamp
+  salesData.sort((a, b) => new Date(a.Timestamp).getTime() - new Date(b.Timestamp).getTime());
 
   for (const row of salesData) {
     const recId = uuid();
@@ -115,7 +161,7 @@ async function main() {
     head = { seq: sealed.seq, canonical_hash: sealed.canonical_hash };
   }
 
-  // 5. Process Expenses
+  // 6. Process Expenses
   console.log(`Processing ${expData.length} expenses...`);
   expData.sort((a, b) => new Date(a.Timestamp).getTime() - new Date(b.Timestamp).getTime());
 
@@ -139,7 +185,7 @@ async function main() {
     head = { seq: sealed.seq, canonical_hash: sealed.canonical_hash };
   }
 
-  // 6. Execute Batches (Turso has a limit, so we chunk by 200)
+  // 7. Execute Batches (Turso has a limit, so we chunk by 200)
   console.log("Sealing to Turso database...");
   for (let i = 0; i < recordBatches.length; i += 200) {
     const chunk = recordBatches.slice(i, i + 200);
@@ -151,11 +197,12 @@ async function main() {
   }
 
   console.log("\n═══════════════════════════════════════════════════");
-  console.log("  SIYANDA'S SPASA SEEDED SUCCESSFULLY");
+  console.log("  SIYANDA'S SPAZA SEEDED SUCCESSFULLY");
   console.log("═══════════════════════════════════════════════════");
   console.log(`  Login:       ${DEMO_EMAIL}`);
   console.log(`  Password:    ${DEMO_PASSWORD}`);
   console.log(`  Business:    Siyanda's Spaza (Gugulethu/Khayelitsha)`);
+  console.log(`  Products:    ${productMap.size}`);
   console.log(`  Records:     ${recordBatches.length}`);
   console.log(`  Movements:   ${movementBatches.length}`);
   console.log("═══════════════════════════════════════════════════\n");

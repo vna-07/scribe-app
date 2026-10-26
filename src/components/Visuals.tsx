@@ -2,42 +2,69 @@
 
 import type { DailyData, ExpenseCategory } from "@/lib/analytics";
 
-export function BarChart({ data, height = 160 }: { data: DailyData[]; height?: number }) {
-  const max = Math.max(...data.map((d) => d.sales), 100);
+export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: number }) {
   const barWidth = 100 / data.length;
+  // Compute max across both series so bars scale to the taller of sales/expenses.
+  // `?? 0` guards against days where one series is undefined — otherwise
+  // Math.max(x, undefined) = NaN poisons the entire chart.
+  const maxVal = Math.max(
+    ...data.map((x) => Math.max(x.sales ?? 0, x.expenses ?? 0)),
+    1,
+  );
 
   return (
     <div className="w-full">
-      <svg viewBox={`0 0 100 ${height}`} className="w-full h-auto overflow-visible" preserveAspectRatio="none">
+      <svg
+        viewBox={`0 0 100 ${height}`}
+        className="w-full"
+        style={{ height: `${height}px` }}
+        preserveAspectRatio="none"
+      >
         {/* Grid lines */}
         {[0.25, 0.5, 0.75, 1].map((pct) => (
           <line
             key={pct}
-            x1="0" y1={height - height * pct} x2="100" y2={height - height * pct}
-            stroke="var(--border-divider)" strokeWidth="0.5" strokeDasharray="2 2"
+            x1="0"
+            y1={height - height * pct}
+            x2="100"
+            y2={height - height * pct}
+            stroke="currentColor"
+            className="text-[#E1E4F7] dark:text-[#2A3070]"
+            strokeWidth="0.3"
+            strokeDasharray="1 1"
           />
         ))}
-        
-        {/* Bars */}
+
+        {/* Bars — sales (left half of slot) + expenses (right half) */}
         {data.map((d, i) => {
-          const h = (d.sales / max) * (height - 20);
+          const salesH = ((d.sales ?? 0) / maxVal) * (height - 24);
+          const expH = ((d.expenses ?? 0) / maxVal) * (height - 24);
+
           return (
             <g key={d.date}>
               <rect
                 x={i * barWidth + barWidth * 0.1}
-                y={height - h}
-                width={barWidth * 0.8}
-                height={h}
+                y={height - salesH}
+                width={barWidth * 0.38}
+                height={Math.max(1, salesH)}
                 fill="var(--chart-bar)"
-                rx={1}
+                rx={0.5}
+              />
+              <rect
+                x={i * barWidth + barWidth * 0.52}
+                y={height - expH}
+                width={barWidth * 0.38}
+                height={Math.max(1, expH)}
+                className="fill-[#E1E4F7] dark:fill-[#2A3070]"
+                rx={0.5}
               />
             </g>
           );
         })}
       </svg>
-      
+
       {/* X-Axis Labels */}
-      <div className="flex justify-between mt-2 text-[10px] text-[#5A5F8C] dark:text-[#A9AEFF] font-bold uppercase transition-colors">
+      <div className="flex justify-between mt-2 text-[10px] text-[#5A5F8C] dark:text-[#C5C9F5] font-bold uppercase">
         {data.filter((_, i) => i % 2 === 0).map((d) => (
           <span key={d.date}>{d.label}</span>
         ))}

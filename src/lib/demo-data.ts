@@ -70,7 +70,10 @@ export async function loadDemoData(businessId: string): Promise<DemoData | null>
     revenue: revenueRange(records),
     score: consistencyScore(records),
     chain: verifyChain(records),
-    chartRecords: records.slice(-250).map(toRow),
+    chartRecords: [...records]
+      .sort((a, b) => b.occurred_at - a.occurred_at)
+      .slice(0, 500)
+      .map(toRow),
     recentRecords: records.slice(-15).reverse().map((r) => ({
       ...toRow(r),
       canonical_hash: r.canonical_hash,

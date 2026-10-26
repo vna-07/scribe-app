@@ -426,84 +426,87 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               </div>
             </div>
 
-            <div className="animate-stagger delay-5 flex flex-col lg:flex-row gap-4 mb-6">
-              <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
-                <div className="flex justify-between items-center mb-6">
+            {/* ─── CHART + SCORE (equal columns) ─── */}
+            <div className="animate-stagger delay-5 grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
+              {/* Cash flow chart — 3/5 width */}
+              <div className="lg:col-span-3 bg-white dark:bg-[#1A1F52] rounded-[24px] p-5 md:p-6 shadow-sm border border-[#E1E4F7] dark:border-[#2A3070]">
+                <div className="flex justify-between items-start mb-5">
                   <div>
-                    <h3 className="font-extrabold text-lg">Daily Cash Flow</h3>
-                    <p className="text-xs font-medium text-[#4A4F7A]">Sales vs Expenses over the past 14 days.</p>
+                    <h3 className="font-extrabold text-lg text-[#14173F] dark:text-white">Daily Cash Flow</h3>
+                    <p className="text-xs text-[#4A4F7A] dark:text-[#C5C9F5] mt-0.5">Sales vs expenses · last 14 trading days</p>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs font-bold">
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[var(--chart-bar)]"></span> Sales</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#E1E4F7] dark:bg-[#2A3070]"></span> Expenses</span>
                   </div>
                 </div>
-                <BarChart data={dailyData} />
+                <BarChart data={dailyData} height={220} />
               </div>
 
-              <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
-                <div className="flex justify-between items-end mb-4">
-                  <div>
-                    <h3 className="font-extrabold text-lg">Trading Consistency Score</h3>
-                    <p className="text-xs font-medium text-[#4A4F7A]">Click a component to see how to improve it.</p>
-                  </div>
-                  <span className="font-extrabold text-2xl text-[#5B5BE0] tabular-nums">{data.score.low}–{data.score.high}</span>
+              {/* Score + expense donut — 2/5 width */}
+              <div className="lg:col-span-2 bg-white dark:bg-[#1A1F52] rounded-[24px] p-5 md:p-6 shadow-sm border border-[#E1E4F7] dark:border-[#2A3070] flex flex-col">
+                <div className="flex justify-between items-baseline mb-5">
+                  <h3 className="font-extrabold text-lg text-[#14173F] dark:text-white">Readiness</h3>
+                  <span className="font-extrabold text-2xl text-[#5B5BE0] dark:text-[#A9AEFF] tabular-nums">{data.score.low}–{data.score.high}</span>
                 </div>
-                <div className="space-y-4">
+
+                <div className="space-y-3 mb-6">
                   {data.score.components.map(c => (
-                    <div key={c.key} className="cursor-pointer group">
-                      <div className="flex justify-between text-xs font-bold mb-1 group-hover:text-[#5B5BE0] transition-colors">
+                    <div key={c.key} className="group">
+                      <div className="flex justify-between text-xs font-bold mb-1 text-[#14173F] dark:text-white">
                         <span>{c.label}</span>
                         <span className="tabular-nums">{Math.round(c.value * 100)}</span>
                       </div>
-                      <div className="h-2 w-full bg-[#E6E8FA] rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full transition-all ${c.value > 0.6 ? 'bg-[#14173F]' : c.value > 0.3 ? 'bg-[#A9AEFF]' : 'bg-[#D99A00]'}`} style={{ width: `${Math.max(5, c.value * 100)}%` }} />
+                      <div className="h-1.5 w-full bg-[#E6E8FA] dark:bg-[#2A3070] rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${c.value > 0.6 ? 'bg-[#14173F] dark:bg-[#A9AEFF]' : c.value > 0.3 ? 'bg-[#A9AEFF]' : 'bg-[#D99A00]'}`} style={{ width: `${Math.max(3, c.value * 100)}%` }} />
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-6 border-t border-[#E1E4F7] pt-6">
-                  <h3 className="font-extrabold text-sm mb-3">Expense Breakdown</h3>
+                <div className="mt-auto pt-4 border-t border-[#E1E4F7] dark:border-[#2A3070]">
+                  <p className="text-xs font-bold text-[#5A5F8C] dark:text-[#C5C9F5] uppercase tracking-wider mb-2">Expense breakdown</p>
                   <DonutChart data={expenseCategories} />
-                </div>
-
-                <div className="mt-5 bg-[#FFF0C4] rounded-xl p-3 text-xs font-bold leading-relaxed text-[#1D2260]">
-                  Weakest component: {weakestComponent.label}. {data.score.counterfactuals[0]?.action || "Keep recording to improve."}
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 bg-white/90 rounded-[28px] p-4 md:p-6 shadow-sm border border-white/50">
-                <h3 className="font-extrabold text-lg mb-4">Stock reconciliation</h3>
-                <div className="space-y-2">
-                  {data.stockState.products.slice(0, 6).map(p => (
-                    <div key={p.id} className="flex items-center justify-between text-sm py-2 border-b border-[#E1E4F7] last:border-0">
-                      <span className="font-medium text-[#14173F] truncate max-w-[50%]">{p.name}</span>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-xs text-[#5A5F8C] tabular-nums">Expected {p.expected}</span>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full tabular-nums ${
-                          p.status === "open" ? "bg-[#FFF0C4] text-[#D99A00]" :
-                          p.status === "reconciled" ? "bg-[#47745D]/10 text-[#47745D]" :
-                          "bg-[#E1E4F7] text-[#5A5F8C]"
-                        }`}>
-                          {p.status === "no_count" ? "No count" : p.variance === 0 ? "✓ Matched" : `${p.variance! > 0 ? "+" : ""}${p.variance}`}
-                        </span>
-                      </div>
+            {/* ─── STOCK RECONCILIATION (full width) ─── */}
+            <div className="animate-stagger bg-white dark:bg-[#1A1F52] rounded-[24px] p-5 md:p-6 shadow-sm border border-[#E1E4F7] dark:border-[#2A3070]">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-extrabold text-lg text-[#14173F] dark:text-white">Stock reconciliation</h3>
+                <span className="text-xs font-bold text-[#5A5F8C] dark:text-[#C5C9F5]">{data.stockState.total_products} products tracked</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 max-h-56 overflow-y-auto pr-2">
+                {data.stockState.products.slice(0, 12).map(p => (
+                  <div key={p.id} className="flex items-center justify-between py-2 border-b border-[#F1F2FF] dark:border-[#2A3070] last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[#14173F] dark:text-white truncate">{p.name}</p>
+                      <p className="text-[10px] text-[#5A5F8C] dark:text-[#C5C9F5] tabular-nums">Expected: {p.expected}</p>
                     </div>
-                  ))}
-                </div>
-
-                <div className="border-t border-[#E1E4F7] pt-4 mt-4">
-                  <p className="text-xs font-bold text-[#14173F] mb-2 uppercase tracking-wider">Judge Mode</p>
-                  <div className="flex flex-wrap gap-2">
-                    <button onClick={() => judgeAction("inject-discrepancy", "inject")} disabled={!!busy} className="px-3 py-2 bg-[#F1F2FF] text-[#4B4FC9] hover:bg-[#E6E8FA] rounded-lg text-xs font-bold transition-colors">
-                      {busy === "inject" ? "Working..." : "Inject Discrepancy"}
-                    </button>
-                    <button onClick={() => judgeAction("tamper", "tamper")} disabled={!!busy} className="px-3 py-2 bg-[#F1F2FF] text-[#4B4FC9] hover:bg-[#E6E8FA] rounded-lg text-xs font-bold transition-colors">
-                      {busy === "tamper" ? "Working..." : "Try to Cheat"}
-                    </button>
-                    <button onClick={() => judgeAction("reset", "reset")} disabled={!!busy} className="px-3 py-2 bg-white border border-[#E1E4F7] text-[#4A4F7A] hover:text-[#14173F] rounded-lg text-xs font-bold transition-colors">
-                      {busy === "reset" ? "Restoring..." : "Restore Demo"}
-                    </button>
+                    <span className={`ml-2 shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full tabular-nums ${
+                      p.status === "open" ? "bg-[#FFF0C4] dark:bg-[#4A3B10] text-[#D99A00] dark:text-[#F2B84B]" :
+                      p.status === "reconciled" ? "bg-[#47745D]/10 text-[#47745D]" :
+                      "bg-[#E1E4F7] dark:bg-[#2A3070] text-[#5A5F8C] dark:text-[#C5C9F5]"
+                    }`}>
+                      {p.status === "no_count" ? "No count" : p.variance === 0 ? "✓ Match" : `${p.variance! > 0 ? "+" : ""}${p.variance}`}
+                    </span>
                   </div>
+                ))}
+              </div>
+
+              <div className="mt-5 pt-4 border-t border-[#E1E4F7] dark:border-[#2A3070]">
+                <p className="text-xs font-bold text-[#14173F] dark:text-white mb-2 uppercase tracking-wider">Judge Mode</p>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => judgeAction("inject-discrepancy", "inject")} disabled={!!busy} className="px-3 py-2 bg-[#F1F2FF] dark:bg-[#2A3070] text-[#4B4FC9] dark:text-[#A9AEFF] hover:bg-[#E6E8FA] rounded-lg text-xs font-bold transition-colors">
+                    {busy === "inject" ? "Working..." : "Inject Discrepancy"}
+                  </button>
+                  <button onClick={() => judgeAction("tamper", "tamper")} disabled={!!busy} className="px-3 py-2 bg-[#F1F2FF] dark:bg-[#2A3070] text-[#4B4FC9] dark:text-[#A9AEFF] hover:bg-[#E6E8FA] rounded-lg text-xs font-bold transition-colors">
+                    {busy === "tamper" ? "Working..." : "Try to Cheat"}
+                  </button>
+                  <button onClick={() => judgeAction("reset", "reset")} disabled={!!busy} className="px-3 py-2 bg-white dark:bg-[#14173F] border border-[#E1E4F7] dark:border-[#3A4080] text-[#4A4F7A] dark:text-[#C5C9F5] hover:text-[#14173F] dark:hover:text-white rounded-lg text-xs font-bold transition-colors">
+                    {busy === "reset" ? "Restoring..." : "Restore Demo"}
+                  </button>
                 </div>
               </div>
             </div>

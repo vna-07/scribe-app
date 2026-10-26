@@ -79,7 +79,7 @@ async function main() {
   const recordBatches: any[] = [];
   const movementBatches: any[] = [];
 
-  // Single chain head threaded through opening stock → sales → expenses
+  // Single chain head threaded through opening stock → sales → expenses → variance count
   let head: { seq: number; canonical_hash: string } | null = null;
 
   // 4. Seed Opening Stock
@@ -185,7 +185,65 @@ async function main() {
     head = { seq: sealed.seq, canonical_hash: sealed.canonical_hash };
   }
 
-  // 7. Execute Batches (Turso has a limit, so we chunk by 200)
+  // 7. Seed a stock count with an intentional variance
+  // Without a physical count, every product's status is "no_count", the Dashboard's
+  // "Stock gaps to review" KPI reads "0 products", and the Action Centre says
+  // "You're all caught up" — a weak demo. Seed one count with a -8 unit shortfall
+  // so the judge has something concrete to investigate.
+  console.log("Seeding stock count with intentional variance...");
+
+  const primarySku = "Albany Superior White Bread 700g";
+  let activeSku = primarySku;
+  let breadPid = productMap.get(primarySku);
+  if (!breadPid) {
+    // CSV uses different SKU codes — fall back to the highest-volume product so
+    // the variance story still lands rather than silently no-op'ing.
+    const top = [...totalSalesQty.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (top) {
+      activeSku = top[0];
+      breadPid = productMap.get(activeSku);
+      console.warn(`[import] "${primarySku}" not in CSV — seeding variance on "${activeSku}" instead.`);
+    }
+  }
+
+  if (breadPid) {
+    const allTimestamps = [
+      ...salesData.map((r) => new Date(r.Timestamp).getTime()),
+      ...expData.map((r) => new Date(r.Timestamp).getTime()),
+    ].filter(Number.isFinite);
+    const latestTime = allTimestamps.length > 0 ? Math.max(...allTimestamps) : Date.now();
+    const countDate = latestTime + 86_400_000; // One day after last transaction
+
+    const totalSold = totalSalesQty.get(activeSku) || 0;
+    const openingQty = Math.ceil(totalSold * 1.5);
+    const expectedClose = openingQty - totalSold;
+    // Intentional shortfall: 8 units fewer than expected. Clamped at 0 so a
+    // sparse SKU (totalSold < 16) can't produce a negative physical count.
+    const counted = Math.max(0, expectedClose - 8);
+    const actualVariance = counted - expectedClose;
+
+    const recId = uuid();
+    const sealed = sealRecord(head, {
+      id: recId, business_id: bizId, kind: "stock_count",
+      amount_cents: 0, quantity: counted,
+      description: `Physical count — ${activeSku} (${counted} units)`,
+      occurred_at: countDate,
+      source_channel: "web", status: "reconciled", evidence_tier: "document_supported",
+    });
+    recordBatches.push({
+      sql: `INSERT INTO records (id, business_id, seq, kind, amount_cents, quantity, description, occurred_at, source_channel, status, idempotency_key, evidence_tier, prev_hash, canonical_hash, signature, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [recId, bizId, sealed.seq, sealed.kind, sealed.amount_cents, sealed.quantity, sealed.description, sealed.occurred_at, sealed.source_channel, sealed.status, null, sealed.evidence_tier, sealed.prev_hash, sealed.canonical_hash, sealed.signature, userId, now]
+    });
+    movementBatches.push({
+      sql: `INSERT INTO stock_movements (id, business_id, product_id, type, quantity_delta, observed_quantity, reference_id, notes, created_at) VALUES (?, ?, ?, 'count', 0, ?, ?, ?, ?)`,
+      args: [uuid(), bizId, breadPid, counted, recId, `Physical count: ${counted} (variance ${actualVariance})`, countDate]
+    });
+    head = { seq: sealed.seq, canonical_hash: sealed.canonical_hash };
+  } else {
+    console.warn("[import] No products found for variance seed — skipping stock count.");
+  }
+
+  // 8. Execute Batches (Turso has a limit, so we chunk by 200)
   console.log("Sealing to Turso database...");
   for (let i = 0; i < recordBatches.length; i += 200) {
     const chunk = recordBatches.slice(i, i + 200);
@@ -205,6 +263,7 @@ async function main() {
   console.log(`  Products:    ${productMap.size}`);
   console.log(`  Records:     ${recordBatches.length}`);
   console.log(`  Movements:   ${movementBatches.length}`);
+  console.log(`  Variance:    ${activeSku} seeded with -8 unit shortfall`);
   console.log("═══════════════════════════════════════════════════\n");
 }
 

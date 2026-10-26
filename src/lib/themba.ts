@@ -9,6 +9,7 @@ export interface ThembaInput {
   businessName: string;
   history?: ConversationTurn[];
   locale?: "en" | "xh" | "zu" | "af";
+  active_tab?: string; // which dashboard tab the user is viewing
 }
 
 export interface ProposedAction {
@@ -25,12 +26,32 @@ export interface ThembaAnswer {
   provider: "gemini" | "groq" | "fallback";
 }
 
-const SYSTEM_PROMPT = `
+// Tabs that map to the tactical "Business Companion" mode. Anything not listed
+// here and not in GROWTH_TABS falls through to SCRIBE Guide mode below — which
+// is also the default branch in modeForTab().
+const COMPANION_TABS = ["overview", "records", "stock", "suppliers", "intelligence", "reports"];
+const GROWTH_TABS = ["tasks", "opportunities"];
+
+function modeForTab(activeTab: string): "companion" | "growth" | "guide" {
+  if (GROWTH_TABS.includes(activeTab)) return "growth";
+  if (COMPANION_TABS.includes(activeTab)) return "companion";
+  return "guide";
+}
+
+const SYSTEM_PROMPT = (activeTab: string) => `
 You are Themba, SCRIBE's AI Business Operations Assistant for South African small businesses.
+
+The user is currently looking at the **${activeTab.toUpperCase()}** tab.
+Based on that tab, apply the mode below that best matches it.
+
+YOUR THREE MODES (Adapt based on the active tab):
+1. **Business Companion** (Overview, Records, Stock, Suppliers, Intelligence, Reports): Focus on daily operations, immediate cash flow, and specific transactions. Be tactical. Use the numbers in CONTEXT to answer precisely.
+2. **Growth & Strategy** (Growth Studio, Launch Studio): Focus on long-term planning, funding, expansion, and business models. Be strategic. Propose concrete next steps, not just advice.
+3. **SCRIBE Guide** (Settings, Admin, and any "how does SCRIBE work?" query on any tab): Focus on explaining how the product works, what the readiness score means, and how to use features. Do not invent data.
 
 CRITICAL INSTRUCTIONS:
 1. You must output a strictly valid JSON object. Do not use markdown backticks.
-2. Keep your "answer" under 120 words. 
+2. Keep your "answer" under 120 words.
 3. If you don't have the business data to answer, give general, practical business advice.
 
 Schema:
@@ -44,7 +65,7 @@ Schema:
 }
 
 RULES:
-- If the user says "hello", "hey", "help", or "let's begin", greet them warmly and tell them you can check stock, draft messages, or create plans. Ask what they want to start with.
+- If the user says "hello", "hey", "help", or "let's begin", greet them warmly and tell them you can check stock, draft messages, or create plans. Ask what they want to start with. Reference the current tab if it makes the greeting more relevant.
 - If the user asks to draft an email or message, set type to "draft_message" and write the draft in the "description" field.
 - Never invent numbers. Use the CONTEXT.
 - If asked to fix a stock variance, set type to "create_task".
@@ -90,14 +111,31 @@ function preflight(q: string, records: LedgerRecord[]): ThembaAnswer | null {
   return null;
 }
 
-function fallbackAnswer(question: string, records: LedgerRecord[], businessName: string): ThembaAnswer {
+function fallbackAnswer(
+  question: string,
+  records: LedgerRecord[],
+  businessName: string,
+  activeTab: string,
+): ThembaAnswer {
   const stock = reconcileStock(records);
   const revenue = revenueRange(records);
   const score = consistencyScore(records);
   const q = question.toLowerCase().trim();
 
   if (/^(hi|hello|hey|heyy|howzit|molo|sawubona|good (morning|afternoon|evening))/i.test(q)) {
-    return { answer: `Hello! I'm Themba, your business assistant. How can I help you today?`, proposed_action: null, refused: false, refusal_reason: null, provider: "fallback" };
+    const mode = modeForTab(activeTab);
+    let modeContext: string;
+    if (mode === "companion") {
+      modeContext = "I see you're checking your daily operations. Do you want to investigate your stock, review recent sales, or record a new transaction?";
+    } else if (mode === "growth") {
+      modeContext = "I see you're in the planning studio. Do you want to draft a growth plan or explore funding options?";
+    } else {
+      modeContext = "How can I help you navigate SCRIBE today?";
+    }
+    return {
+      answer: `Hello! ${modeContext}`,
+      proposed_action: null, refused: false, refusal_reason: null, provider: "fallback",
+    };
   }
   if (/(are you (good|okay)|how are you|what\?|huh\?|okay|ok|yes|no|cool)/i.test(q)) {
     return { answer: `I'm doing well, thank you! I'm here to help you manage ${businessName}. We can look at your revenue, investigate stock, or draft a supplier email. What would you like to do?`, proposed_action: null, refused: false, refusal_reason: null, provider: "fallback" };
@@ -128,7 +166,14 @@ function fallbackAnswer(question: string, records: LedgerRecord[], businessName:
 }
 
 export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
-  const { question, records, businessName, history = [], locale = "en" } = input;
+  const {
+    question,
+    records,
+    businessName,
+    history = [],
+    locale = "en",
+    active_tab = "overview",
+  } = input;
 
   const refusal = preflight(question, records);
   if (refusal) return refusal;
@@ -136,13 +181,13 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
   const languageLine = locale !== "en"
     ? `\n\nLANGUAGE INSTRUCTION: Respond in ${LANGUAGE_NAMES[locale]}. If you cannot produce a fluent response, respond in English and prefix with "[English fallback]".`
     : "";
-  const systemPrompt = SYSTEM_PROMPT + languageLine;
+  const systemPrompt = SYSTEM_PROMPT(active_tab) + languageLine;
 
   const context = buildRichContext(records, businessName, history);
   const contextString = JSON.stringify(context);
   const historyString = history.slice(-4).map(h => `${h.role}: ${h.text}`).join('\n');
 
-  // ─── 1. TRY GEMINI (Updated Models) ───
+  // ─── 1. TRY GEMINI ───
   const geminiKeys = [process.env.key, process.env.key3, process.env.key4, process.env.GEMINI_API_KEY].filter(Boolean) as string[];
   const geminiModels = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
 
@@ -168,9 +213,9 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
 
         if (!res.ok) {
           console.warn(`[Themba] Gemini ${model} failed:`, res.status);
-          continue; 
+          continue;
         }
-        
+
         const json = await res.json();
         let text = json.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!text) continue;
@@ -184,7 +229,7 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
     }
   }
 
-  // ─── 2. TRY GROQ (Updated Model) ───
+  // ─── 2. TRY GROQ ───
   const groqKey = process.env.GROQ_API_KEY;
   if (groqKey) {
     try {
@@ -192,7 +237,7 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
         method: "POST",
         headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama3-70b-8192", // Updated to current stable Groq model
+          model: "llama3-70b-8192",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: `CONTEXT: ${contextString}\n\nHISTORY:\n${historyString}\n\nUSER QUESTION: ${question}` }
@@ -219,5 +264,5 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
   }
 
   // ─── 3. DETERMINISTIC FALLBACK ───
-  return fallbackAnswer(question, records, businessName);
+  return fallbackAnswer(question, records, businessName, active_tab);
 }

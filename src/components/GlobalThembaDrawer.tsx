@@ -6,7 +6,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { playSuccessChime } from "@/lib/sounds";
 
 export default function GlobalThembaDrawer() {
-  const { businessId, thembaOpen, setThembaOpen, history, setHistory } = useApp();
+  const { businessId, thembaOpen, setThembaOpen, history, setHistory, activeTab } = useApp();
   const { locale, t } = useLanguage();
   const [input, setInput] = useState("");
   const [asking, setAsking] = useState(false);
@@ -24,7 +24,13 @@ export default function GlobalThembaDrawer() {
       const r = await fetch("/api/themba", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ business_id: businessId, question: q, history: history.slice(-4), locale }),
+        body: JSON.stringify({
+          business_id: businessId,
+          question: q,
+          history: history.slice(-4),
+          locale,
+          active_tab: activeTab,
+        }),
       });
       const json = await r.json();
       setHistory((h) => [...h, {

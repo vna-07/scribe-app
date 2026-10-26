@@ -25,7 +25,7 @@ import CompletenessCard from "@/components/CompletenessCard";
 type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports" | "opportunities" | "suppliers";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
-  const { setBusinessId, setThembaOpen } = useApp();
+  const { setBusinessId, setThembaOpen, setActiveTab } = useApp();
   
   // Set the global context when this page mounts
   useEffect(() => {
@@ -36,6 +36,11 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
   const [data, setData] = useState<DemoData>(initialData);
   const [busy, setBusy] = useState<string | null>(null);
   const [mainTab, setMainTab] = useState<MainTab>("overview");
+
+  // Broadcast the active tab to global context so Themba can be context-aware
+  useEffect(() => {
+    setActiveTab(mainTab);
+  }, [mainTab, setActiveTab]);
   
   const { dailyData, expenseCategories } = generateAnalytics(
     data.recentRecords.map(r => ({ ...r, prev_hash: "", canonical_hash: "", signature: "", business_id: data.businessId })) as any

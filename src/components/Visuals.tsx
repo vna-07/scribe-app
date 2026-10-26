@@ -5,8 +5,8 @@ import type { DailyData, ExpenseCategory } from "@/lib/analytics";
 export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: number }) {
   const barWidth = 100 / data.length;
   // `?? 0` guards: a single missing field would produce NaN and poison the whole chart.
-  // Floor of 1 (not 100) — the floor exists only to prevent divide-by-zero on empty
-  // datasets; a 100-rand floor would shrink real small-value charts by 100x.
+  // Floor of 1 (not 100) — the floor prevents divide-by-zero on empty datasets only;
+  // a 100-rand floor incorrectly shrinks small-value charts by 100x.
   const maxVal = Math.max(
     ...data.map((x) => Math.max(x.sales ?? 0, x.expenses ?? 0)),
     1,
@@ -46,7 +46,10 @@ export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: n
             style={{ height: `${height}px` }}
             preserveAspectRatio="none"
           >
-            {/* Grid lines — span the plot area, not the full SVG height */}
+            {/* Grid lines — span the plot area, not the full SVG height.
+                stroke="currentColor" + text-* classes proven to work in this
+                codebase (they're used throughout the app for readable text
+                colors, so the same Tailwind pipeline handles them). */}
             {[0.25, 0.5, 0.75, 1].map((pct) => (
               <line
                 key={pct}
@@ -62,35 +65,38 @@ export function BarChart({ data, height = 220 }: { data: DailyData[]; height?: n
             ))}
 
             {/* Bars — sales (left half) + expenses (right half).
-                Colors are hardcoded via Tailwind fill-[...] utilities instead of
-                fill="var(--chart-bar)" because var() in the SVG presentation
-                attribute doesn't reliably resolve in every toolchain. The
-                generated CSS rule `.fill-\[\#5B5BE0\] { fill: #5B5BE0 }` sets the
-                fill as a real CSS declaration, which works everywhere. */}
+                fill="#..." is a direct SVG presentation attribute. Browsers
+                ALWAYS honor it — no dependency on Tailwind's fill-* utilities
+                compiling. The dark:fill-[...] class is an optional enhancement:
+                if Tailwind's fill-* utilities work, dark mode gets the lighter
+                variant; if they don't, we fall back to the base attribute
+                (still visible — indigo on dark navy, amber on dark navy both
+                have adequate contrast). This is the best of both worlds. */}
             {data.map((d, i) => {
-              const salesH = ((d.sales ?? 0) / maxVal) * plotHeight;
-              const expH = ((d.expenses ?? 0) / maxVal) * plotHeight;
-              const renderedSalesH = Math.max(2, salesH);
-              const renderedExpH = Math.max(2, expH);
+              const salesH = Math.max(2, ((d.sales ?? 0) / maxVal) * plotHeight);
+              const expH = Math.max(2, ((d.expenses ?? 0) / maxVal) * plotHeight);
 
               return (
                 <g key={d.date}>
                   <rect
                     x={i * barWidth + barWidth * 0.1}
-                    y={height - renderedSalesH}
+                    y={height - salesH}
                     width={barWidth * 0.38}
-                    height={renderedSalesH}
-                    className="fill-[#5B5BE0] dark:fill-[#A9AEFF]"
+                    height={salesH}
+                    fill="#5B5BE0"
+                    className="dark:fill-[#A9AEFF]"
                     rx={0.5}
                   >
                     <title>{`${d.label}: Sales R${(d.sales ?? 0).toFixed(2)}`}</title>
                   </rect>
                   <rect
                     x={i * barWidth + barWidth * 0.52}
-                    y={height - renderedExpH}
+                    y={height - expH}
                     width={barWidth * 0.38}
-                    height={renderedExpH}
-                    className="fill-[#D99A00] dark:fill-[#F2B84B] opacity-60"
+                    height={expH}
+                    fill="#D99A00"
+                    opacity={0.65}
+                    className="dark:fill-[#F2B84B]"
                     rx={0.5}
                   >
                     <title>{`${d.label}: Expenses R${(d.expenses ?? 0).toFixed(2)}`}</title>

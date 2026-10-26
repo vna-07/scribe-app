@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380" role="img" aria-labelledby="t d">
+  <title id="t">Tamper-evident ledger chain</title>
+  <desc id="d">Animated hash chain of four sealed records. After a few seconds, one record is altered; its hash no longer matches and every record after it is flagged. The cycle then resets.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#818cf8"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="380" rx="24" fill="#0f172a"/>
+  <text x="600" y="42" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#e0e7ff">Change one record, break the chain</text>
+
+  <!-- links -->
+  <g stroke="#818cf8" stroke-width="2.5" marker-end="url(#arr)" fill="none">
+    <path d="M260 190 H338"/>
+    <path d="M560 190 H638"/>
+    <path d="M860 190 H938"/>
+  </g>
+  <!-- travelling checks -->
+  <circle r="5" fill="#34d399" cy="190">
+    <animate attributeName="cx" values="262;336" dur="1.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle r="5" fill="#34d399" cy="190">
+    <animate attributeName="cx" values="562;636" dur="1.6s" begin="0.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle r="5" fill="#34d399" cy="190">
+    <animate attributeName="cx" values="862;936" dur="1.6s" begin="1s" repeatCount="indefinite"/>
+  </circle>
+
+  <g font-family="Consolas, Menlo, monospace" font-size="13">
+    <!-- Record 1 -->
+    <g transform="translate(40,90)">
+      <rect width="220" height="200" rx="14" fill="#1e1b4b" stroke="#34d399" stroke-width="2.5"/>
+      <text x="16" y="30" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">Record #1</text>
+      <text x="16" y="62" fill="#94a3b8">sale · R85.00</text>
+      <text x="16" y="90" fill="#64748b">prev_hash</text>
+      <text x="16" y="108" fill="#a5b4fc">0000…0000</text>
+      <text x="16" y="136" fill="#64748b">hash</text>
+      <text x="16" y="154" fill="#34d399">9f2a…c41d</text>
+      <text x="16" y="184" fill="#64748b">sig: Ed25519 ✓</text>
+    </g>
+
+    <!-- Record 2 -->
+    <g transform="translate(340,90)">
+      <rect width="220" height="200" rx="14" fill="#1e1b4b" stroke="#34d399" stroke-width="2.5"/>
+      <text x="16" y="30" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">Record #2</text>
+      <text x="16" y="62" fill="#94a3b8">expense · R240.00</text>
+      <text x="16" y="90" fill="#64748b">prev_hash</text>
+      <text x="16" y="108" fill="#a5b4fc">9f2a…c41d</text>
+      <text x="16" y="136" fill="#64748b">hash</text>
+      <text x="16" y="154" fill="#34d399">3be7…70a2</text>
+      <text x="16" y="184" fill="#64748b">sig: Ed25519 ✓</text>
+    </g>
+
+    <!-- Record 3 (tampered) -->
+    <g transform="translate(640,90)">
+      <rect width="220" height="200" rx="14" fill="#1e1b4b" stroke-width="2.5" stroke="#34d399">
+        <animate attributeName="stroke" calcMode="discrete" values="#34d399;#f43f5e;#34d399" keyTimes="0;0.5;0.93" dur="14s" repeatCount="indefinite"/>
+      </rect>
+      <text x="16" y="30" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">Record #3</text>
+      <text x="16" y="62" fill="#94a3b8">sale · R120.00
+        <animate attributeName="opacity" calcMode="discrete" values="1;0;1" keyTimes="0;0.43;0.5" dur="14s" repeatCount="indefinite"/>
+      </text>
+      <text x="16" y="62" fill="#f43f5e" opacity="0">sale · R1,200.00
+        <animate attributeName="opacity" calcMode="discrete" values="0;1;0" keyTimes="0;0.43;0.93" dur="14s" repeatCount="indefinite"/>
+      </text>
+      <text x="16" y="90" fill="#64748b">prev_hash</text>
+      <text x="16" y="108" fill="#a5b4fc">3be7…70a2</text>
+      <text x="16" y="136" fill="#64748b">stored hash</text>
+      <text x="16" y="154" fill="#34d399">c8d1…5e09
+        <animate attributeName="fill" calcMode="discrete" values="#34d399;#f43f5e;#34d399" keyTimes="0;0.5;0.93" dur="14s" repeatCount="indefinite"/>
+      </text>
+      <text x="16" y="184" fill="#64748b">recomputed: </text>
+      <text x="104" y="184" fill="#34d399">match ✓
+        <animate attributeName="opacity" calcMode="discrete" values="1;0;1" keyTimes="0;0.5;0.93" dur="14s" repeatCount="indefinite"/>
+      </text>
+      <text x="104" y="184" fill="#f43f5e" opacity="0">MISMATCH ✗
+        <animate attributeName="opacity" calcMode="discrete" values="0;1;0" keyTimes="0;0.5;0.93" dur="14s" repeatCount="indefinite"/>
+      </text>
+    </g>
+
+    <!-- Record 4 (downstream) -->
+    <g transform="translate(940,90)">
+      <rect width="220" height="200" rx="14" fill="#1e1b4b" stroke-width="2.5" stroke="#34d399">
+        <animate attributeName="stroke" calcMode="discrete" values="#34d399;#f59e0b;#34d399" keyTimes="0;0.55;0.93" dur="14s" repeatCount="indefinite"/>
+      </rect>
+      <text x="16" y="30" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">Record #4</text>
+      <text x="16" y="62" fill="#94a3b8">sale · R45.00</text>
+      <text x="16" y="90" fill="#64748b">prev_hash</text>
+      <text x="16" y="108" fill="#a5b4fc">c8d1…5e09</text>
+      <text x="16" y="136" fill="#64748b">hash</text>
+      <text x="16" y="154" fill="#34d399">71f0…ab36</text>
+      <text x="16" y="184" fill="#64748b">chain: </text>
+      <text x="68" y="184" fill="#34d399">linked ✓
+        <animate attributeName="opacity" calcMode="discrete" values="1;0;1" keyTimes="0;0.55;0.93" dur="14s" repeatCount="indefinite"/>
+      </text>
+      <text x="68" y="184" fill="#f59e0b" opacity="0">broken upstream ⚠
+        <animate attributeName="opacity" calcMode="discrete" values="0;1;0" keyTimes="0;0.55;0.93" dur="14s" repeatCount="indefinite"/>
+      </text>
+    </g>
+  </g>
+
+  <!-- status line -->
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" text-anchor="middle">
+    <text x="600" y="340" fill="#34d399">Chain verified: every hash recomputes and every signature checks out
+      <animate attributeName="opacity" calcMode="discrete" values="1;0;1" keyTimes="0;0.5;0.93" dur="14s" repeatCount="indefinite"/>
+    </text>
+    <text x="600" y="340" fill="#f43f5e" opacity="0">Tamper detected at record #3: later records can no longer be trusted
+      <animate attributeName="opacity" calcMode="discrete" values="0;1;0" keyTimes="0;0.5;0.93" dur="14s" repeatCount="indefinite"/>
+    </text>
+    <text x="600" y="364" font-size="13" font-weight="400" fill="#64748b">Illustrative values. Tamper evidence shows a record changed after sealing, not that the original sale was real.</text>
+  </g>
+</svg>

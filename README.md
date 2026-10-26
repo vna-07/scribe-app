@@ -1035,4 +1035,8 @@ Built for educational and demonstration purposes as part of the FNB App of the Y
 
 **Better records. Clearer decisions. More informed growth.**
 
+<<<<<<< HEAD
 </div>
+=======
+</div>
+>>>>>>> 48237f2 (Docs: Comprehensive README + supporting docs)

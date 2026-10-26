@@ -318,3 +318,46 @@ html.dark *:focus-visible {
   clip: auto;
   white-space: normal;
 }
+
+/* ─── ADVANCED UI TOKENS ─── */
+/* NOTE: .ease-spring is already declared in the "HIGH-END UX ANIMATIONS"
+   section above. Do not redeclare it here — duplicates cause confusion when
+   someone edits one and not the other. */
+
+/* Glassmorphism Surface — glass card treatment that works across all themes.
+   Complements the existing `.bg-white\/60` mapping (which is the same idea,
+   scoped to a specific Tailwind utility). Use .glass-surface on any element
+   that wants the full glass treatment without relying on bg-white/60. */
+.glass-surface {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+.dark .glass-surface {
+  background: rgba(26, 31, 82, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+/* Sunlight mode: glass surface becomes flat white with a strong border,
+   matching the high-contrast intent of the rest of the Sunlight theme. */
+.sunlight .glass-surface {
+  background: #FFFFFF;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 2px solid #14173F;
+}
+
+/* Tactile Button Press — slightly deeper scale than .btn-press (0.95 vs 0.96),
+   and explicitly names the spring curve. Note: the previous version of this
+   rule used `ease-spring` as a transition-timing-function keyword, which is
+   not valid CSS — the browser silently drops the whole shorthand. Using
+   cubic-bezier() inline is the correct way to reference the spring curve
+   from a transition shorthand. */
+.btn-tactile {
+  transition:
+    transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    background-color 0.2s ease;
+}
+.btn-tactile:active {
+  transform: scale(0.95);
+}

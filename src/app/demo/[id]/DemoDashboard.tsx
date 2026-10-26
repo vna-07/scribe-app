@@ -22,6 +22,7 @@ import OpportunitiesTab from "./OpportunitiesTab";
 import { calculateCompleteness } from "@/lib/completeness";
 import CompletenessCard from "@/components/CompletenessCard";
 import ReorderModal from "@/components/ReorderModal";
+import SpotlightCard from "@/components/SpotlightCard";
 
 type MainTab = "overview" | "records" | "tasks" | "stock" | "intelligence" | "reports" | "opportunities" | "suppliers";
 
@@ -304,7 +305,9 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               onClick={() => setShowSale(true)}
               className="hidden md:flex px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070] transition-colors"
             >
+              <button className="btn-tactile px-4 py-2.5 rounded-xl bg-[#14173F] text-white font-bold text-sm shadow-md hover:bg-[#2A3070]">
               + Record Sale
+              </button>
             </button>
             <button
               aria-label="Record Expense — new entry"
@@ -321,30 +324,38 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           <>
           <AISummaryCard />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="animate-stagger delay-1 bg-[#A9AEFF] dark:bg-[#2A3070] rounded-[24px] p-5 shadow-sm">
-                <div className="text-xs font-bold text-[#1D2260] mb-1">Total recorded sales</div>
-                <div className="text-2xl font-extrabold tracking-tight tabular-nums">{rands(data.revenue.low_cents)}</div>
-                <div className="text-xs font-medium text-[#1D2260] mt-2 tabular-nums">Range to {rands(data.revenue.high_cents)}</div>
-              </div>
-              <div className="animate-stagger delay-2 bg-white/60 dark:bg-[#1A1F52] backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50 dark:border-[#2A3070]">
-                <div className="text-xs font-bold text-[#4A4F7A] mb-1">Cash on hand</div>
-                <div className="text-2xl font-extrabold tracking-tight tabular-nums">R3 245</div>
-                <div className="text-xs font-medium text-[#4A4F7A] mt-2">Reported Friday 16:40</div>
-              </div>
-              <div className="animate-stagger delay-3 bg-white/60 dark:bg-[#1A1F52] backdrop-blur-md rounded-[24px] p-5 shadow-sm border border-white/50 dark:border-[#2A3070]">
-                <div className="text-xs font-bold text-[#4A4F7A] dark:text-[#C5C9F5] mb-1">Stock gaps to review</div>
-                <div className={`text-2xl font-extrabold tracking-tight tabular-nums ${data.stockState.open_variances > 0 ? "text-[#D99A00]" : "text-[#47745D]"}`}>
-                  {data.stockState.open_variances} {data.stockState.open_variances === 1 ? "product" : "products"}
+              <SpotlightCard className="animate-stagger delay-1 bg-[#A9AEFF] dark:bg-[#2A3070] shadow-sm">
+                <div className="p-5">
+                  <div className="text-xs font-bold text-[#1D2260] mb-1">Total recorded sales</div>
+                  <div className="text-2xl font-extrabold tracking-tight tabular-nums">{rands(data.revenue.low_cents)}</div>
+                  <div className="text-xs font-medium text-[#1D2260] mt-2 tabular-nums">Range to {rands(data.revenue.high_cents)}</div>
                 </div>
-                <div className="text-xs font-medium text-[#4A4F7A] dark:text-[#C5C9F5] mt-2">
-                  {data.stockState.total_products} tracked · {data.stockState.with_variance} with variance
+              </SpotlightCard>
+              <SpotlightCard className="animate-stagger delay-2 bg-white/60 dark:bg-[#1A1F52] backdrop-blur-md shadow-sm border border-white/50 dark:border-[#2A3070]">
+                <div className="p-5">
+                  <div className="text-xs font-bold text-[#4A4F7A] mb-1">Cash on hand</div>
+                  <div className="text-2xl font-extrabold tracking-tight tabular-nums">R3 245</div>
+                  <div className="text-xs font-medium text-[#4A4F7A] mt-2">Reported Friday 16:40</div>
                 </div>
-              </div>
-              <div className="animate-stagger delay-4 bg-[#14173F] dark:bg-[#0E1130] rounded-[24px] p-5 shadow-md text-white">
-                <div className="text-xs font-bold text-[#C5C9F5] mb-1">Consistency Score</div>
-                <div className="text-2xl font-extrabold tracking-tight text-[#A9AEFF] tabular-nums">{data.score.low}–{data.score.high}</div>
-                <div className="text-xs font-medium text-[#C5C9F5] mt-2">Evidence of readiness</div>
-              </div>
+              </SpotlightCard>
+              <SpotlightCard className="animate-stagger delay-3 bg-white/60 dark:bg-[#1A1F52] backdrop-blur-md shadow-sm border border-white/50 dark:border-[#2A3070]">
+                <div className="p-5">
+                  <div className="text-xs font-bold text-[#4A4F7A] dark:text-[#C5C9F5] mb-1">Stock gaps to review</div>
+                  <div className={`text-2xl font-extrabold tracking-tight tabular-nums ${data.stockState.open_variances > 0 ? "text-[#D99A00]" : "text-[#47745D]"}`}>
+                    {data.stockState.open_variances} {data.stockState.open_variances === 1 ? "product" : "products"}
+                  </div>
+                  <div className="text-xs font-medium text-[#4A4F7A] dark:text-[#C5C9F5] mt-2">
+                    {data.stockState.total_products} tracked · {data.stockState.with_variance} with variance
+                  </div>
+                </div>
+              </SpotlightCard>
+              <SpotlightCard className="animate-stagger delay-4 bg-[#14173F] dark:bg-[#0E1130] shadow-md text-white">
+                <div className="p-5">
+                  <div className="text-xs font-bold text-[#C5C9F5] mb-1">Consistency Score</div>
+                  <div className="text-2xl font-extrabold tracking-tight text-[#A9AEFF] tabular-nums">{data.score.low}–{data.score.high}</div>
+                  <div className="text-xs font-medium text-[#C5C9F5] mt-2">Evidence of readiness</div>
+                </div>
+              </SpotlightCard>
             </div>
 
             <CompletenessCard data={completeness} />

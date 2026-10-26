@@ -6,6 +6,7 @@ import { AppProvider } from "@/context/AppContext";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import GlobalThembaDrawer from "@/components/GlobalThembaDrawer";
 import InstallPrompt from "@/components/InstallPrompt";
+import OfflineBanner from "@/components/OfflineBanner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const instrument = Instrument_Serif({ 
@@ -47,6 +48,8 @@ export default function RootLayout({
         >
           Skip to content
         </a>
+
+        <OfflineBanner />
 
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <LanguageProvider>

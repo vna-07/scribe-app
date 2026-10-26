@@ -20,6 +20,14 @@ CREATE TABLE IF NOT EXISTS businesses (
   created_at INTEGER NOT NULL
 );
 
+-- Onboarding / profile enrichment
+ALTER TABLE businesses ADD COLUMN onboarding_path TEXT;
+ALTER TABLE businesses ADD COLUMN business_stage TEXT;
+ALTER TABLE businesses ADD COLUMN registration_status TEXT;
+ALTER TABLE businesses ADD COLUMN vat_status TEXT;
+ALTER TABLE businesses ADD COLUMN main_goal TEXT;
+ALTER TABLE businesses ADD COLUMN business_description TEXT;
+
 CREATE TABLE IF NOT EXISTS business_members (
   business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

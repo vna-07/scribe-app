@@ -21,7 +21,7 @@ function mk(over: Partial<LedgerRecord>): LedgerRecord {
   };
 }
 
-// Nomsa's Spaza: 1 opening, 12 sales over 12 days, 1 count. Weak verification.
+// Siyanda's Spaza: 1 opening, 12 sales over 12 days, 1 count. Weak verification.
 const DAY = 86_400_000;
 const base = Date.now();
 const nomsa: LedgerRecord[] = [

@@ -1,5 +1,5 @@
 "use client";
-
+import AISummaryCard from "@/components/AISummaryCard";
 import { useState, useEffect } from "react";
 import type { DemoData } from "@/lib/demo-data";
 import { rands, fmtDate } from "@/lib/format";
@@ -246,7 +246,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {mainTab === "overview" ? "Molo, Nomsa" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "suppliers" ? "Suppliers" : mainTab === "intelligence" ? "Business Intelligence" : mainTab === "reports" ? "Reports & Exports" : mainTab === "opportunities" ? "Launch Studio" : "Growth Studio"}
+              {mainTab === "overview" ? "Molo, Siyanda" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "suppliers" ? "Suppliers" : mainTab === "intelligence" ? "Business Intelligence" : mainTab === "reports" ? "Reports & Exports" : mainTab === "opportunities" ? "Launch Studio" : "Growth Studio"}
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
@@ -318,6 +318,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         {/* ─── OVERVIEW TAB ─── */}
         {mainTab === "overview" && (
           <>
+          <AISummaryCard />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="animate-stagger delay-1 bg-[#A9AEFF] dark:bg-[#2A3070] rounded-[24px] p-5 shadow-sm">
                 <div className="text-xs font-bold text-[#1D2260] mb-1">Total recorded sales</div>

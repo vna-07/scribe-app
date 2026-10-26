@@ -86,6 +86,7 @@ export default async function Home() {
             <p className="text-sm text-[#4A4F7A] leading-relaxed">
               Code computes the numbers. Themba explains them.
             </p>
+            <Link href="/privacy">Privacy Policy</Link>
           </div>
         </div>
       </div>

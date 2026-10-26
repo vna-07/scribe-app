@@ -68,6 +68,9 @@ export default function SignupPage() {
               placeholder="At least 8 characters" />
           </div>
           {err && <p className="text-sm text-[#B3261E] dark:text-[#FF8A80] font-semibold">{err}</p>}
+          <p className="text-xs text-[#5A5F8C] dark:text-[#C5C9F5] text-center mt-2">
+            By creating an account, you agree to our <Link href="/privacy" className="text-[#5B5BE0] font-bold hover:underline">Privacy Policy</Link>.
+          </p>
           <button type="submit" disabled={busy}
             className="w-full py-3 bg-[#5B5BE0] text-white font-bold rounded-xl hover:bg-[#4B4FC9] transition-colors disabled:opacity-50 shadow-md">
             {busy ? "Creating…" : "Create account"}

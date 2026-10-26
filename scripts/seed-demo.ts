@@ -128,8 +128,13 @@ async function main() {
     sql: `INSERT INTO businesses (id, name, business_type, location, currency, trading_since, operating_notes, created_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
-      bizId, "Nomsa's Spaza", "Spaza shop", "Makhanda, Eastern Cape", "ZAR", "2023-04",
-      "Cash-based. Bread, cold drinks, airtime, household staples. Composite demo business — no real trader data.",
+      bizId,
+      "Siyanda's Spaza",
+      "Spaza shop",
+      "Gugulethu & Khayelitsha, Western Cape",
+      "ZAR",
+      "2006-01",
+      "A 20-year-old community staple. Cash-based. Real historical data (2021-2026) provided by owner.",
       now,
     ],
   });

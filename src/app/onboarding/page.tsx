@@ -160,7 +160,7 @@ export default function OnboardingPage() {
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     className="w-full bg-[#F1F2FF] dark:bg-[#2A3070] border border-[#E1E4F7] dark:border-[#3A4080] rounded-xl px-4 py-3 text-sm text-[#14173F] dark:text-white focus:border-[#5B5BE0] outline-none"
-                    placeholder={path === "planning" ? "e.g. Makhanda Grocery Co-op" : "e.g. Nomsa's Spaza"}
+                    placeholder={path === "planning" ? "e.g. Makhanda Grocery Co-op" : "e.g. Siyanda's Spaza"}
                   />
                 </div>
 

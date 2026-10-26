@@ -84,9 +84,11 @@ export default async function VerifyPage({
               <span className="font-bold text-[#14173F]">{data.score.low} – {data.score.high} / 100</span>
             </div>
             <div className="flex justify-between items-center py-2">
-              <span className="text-sm text-[#4A4F7A] font-medium">Stock Variance</span>
-              <span className={`font-bold ${data.stock.variance !== 0 ? "text-[#D99A00]" : "text-[#47745D]"}`}>
-                {data.stock.variance === null ? "No Count" : `${data.stock.variance} units`}
+              <span className="text-sm text-[#4A4F7A] font-medium">Open Discrepancies</span>
+              <span className={`font-bold ${data.stockState.open_variances === 0 ? "text-[#47745D]" : "text-[#D99A00]"}`}>
+                {data.stockState.open_variances === 0
+                  ? "None"
+                  : `${data.stockState.open_variances} product${data.stockState.open_variances === 1 ? "" : "s"}`}
               </span>
             </div>
           </div>

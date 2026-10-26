@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, nowMs, uuid } from "@/lib/db";
 import { sealRecord } from "@/lib/ledger";
+import { authorizeBusiness } from "@/lib/guard";
 
 export async function POST(req: NextRequest) {
   try {
     const { business_id, product_id, quantity, total_amount_cents } = await req.json();
+
+    // ─── HARDENING CHECK ───
+    const { user, error } = await authorizeBusiness(business_id);
+    if (error) return error;
 
     if (!business_id || !product_id || !quantity || !total_amount_cents) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });

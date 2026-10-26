@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, nowMs, uuid } from "@/lib/db";
+import { authorizeBusiness } from "@/lib/guard";
 
 export async function GET(req: NextRequest) {
   const businessId = req.nextUrl.searchParams.get("business_id");
   if (!businessId) return NextResponse.json({ error: "Missing business_id" }, { status: 400 });
+
+  // ─── HARDENING CHECK ───
+  const { user, error } = await authorizeBusiness(businessId);
+  if (error) return error;
 
   const res = await db().execute({
     sql: "SELECT * FROM goals WHERE business_id = ? ORDER BY created_at DESC",
@@ -32,6 +37,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { action, business_id } = body;
+
+    // ─── HARDENING CHECK ───
+    const { user, error } = await authorizeBusiness(business_id);
+    if (error) return error;
+
     if (!business_id) return NextResponse.json({ error: "Missing business_id" }, { status: 400 });
 
     // Verify the business actually exists before mutating

@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, nowMs, uuid } from "@/lib/db";
 import { sealRecord } from "@/lib/ledger";
+import { authorizeBusiness } from "@/lib/guard";
 
 export async function POST(req: NextRequest) {
   try {
     const { business_id, amount_cents, description } = await req.json();
+
+    // ─── HARDENING CHECK ───
+    const { user, error } = await authorizeBusiness(business_id);
+    if (error) return error;
 
     if (!business_id || !amount_cents || !description) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -20,7 +25,7 @@ export async function POST(req: NextRequest) {
 
     const id = uuid();
     const now = nowMs();
-    
+
     // Seal the expense into the ledger
     const sealed = sealRecord(head, {
       id,
@@ -51,6 +56,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, expense_id: id });
   } catch (error) {
+    console.error("Expense error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

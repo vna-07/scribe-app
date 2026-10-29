@@ -11,6 +11,7 @@ export interface ThembaInput {
   locale?: "en" | "xh" | "zu" | "af";
   active_tab?: string;
   mode?: "bi" | "growth" | "assistant";
+  news_context?: string;
 }
 
 export interface ProposedAction {
@@ -58,7 +59,11 @@ const MODE_INSTRUCTIONS: Record<InternalMode, string> = {
   assistant: `**Assistant** — Help the trader draft messages, emails, or WhatsApp texts to suppliers or customers. Be polite, professional, and locally appropriate (South African English, ZAR amounts). Do NOT fabricate financial figures — if a number is needed, ask the trader to provide it.`,
 };
 
-const SYSTEM_PROMPT = (activeTab: string, mode: InternalMode) => `
+const SYSTEM_PROMPT = (
+  activeTab: string,
+  mode: InternalMode,
+  newsContext: string,
+) => `
 You are Themba, SCRIBE's AI Business Operations Assistant for South African small businesses.
 
 The user is currently looking at the **${activeTab.toUpperCase()}** tab.
@@ -66,7 +71,20 @@ YOUR ACTIVE MODE: ${MODE_INSTRUCTIONS[mode]}
 
 IMPORTANT CONTEXT: You are looking at **Siyanda's Spaza**, a real 20-year-old business in Gugulethu/Khayelitsha.
 The data you are analyzing is real historical data (2021-2026) provided by the owner.
+${newsContext ? `
+CURRENT SOUTH AFRICAN BUSINESS NEWS (headlines only):
+${newsContext}
 
+NEWS RULES:
+- Use the above ONLY when it is directly relevant to the user's question.
+  Example: if they ask "why are my costs rising?", and a headline mentions fuel
+  or food inflation, you may reference "a recent headline". Otherwise ignore it.
+- Say "a recent headline" or "recent reporting" — never "today's news",
+  because headlines may be hours old.
+- Never invent a headline, never quote an article, never cite a date from the
+  list above, and never imply you have live data.
+- If the user's question is unrelated to the news, do not mention it.
+` : ""}
 CRITICAL INSTRUCTIONS:
 1. You must output a strictly valid JSON object. Do not use markdown backticks.
 2. Keep your "answer" under 120 words.
@@ -193,6 +211,7 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
     history = [],
     locale = "en",
     active_tab = "overview",
+    news_context = "",
   } = input;
 
   const mode = resolveMode(input.mode, active_tab);
@@ -203,7 +222,7 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
   const languageLine = locale !== "en"
     ? `\n\nLANGUAGE INSTRUCTION: Respond in ${LANGUAGE_NAMES[locale]}. If you cannot produce a fluent response, respond in English and prefix with "[English fallback]".`
     : "";
-  const systemPrompt = SYSTEM_PROMPT(active_tab, mode) + languageLine;
+  const systemPrompt = SYSTEM_PROMPT(active_tab, mode, news_context) + languageLine;
 
   const context = buildRichContext(records, businessName, history);
   const contextString = JSON.stringify(context);

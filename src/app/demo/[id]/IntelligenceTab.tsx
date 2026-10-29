@@ -12,7 +12,6 @@ export default function IntelligenceTab({ data, onRefresh }: { data: DemoData; o
   const [showExplainer, setShowExplainer] = useState(false);
   const [creatingCaseFor, setCreatingCaseFor] = useState<string | null>(null);
 
-  // ─── use chartRecords (500 records) not recentRecords (15) ───
   const { dailyData, expenseCategories } = generateAnalytics(
     data.chartRecords.map(r => ({
       ...r,
@@ -32,11 +31,6 @@ export default function IntelligenceTab({ data, onRefresh }: { data: DemoData; o
   );
   const openVariances = data.stockState.products.filter((p) => p.status === "open");
 
-  // ─── Create an investigation case from a stock variance ────────
-  // expected/counted are typed `number | null` because stock products may
-  // never have been counted. We do NOT coerce null → 0: that would write
-  // "counted 0" into the case file, which is factually wrong (nothing was
-  // counted) and would read as "all units missing" to a reviewer.
   const handleInvestigate = async (
     productId: string,
     productName: string,
@@ -73,9 +67,6 @@ export default function IntelligenceTab({ data, onRefresh }: { data: DemoData; o
 
       await res.json();
       alert(`Investigation case created for ${productName}.\n\nOpen the Investigations tab to review it.`);
-
-      // Best-effort: refresh the parent so the Investigations tab sees it
-      // immediately. The case exists in the DB regardless.
       onRefresh?.();
     } catch (e) {
       console.error("[IntelligenceTab] Case create threw:", e);
@@ -147,7 +138,7 @@ export default function IntelligenceTab({ data, onRefresh }: { data: DemoData; o
         </div>
       </div>
 
-      {/* ─── THEMBA'S RECOMMENDATIONS ─── */}
+      {/* THEMBA'S RECOMMENDATIONS */}
       <RecommendationCards
         stockState={data.stockState}
         chartRecords={data.chartRecords.map((r) => ({

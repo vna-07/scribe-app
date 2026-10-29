@@ -27,6 +27,7 @@ import CompletenessCard from "@/components/CompletenessCard";
 import ReorderModal from "@/components/ReorderModal";
 import SpotlightCard from "@/components/SpotlightCard";
 import VoiceCapture from "@/components/VoiceCapture";
+import MarketPulse from "@/components/MarketPulse";
 
 type MainTab =
   | "overview"
@@ -269,7 +270,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <span className={`hidden sm:flex px-4 py-2 rounded-xl text-xs font-bold items-center gap-2 ${
               data.chain.ok ? "bg-white text-[#14173F] shadow-sm" : "bg-[#A94E40] text-white"
             }`}>
@@ -310,6 +311,16 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             >
               Share
             </button>
+            <Link
+              href={`/lender/${data.businessId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open Banker Export view in a new tab"
+              className="flex items-center gap-2 bg-[#B89A61] text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-[#A38752] transition-colors shadow-sm"
+            >
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12h20"></path><path d="M12 2v20"></path></svg>
+              Banker Export
+            </Link>
             <button
               aria-label="Import CSV file"
               onClick={() => setShowImport(true)}
@@ -482,30 +493,34 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
                 <BarChart data={dailyData} height={220} />
               </div>
 
-              {/* Score + expense donut — 2/5 width */}
-              <div className="lg:col-span-2 bg-white dark:bg-[#1A1F52] rounded-[24px] p-5 md:p-6 shadow-sm border border-[#E1E4F7] dark:border-[#2A3070] flex flex-col">
-                <div className="flex justify-between items-baseline mb-5">
-                  <h3 className="font-extrabold text-lg text-[#14173F] dark:text-white">Readiness</h3>
-                  <span className="font-extrabold text-2xl text-[#5B5BE0] dark:text-[#A9AEFF] tabular-nums">{data.score.low}–{data.score.high}</span>
-                </div>
+              {/* Right column — Market Pulse + Score + expense donut */}
+              <div className="lg:col-span-2 flex flex-col gap-4">
+                <MarketPulse />
 
-                <div className="space-y-3 mb-6">
-                  {data.score.components.map(c => (
-                    <div key={c.key} className="group">
-                      <div className="flex justify-between text-xs font-bold mb-1 text-[#14173F] dark:text-white">
-                        <span>{c.label}</span>
-                        <span className="tabular-nums">{Math.round(c.value * 100)}</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-[#E6E8FA] dark:bg-[#2A3070] rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full transition-all ${c.value > 0.6 ? 'bg-[#14173F] dark:bg-[#A9AEFF]' : c.value > 0.3 ? 'bg-[#A9AEFF]' : 'bg-[#D99A00]'}`} style={{ width: `${Math.max(3, c.value * 100)}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <div className="bg-white dark:bg-[#1A1F52] rounded-[24px] p-5 md:p-6 shadow-sm border border-[#E1E4F7] dark:border-[#2A3070] flex flex-col flex-1">
+                  <div className="flex justify-between items-baseline mb-5">
+                    <h3 className="font-extrabold text-lg text-[#14173F] dark:text-white">Readiness</h3>
+                    <span className="font-extrabold text-2xl text-[#5B5BE0] dark:text-[#A9AEFF] tabular-nums">{data.score.low}–{data.score.high}</span>
+                  </div>
 
-                <div className="mt-auto pt-4 border-t border-[#E1E4F7] dark:border-[#2A3070]">
-                  <p className="text-xs font-bold text-[#5A5F8C] dark:text-[#C5C9F5] uppercase tracking-wider mb-2">Expense breakdown</p>
-                  <DonutChart data={expenseCategories} />
+                  <div className="space-y-3 mb-6">
+                    {data.score.components.map(c => (
+                      <div key={c.key} className="group">
+                        <div className="flex justify-between text-xs font-bold mb-1 text-[#14173F] dark:text-white">
+                          <span>{c.label}</span>
+                          <span className="tabular-nums">{Math.round(c.value * 100)}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-[#E6E8FA] dark:bg-[#2A3070] rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full transition-all ${c.value > 0.6 ? 'bg-[#14173F] dark:bg-[#A9AEFF]' : c.value > 0.3 ? 'bg-[#A9AEFF]' : 'bg-[#D99A00]'}`} style={{ width: `${Math.max(3, c.value * 100)}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-auto pt-4 border-t border-[#E1E4F7] dark:border-[#2A3070]">
+                    <p className="text-xs font-bold text-[#5A5F8C] dark:text-[#C5C9F5] uppercase tracking-wider mb-2">Expense breakdown</p>
+                    <DonutChart data={expenseCategories} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -812,6 +827,30 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             <p className="text-sm text-[#4A4F7A] mb-6">
               Paste a suspicious WhatsApp, SMS or email message. We&apos;ll flag risk signals — not judge the sender.
             </p>
+
+            {/* ─── KNOWN PATTERNS ─── */}
+            <div className="bg-[#B3261E]/5 border border-[#B3261E]/20 rounded-xl p-4 mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-2 w-2 rounded-full bg-[#B3261E] animate-pulse"></div>
+                <h4 className="font-bold text-[#B3261E] text-sm uppercase tracking-wider">Known Scam Patterns</h4>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <span className="text-lg" aria-hidden="true">⚠️</span>
+                  <div>
+                    <p className="text-sm font-bold text-[#14173F]">Fake proof of payment</p>
+                    <p className="text-xs text-[#5A5F8C]">Edited bank screenshots and PDF generators — the amount looks right, but the money never lands.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-lg" aria-hidden="true">🛡️</span>
+                  <div>
+                    <p className="text-sm font-bold text-[#14173F]">Supplier banking-detail change</p>
+                    <p className="text-xs text-[#5A5F8C]">An email that looks like your supplier says &quot;we&apos;ve changed accounts&quot;. Always verify by phone.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <textarea
               value={scamMessage}

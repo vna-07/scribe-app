@@ -11,10 +11,14 @@ export default function GuidedTour() {
   }, []);
 
   const handleNext = () => {
-    const next = step + 1;
-    setStep(next);
-    if (next > 4) {
+    // If we are on the last step (index 3 = step 4), hide the tour.
+    // Otherwise advance one step. Never let step reach 4 — steps[4] is
+    // undefined and would crash the render.
+    if (step === 3) {
+      setStep(99);
       localStorage.setItem("scribe_tour_done", "true");
+    } else {
+      setStep(step + 1);
     }
   };
 

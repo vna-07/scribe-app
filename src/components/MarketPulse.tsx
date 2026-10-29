@@ -12,11 +12,11 @@ export default function MarketPulse() {
       .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="h-24 bg-gray-100 animate-pulse rounded-xl" />;
-  if (!news.length) return null;
+  if (loading) return <div className="h-32 bg-gray-100 dark:bg-[#1A1F52] animate-pulse rounded-xl" />;
+  if (!news?.length) return null;
 
   return (
-    <div className="bg-[#14173F] text-white rounded-2xl p-5 mb-6 shadow-lg border border-[#2A3070]">
+    <div className="bg-[#14173F] text-white rounded-2xl p-5 shadow-lg border border-[#2A3070]">
       <div className="flex items-center gap-2 mb-3">
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>

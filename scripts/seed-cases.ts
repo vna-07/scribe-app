@@ -23,20 +23,20 @@ async function main() {
   await db().execute({ sql: "DELETE FROM cases WHERE business_id = ?", args: [bizId] });
 
   const cases = [
-    { title: "1. Legitimate Payment", status: "resolved" },
-    { title: "2. Amount Mismatch", status: "investigating" },
-    { title: "3. Pending Payment", status: "open" },
-    { title: "4. Altered Document Indicators", status: "investigating" },
-    { title: "5. Supplier Bank-Detail Change", status: "investigating" }, // was "requires_attention"
-    { title: "6. Duplicate Transaction", status: "open" },
-    { title: "7. Stock Variance", status: "investigating" },
-    { title: "8. Multi-Document Investigation", status: "open" },
+    { title: "1. Legitimate Payment", status: "resolved", findings: "Receipt matches bank statement. Supplier details verified. No action required." },
+    { title: "2. Amount Mismatch", status: "investigating", findings: "Receipt shows R450.00 but bank SMS shows R540.00. Possible typo or overcharge. Flagged for trader review." },
+    { title: "3. Pending Payment", status: "open", findings: "Invoice generated 14 days ago. No matching bank transaction found in the records provided." },
+    { title: "4. Altered Document Indicators", status: "investigating", findings: "Metadata suggests the PDF was edited after generation. Font inconsistencies detected on the total amount line." },
+    { title: "5. Supplier Bank-Detail Change", status: "investigating", findings: "Supplier requested a change of banking details via email. Email domain does not match supplier's official website. High risk of BEC fraud." },
+    { title: "6. Duplicate Transaction", status: "open", findings: "Two identical card transactions (R890) recorded 3 minutes apart. Likely accidental double-swipe." },
+    { title: "7. Stock Variance", status: "investigating", findings: "Albany Bread theoretical stock: 38. Physical count: 30. Variance: -8 units. Requires a recount and waste check." },
+    { title: "8. Multi-Document Investigation", status: "open", findings: "3 receipts uploaded for a single supplier. Total amount does not match the delivery note. Missing 1 case of oil." },
   ];
 
   for (const c of cases) {
     await db().execute({
-      sql: "INSERT INTO cases (id, business_id, title, status, created_at) VALUES (?, ?, ?, ?, ?)",
-      args: [uuid(), bizId, c.title, c.status, nowMs()],
+      sql: "INSERT INTO cases (id, business_id, title, status, findings, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+      args: [uuid(), bizId, c.title, c.status, c.findings, nowMs()],
     });
   }
 

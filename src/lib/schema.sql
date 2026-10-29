@@ -177,7 +177,8 @@ CREATE TABLE IF NOT EXISTS cases (
   business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'open'
-    CHECK (status IN ('open','investigating','resolved')),
+    CHECK (status IN ('open','investigating','resolved','requires_attention')),
+  findings TEXT,
   created_at INTEGER NOT NULL
 );
 

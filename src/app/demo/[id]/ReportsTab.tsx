@@ -1,22 +1,62 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 export default function ReportsTab({ businessId, data }: { businessId: string, data: any }) {
   const [downloading, setDownloading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleCSV = () => {
     setDownloading(true);
-    const csvContent = "data:text/csv;charset=utf-8," + 
-      "Date,Description,Type,Amount,Evidence\n" +
-      data.recentRecords.map((r: any) => `${new Date(r.occurred_at).toISOString().slice(0,10)},"${r.description}",${r.kind},${r.amount_cents/100},${r.evidence_tier}`).join("\n");
+
+    // ─── CSV escaping ───
+    // Escape embedded double-quotes ("" for "), and quote every field so
+    // commas / newlines in descriptions can't split rows. Without this, a
+    // description like: He said "hi", paid R50  would corrupt the whole file.
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+
+    const header = "Date,Description,Type,Amount,Evidence\n";
+    const rows = data.recentRecords
+      .map((r: any) =>
+        [
+          esc(new Date(r.occurred_at).toISOString().slice(0, 10)),
+          esc(r.description),
+          esc(r.kind),
+          esc((r.amount_cents / 100).toFixed(2)),
+          esc(r.evidence_tier),
+        ].join(","),
+      )
+      .join("\n");
+
     const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute(
+      "href",
+      "data:text/csv;charset=utf-8," + encodeURIComponent(header + rows),
+    );
     link.setAttribute("download", "SCRIBE_Transactions.csv");
     document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
     setTimeout(() => setDownloading(false), 1000);
+  };
+
+  const openStatement = () => {
+    // Opens the A4 statement page in a new tab so the dashboard stays put.
+    // noopener,noreferrer: the new tab can't reach back into window.opener.
+    window.open(
+      `/statement/${businessId}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
+
+  const handleGeneratePDF = () => {
+    setIsGenerating(true);
+    openStatement();
+    // The page is rendered server-side, so "generating" is really just the
+    // ~1s the browser takes to open the new tab. Reset the spinner shortly
+    // after so the button doesn't look stuck if the judge returns to this tab.
+    setTimeout(() => setIsGenerating(false), 2000);
   };
 
   return (
@@ -36,9 +76,13 @@ export default function ReportsTab({ businessId, data }: { businessId: string, d
             <h3 className="font-extrabold text-[#14173F] dark:text-white mb-1">Financial Statement</h3>
             <p className="text-xs text-[#4A4F7A] dark:text-[#C5C9F5] leading-relaxed mb-4">A4 printable document with cryptographic verification QR code.</p>
           </div>
-          <Link href={`/statement/${businessId}`} className="w-full block text-center py-2.5 bg-[#5B5BE0] text-white text-sm font-bold rounded-lg hover:bg-[#4B4FC9] transition-colors">
-            Generate PDF
-          </Link>
+          <button
+            onClick={handleGeneratePDF}
+            disabled={isGenerating}
+            className="w-full py-2.5 bg-[#5B5BE0] text-white text-sm font-bold rounded-lg hover:bg-[#4B4FC9] disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+          >
+            {isGenerating ? "Opening…" : "Generate PDF"}
+          </button>
         </div>
 
         {/* CSV Export */}
@@ -65,7 +109,12 @@ export default function ReportsTab({ businessId, data }: { businessId: string, d
               <p className="font-bold text-sm text-[#14173F] dark:text-white">Financial Statement · Oct 2026</p>
               <p className="text-[10px] text-[#5A5F8C] dark:text-[#C5C9F5]">Generated {new Date().toLocaleDateString('en-ZA')}</p>
             </div>
-            <Link href={`/statement/${businessId}`} className="text-xs font-bold text-[#5B5BE0] hover:underline">View</Link>
+            <button
+              onClick={openStatement}
+              className="text-xs font-bold text-[#5B5BE0] hover:underline"
+            >
+              View
+            </button>
           </div>
         </div>
       </div>

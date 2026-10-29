@@ -10,6 +10,8 @@ import Link from "next/link";
    ═══════════════════════════════════════════════════════════════ */
 
 const TELEGRAM_URL = "https://t.me/ScribeIntellegenceBot";
+const CONTACT_EMAIL = "avianrossi@gmail.com";
+const GITHUB_URL = "https://github.com/vna-07/scribe-app";
 
 /* ─── Icons (inline — no lucide-react dependency) ────────────── */
 type IconProps = { size?: number; color?: string; className?: string; style?: CSSProperties };
@@ -317,7 +319,7 @@ const ROTATING = ["a sale happens in cash", "stock doesn’t reconcile", "a lend
 
 const NAV: [string, string][] = [
   ["submission", "Submission"], ["preview", "Product"], ["how", "How it works"], ["integrations", "Integrations"],
-  ["themba", "Themba"], ["trust", "Trust"], ["team", "Team"], ["faq", "FAQ"], ["challenges", "Challenges"],
+  ["themba", "Themba"], ["trust", "Trust"], ["team", "Team"], ["faq", "FAQ"], ["challenges", "Challenges"], ["contact", "Contact"],
 ];
 
 /* ─── CSS ────────────────────────────────────────────────────── */
@@ -368,6 +370,17 @@ const CSS = `
   .sk-root *{animation:none!important;transition:none!important}
   .sk-reveal{opacity:1;transform:none}
 }
+.sk-root{color-scheme:light}
+.sk-root .bg-white{background-color:#fff!important}
+.sk-root .bg-white\\/95{background-color:rgba(255,255,255,.96)!important}
+.sk-root .bg-white\\/92{background-color:rgba(255,255,255,.94)!important}
+.sk-root .bg-white\\/90{background-color:rgba(255,255,255,.93)!important}
+.sk-root .bg-white\\/85{background-color:rgba(255,255,255,.9)!important}
+.sk-root .bg-white\\/80{background-color:rgba(255,255,255,.86)!important}
+.sk-root .bg-white\\/70{background-color:rgba(255,255,255,.78)!important}
+.sk-root [class*="bg-[#F1F2FF]"]{background-color:#F1F2FF!important}
+.sk-root [class*="bg-[#F6F7FF]"]{background-color:#F6F7FF!important}
+.sk-root [class*="bg-[#F3F4FF]"]{background-color:#F3F4FF!important}
 `;
 
 /* ─── Helpers ────────────────────────────────────────────────── */
@@ -1176,6 +1189,34 @@ function ChallengesSection() {
   );
 }
 
+/* ─── Contact ────────────────────────────────────────────────── */
+function ContactSection() {
+  return (
+    <section id="contact" data-theme="light" className="py-16 md:py-24">
+      <div className="max-w-[900px] mx-auto px-5 sm:px-6 md:px-12">
+        <Reveal>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Get in touch.</h2>
+          <p className="sk-lede text-base md:text-lg mb-8" style={{ color: SLATE }}>
+            Questions about SCRIBE, the prototype, or the code? Reach Team CODE BLOODED directly.
+          </p>
+        </Reveal>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <a href={`mailto:${CONTACT_EMAIL}`}
+            className="rounded-2xl bg-white border border-black/10 shadow-lg p-6 hover:-translate-y-0.5 transition-transform min-h-[48px]">
+            <p className="text-xs font-black tracking-widest uppercase mb-2" style={{ color: DEEP }}>Email</p>
+            <p className="font-bold break-all">{CONTACT_EMAIL}</p>
+          </a>
+          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer"
+            className="rounded-2xl bg-white border border-black/10 shadow-lg p-6 hover:-translate-y-0.5 transition-transform min-h-[48px]">
+            <p className="text-xs font-black tracking-widest uppercase mb-2" style={{ color: DEEP }}>GitHub</p>
+            <p className="font-bold break-all">github.com/vna-07/scribe-app</p>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ─── CTA that works with or without a demo business ─────────── */
 function DemoCTA({ demoBizId, className, style, children }: { demoBizId: string | null; className?: string; style?: CSSProperties; children: ReactNode }) {
   if (demoBizId) return <Link href={`/demo/${demoBizId}`} className={className} style={style}>{children}</Link>;
@@ -1687,6 +1728,9 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
         {/* CHALLENGES + SOLUTION */}
         <ChallengesSection />
 
+        {/* CONTACT */}
+        <ContactSection />
+
         {/* FOOTER */}
         <footer data-theme="dark" className="py-16 md:py-20 px-5 text-center" style={{ color: "#F2F3FF" }}>
           <div className="flex justify-center items-center gap-3 mb-5">
@@ -1712,6 +1756,8 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
           </div>
           <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-semibold" style={{ color: "#D5D8FF" }}>
             <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="py-2 hover:text-white">Telegram bot</a>
+            <a href={`mailto:${CONTACT_EMAIL}`} className="py-2 hover:text-white">Email us</a>
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="py-2 hover:text-white">GitHub</a>
             <button type="button" onClick={() => setWa(true)} className="py-2 hover:text-white">WhatsApp (coming soon)</button>
             <Link href="/login" className="py-2 hover:text-white">Sign in</Link>
           </div>

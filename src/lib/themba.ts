@@ -27,23 +27,15 @@ export interface ThembaAnswer {
   provider: "gemini" | "groq" | "fallback";
 }
 
-// Tabs that map to tactical / BI-style mode. Anything not here and not in
-// GROWTH_TABS falls through to the SCRIBE Guide fallback (used for Settings,
-// Admin, and any tab we haven't explicitly classified).
 const COMPANION_TABS = ["overview", "records", "stock", "suppliers", "intelligence", "reports", "cases"];
 const GROWTH_TABS = ["tasks", "opportunities"];
 
-// Legacy: tab-derived mode (used only as a fallback when the frontend
-// doesn't pass an explicit mode — some callers like /api/themba pre-toggle).
 function modeForTab(activeTab: string): "companion" | "growth" | "guide" {
   if (GROWTH_TABS.includes(activeTab)) return "growth";
   if (COMPANION_TABS.includes(activeTab)) return "companion";
   return "guide";
 }
 
-// Unified internal mode. Frontend "bi" is semantically equivalent to
-// tab-derived "companion" — both mean "analytical / tactical". "assistant"
-// is a genuinely new mode (drafting help) that has no tab analog.
 type InternalMode = "companion" | "growth" | "guide" | "assistant";
 
 function resolveMode(
@@ -203,7 +195,6 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
     active_tab = "overview",
   } = input;
 
-  // Resolve the effective mode: explicit user choice > tab-derived default.
   const mode = resolveMode(input.mode, active_tab);
 
   const refusal = preflight(question, records);
@@ -219,8 +210,8 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
   const historyString = history.slice(-4).map(h => `${h.role}: ${h.text}`).join('\n');
 
   // ─── 1. TRY GEMINI ───
-  const geminiKeys = [process.env.key, process.env.key3, process.env.key4, process.env.GEMINI_API_KEY].filter(Boolean) as string[];
-  const geminiModels = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+  const geminiKeys = [process.env.GEMINI_API_KEY, process.env.key, process.env.key3, process.env.key4].filter(Boolean) as string[];
+  const geminiModels = ["gemini-1.5-flash", "gemini-1.5-pro"];
 
   for (const model of geminiModels) {
     for (const key of geminiKeys) {
@@ -243,19 +234,19 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
         clearTimeout(timeout);
 
         if (!res.ok) {
-          console.warn(`[Themba] Gemini ${model} failed:`, res.status);
+          console.warn(`[Themba] Gemini ${model} failed: ${res.status} ${(await res.text()).slice(0, 200)}`);
           continue;
         }
 
         const json = await res.json();
         let text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!text) continue;
+        if (!text) { console.warn(`[Themba] Gemini ${model}: empty response`); continue; }
 
         text = text.trim().replace(/^```json/, "").replace(/```$/, "").trim();
         const parsed = JSON.parse(text);
         return { answer: parsed.answer, proposed_action: parsed.proposed_action?.type !== "none" ? parsed.proposed_action : null, refused: false, refusal_reason: null, provider: "gemini" };
-      } catch (e) {
-        // Silent catch, try next
+      } catch (e: any) {
+        console.warn(`[Themba] Gemini ${model} exception:`, e?.name === "AbortError" ? "timeout" : e?.message);
       }
     }
   }
@@ -268,7 +259,7 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
         method: "POST",
         headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama3-70b-8192",
+          model: "llama-3.3-70b-versatile",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: `CONTEXT: ${contextString}\n\nHISTORY:\n${historyString}\n\nUSER QUESTION: ${question}` }
@@ -287,10 +278,10 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
           return { answer: parsed.answer, proposed_action: parsed.proposed_action?.type !== "none" ? parsed.proposed_action : null, refused: false, refusal_reason: null, provider: "groq" };
         }
       } else {
-        console.warn(`[Themba] Groq failed:`, res.status);
+        console.warn(`[Themba] Groq failed:`, res.status, (await res.text()).slice(0, 200));
       }
-    } catch (e) {
-      console.warn(`[Themba] Groq exception.`);
+    } catch (e: any) {
+      console.warn(`[Themba] Groq exception:`, e?.message);
     }
   }
 

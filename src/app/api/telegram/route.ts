@@ -33,6 +33,33 @@ function escapeMd(s: string) {
   return s.replace(/[_*`\[\]]/g, "\\$&");
 }
 
+// ─── Natural-language transaction parser ────────────────────────
+type TxType = "sale" | "expense";
+
+function extractType(text: string): TxType | null {
+  const lower = text.toLowerCase();
+  if (/\b(sold|sale|income|received|earned|made)\b/.test(lower)) return "sale";
+  if (/\b(bought|buy|spent|paid|expense|purchased|lost)\b/.test(lower)) return "expense";
+  return null;
+}
+
+function extractAmount(text: string): number | null {
+  // 1. R-prefixed amount wins ("R45", "R 45.50", "R45,50")
+  const rMatch = text.match(/\bR\s?(\d+(?:[.,]\d{1,2})?)/i);
+  if (rMatch) return parseFloat(rMatch[1].replace(",", "."));
+
+  // 2. "for 45" / "for R45"
+  const forMatch = text.match(/\bfor\s+(?:R\s?)?(\d+(?:[.,]\d{1,2})?)/i);
+  if (forMatch) return parseFloat(forMatch[1].replace(",", "."));
+
+  // 3. Bare amount with a decimal ("spent 45.50 on X")
+  const decimalMatch = text.match(/\b(\d+[.,]\d{1,2})\b/);
+  if (decimalMatch) return parseFloat(decimalMatch[1].replace(",", "."));
+
+  // No safe fallback — quantity ≠ amount. Ask the user.
+  return null;
+}
+
 const mainMenu = {
   inline_keyboard: [
     [{ text: "📄 Check a document", callback_data: "check_doc" }, { text: "💬 Check a message", callback_data: "check_msg" }],
@@ -52,15 +79,19 @@ async function resolveLinkedUser(chatId: string): Promise<string | null> {
   return r.rows.length > 0 ? String(r.rows[0].user_id) : null;
 }
 
-async function casesTextForUser(userId: string): Promise<string> {
-  const bizRes = await db().execute({
+async function resolveBusinessId(userId: string): Promise<string | null> {
+  const r = await db().execute({
     sql: "SELECT business_id FROM business_members WHERE user_id = ? LIMIT 1",
     args: [userId],
   });
-  if (bizRes.rows.length === 0) {
+  return r.rows.length > 0 ? String(r.rows[0].business_id) : null;
+}
+
+async function casesTextForUser(userId: string): Promise<string> {
+  const bizId = await resolveBusinessId(userId);
+  if (!bizId) {
     return "No business found. Please set one up on the web app.";
   }
-  const bizId = String(bizRes.rows[0].business_id);
   const casesRes = await db().execute({
     sql: "SELECT title, status FROM cases WHERE business_id = ? ORDER BY created_at DESC LIMIT 5",
     args: [bizId],
@@ -129,9 +160,11 @@ export async function POST(req: NextRequest) {
         case "record_tx":
           await sendMessage(
             chatId,
-            "💰 *Record a Transaction*\n\nType it naturally, e.g.:\n" +
-              `"Sold 3 bread for R45"\n"Paid R120 for fuel"\n\n` +
-              "(Themba's natural-language parser lands in the next update — for now use the web app's *Record Sale* / *Record Expense* buttons.)",
+            "💰 *Record a Transaction*\n\n" +
+              "Type it naturally and I'll save it to your ledger:\n" +
+              `• \`Sold 3 bread for R45\`\n` +
+              `• \`Paid R120 for fuel\`\n` +
+              `• \`Bought stock for R500\``,
           );
           break;
 
@@ -175,6 +208,7 @@ export async function POST(req: NextRequest) {
     const chatId = String(message.chat.id);
     const text = message.text || "";
 
+    // /start and /menu
     if (text.startsWith("/start") || text === "/menu") {
       await sendMessage(
         chatId,
@@ -186,6 +220,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    // /link CODE
     if (text.startsWith("/link")) {
       const code = text.split(/\s+/)[1];
       if (!code || code === "YOUR_CODE") {
@@ -219,6 +254,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    // /cases
     const command = text.split(/\s+/)[0].split("@")[0].toLowerCase();
     if (command === "/cases") {
       const userId = await resolveLinkedUser(chatId);
@@ -230,6 +266,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    // Photo (receipt) — unchanged
     if (message.photo) {
       const userId = await resolveLinkedUser(chatId);
       if (!userId) {
@@ -244,18 +281,73 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    // ── 3. Free text → try to record a transaction ───────────────
     const userId = await resolveLinkedUser(chatId);
-    if (userId && text) {
+
+    if (!userId) {
+      // Unknown slash command, or unlinked user typing random text
+      await sendMessage(chatId, "I didn't quite catch that. Here is the main menu:", mainMenu);
+      return NextResponse.json({ ok: true });
+    }
+
+    if (text.startsWith("/")) {
+      // Unrecognised command (e.g. /help). Don't try to record it.
+      await sendMessage(chatId, "I didn't quite catch that. Here is the main menu:", mainMenu);
+      return NextResponse.json({ ok: true });
+    }
+
+    const type = extractType(text);
+    const amount = extractAmount(text);
+
+    if (type === null || amount === null || amount <= 0) {
       await sendMessage(
         chatId,
-        `🤖 *Themba:* I received your message: "${escapeMd(text)}"\n\n` +
-          "(Full natural-language parsing lands in the next update. For now, use the menu for other actions.)",
-        mainMenu,
+        "💰 *Record a Transaction*\n\n" +
+          "I couldn't pick out the details from that message. Try one of these:\n" +
+          `• \`Sold 3 bread for R45\`\n` +
+          `• \`Paid R120 for fuel\`\n` +
+          `• \`Bought stock for R500\``,
       );
       return NextResponse.json({ ok: true });
     }
 
-    await sendMessage(chatId, "I didn't quite catch that. Here is the main menu:", mainMenu);
+    const bizId = await resolveBusinessId(userId);
+    if (!bizId) {
+      await sendMessage(
+        chatId,
+        "⚠️ No business linked to your account yet. Set one up on the web app first.",
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    const recordId = crypto.randomUUID();
+    const amountCents = Math.round(amount * 100);
+
+    try {
+      await db().execute({
+        sql:
+          "INSERT INTO records (id, business_id, occurred_at, description, amount_cents, type, evidence_tier) " +
+          "VALUES (?, ?, ?, ?, ?, ?, 'self_declared')",
+        args: [recordId, bizId, nowMs(), text, amountCents, type],
+      });
+    } catch (dbErr) {
+      console.error("Telegram record insert failed:", dbErr, { bizId, type, amountCents });
+      await sendMessage(
+        chatId,
+        "⚠️ I couldn't save that to your ledger right now. Please try the *Record Sale* / *Record Expense* buttons on the web app.",
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    await sendMessage(
+      chatId,
+      `✅ *Recorded!*\n\n` +
+        `📝 *${type === "sale" ? "Sale" : "Expense"}*\n` +
+        `💰 Amount: *R${amount.toFixed(2)}*\n` +
+        `📄 _${escapeMd(text)}_\n\n` +
+        "Saved to your ledger. Open the web app to see it in your records.",
+      mainMenu,
+    );
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Telegram Webhook Error:", error);

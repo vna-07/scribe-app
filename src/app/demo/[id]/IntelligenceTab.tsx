@@ -8,10 +8,11 @@ import { BarChart, DonutChart } from "@/components/Visuals";
 import ScoreExplainer from "@/components/ScoreExplainer";
 import RecommendationCards from "@/components/Recommendations";
 
-export default function IntelligenceTab({ data }: { data: DemoData; onRefresh?: () => void }) {
+export default function IntelligenceTab({ data, onRefresh }: { data: DemoData; onRefresh?: () => void }) {
   const [showExplainer, setShowExplainer] = useState(false);
+  const [creatingCaseFor, setCreatingCaseFor] = useState<string | null>(null);
 
-  // ─── FIXED: use chartRecords (500 records) not recentRecords (15) ───
+  // ─── use chartRecords (500 records) not recentRecords (15) ───
   const { dailyData, expenseCategories } = generateAnalytics(
     data.chartRecords.map(r => ({
       ...r,
@@ -26,14 +27,63 @@ export default function IntelligenceTab({ data }: { data: DemoData; onRefresh?: 
   const totalExpenses = dailyData.reduce((s, d) => s + d.expenses, 0);
   const netCashFlow = totalSales - totalExpenses;
 
-  // Low-stock products: expected balance is below the reorder threshold.
-  // `reorder_threshold > 0` guards against products with no configured threshold
-  // (the import script leaves this at the schema default of 0), which would
-  // otherwise all flag as "low stock" whenever their balance is zero.
   const lowStock = data.stockState.products.filter(
     (p) => p.reorder_threshold > 0 && p.expected <= p.reorder_threshold
   );
   const openVariances = data.stockState.products.filter((p) => p.status === "open");
+
+  // ─── Create an investigation case from a stock variance ────────
+  // expected/counted are typed `number | null` because stock products may
+  // never have been counted. We do NOT coerce null → 0: that would write
+  // "counted 0" into the case file, which is factually wrong (nothing was
+  // counted) and would read as "all units missing" to a reviewer.
+  const handleInvestigate = async (
+    productId: string,
+    productName: string,
+    variance: number | null,
+    expected: number | null,
+    counted: number | null,
+  ) => {
+    setCreatingCaseFor(productId);
+    try {
+      const expectedLabel = expected !== null ? `${expected}` : "unknown";
+      const countedLabel = counted !== null ? `${counted}` : "not yet counted";
+      const varianceLabel =
+        variance !== null ? `${variance > 0 ? "+" : ""}${variance}` : "unknown";
+
+      const res = await fetch("/api/cases", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          business_id: data.businessId,
+          title: `Stock Variance: ${productName}`,
+          findings:
+            `Expected ${expectedLabel} units, counted ${countedLabel}. ` +
+            `Variance of ${varianceLabel} units. ` +
+            `Review delivery slips and recent sales to reconcile.`,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        console.error("[IntelligenceTab] Case create failed:", res.status, body);
+        alert(`Could not create case: ${body.error ?? res.statusText}`);
+        return;
+      }
+
+      await res.json();
+      alert(`Investigation case created for ${productName}.\n\nOpen the Investigations tab to review it.`);
+
+      // Best-effort: refresh the parent so the Investigations tab sees it
+      // immediately. The case exists in the DB regardless.
+      onRefresh?.();
+    } catch (e) {
+      console.error("[IntelligenceTab] Case create threw:", e);
+      alert("Could not create case — network error. Please try again.");
+    } finally {
+      setCreatingCaseFor(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -113,12 +163,21 @@ export default function IntelligenceTab({ data }: { data: DemoData; onRefresh?: 
           <h3 className="font-extrabold text-lg text-[#14173F] dark:text-white mb-4">Decisions to Review</h3>
           <div className="space-y-2">
             {openVariances.map(p => (
-              <div key={p.id} className="flex justify-between items-center py-2 border-b border-[#F1F2FF] dark:border-[#2A3070] last:border-0">
-                <div>
+              <div key={p.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 py-3 border-b border-[#F1F2FF] dark:border-[#2A3070] last:border-0">
+                <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm text-[#14173F] dark:text-white">{p.name} — {p.variance} units</p>
                   <p className="text-xs text-[#5A5F8C] dark:text-[#C5C9F5]">Expected {p.expected} · Counted {p.counted} · Review required</p>
                 </div>
-                <span className="text-[10px] font-bold uppercase text-[#D99A00] bg-[#FFF0C4] dark:bg-[#4A3B10] px-2 py-1 rounded-full">Investigate</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-bold uppercase text-[#D99A00] bg-[#FFF0C4] dark:bg-[#4A3B10] px-2 py-1 rounded-full">Investigate</span>
+                  <button
+                    onClick={() => handleInvestigate(p.id, p.name, p.variance ?? null, p.expected, p.counted)}
+                    disabled={creatingCaseFor === p.id}
+                    className="bg-[#5B5BE0] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-[#4B4FC9] transition-colors disabled:opacity-50 disabled:cursor-wait"
+                  >
+                    {creatingCaseFor === p.id ? "Creating…" : "Open Case"}
+                  </button>
+                </div>
               </div>
             ))}
             {lowStock.map((p) => (

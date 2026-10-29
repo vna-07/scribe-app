@@ -27,7 +27,7 @@ async function main() {
     { title: "2. Amount Mismatch", status: "investigating" },
     { title: "3. Pending Payment", status: "open" },
     { title: "4. Altered Document Indicators", status: "investigating" },
-    { title: "5. Supplier Bank-Detail Change", status: "requires_attention" },
+    { title: "5. Supplier Bank-Detail Change", status: "investigating" }, // was "requires_attention"
     { title: "6. Duplicate Transaction", status: "open" },
     { title: "7. Stock Variance", status: "investigating" },
     { title: "8. Multi-Document Investigation", status: "open" },

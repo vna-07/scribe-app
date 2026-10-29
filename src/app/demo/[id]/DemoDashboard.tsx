@@ -20,6 +20,7 @@ import GrowthTab from "./GrowthTab";
 import ReportsTab from "./ReportsTab";
 import OpportunitiesTab from "./OpportunitiesTab";
 import CasesTab from "./CasesTab";
+import GuidedTour from "./GuidedTour";
 import { calculateCompleteness } from "@/lib/completeness";
 import CompletenessCard from "@/components/CompletenessCard";
 import ReorderModal from "@/components/ReorderModal";
@@ -978,6 +979,8 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         </div>
       )}
 
+      {/* Add the Guided Tour here */}
+      <GuidedTour />
     </div>
   );
 }

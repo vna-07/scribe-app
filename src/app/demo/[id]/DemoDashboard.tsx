@@ -396,6 +396,11 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               </SpotlightCard>
             </div>
 
+            {/* Market Pulse Widget */}
+            <div className="mb-6">
+              <MarketPulse />
+            </div>
+
             <CompletenessCard data={completeness} />
 
             {/* ─── LOW STOCK ALERT ─── */}

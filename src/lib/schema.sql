@@ -166,3 +166,38 @@ CREATE TABLE IF NOT EXISTS password_resets (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
+
+-- ─────────────────────────────────────────────────────────────
+-- Step 1: Cases + Telegram links
+-- ─────────────────────────────────────────────────────────────
+
+-- Cases for investigations
+CREATE TABLE IF NOT EXISTS cases (
+  id TEXT PRIMARY KEY,
+  business_id TEXT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'open'
+    CHECK (status IN ('open','investigating','resolved')),
+  created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS ix_cases_business_status
+  ON cases (business_id, status, created_at);
+
+-- Secure Telegram Linking
+CREATE TABLE IF NOT EXISTS telegram_links (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  telegram_chat_id TEXT UNIQUE,
+  linking_code TEXT,
+  expires_at INTEGER,
+  linked_at INTEGER,
+  created_at INTEGER NOT NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_telegram_links_code
+  ON telegram_links (linking_code)
+  WHERE linking_code IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS ix_telegram_links_user
+  ON telegram_links (user_id);

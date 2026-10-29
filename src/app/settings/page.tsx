@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { LOCALES } from "@/lib/i18n/dictionary";
+import TelegramLink from "@/components/TelegramLink";
 
 export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
@@ -114,6 +115,9 @@ export default function SettingsPage() {
               ))}
             </div>
           </section>
+
+          {/* Telegram linking */}
+          <TelegramLink />
         </div>
       </div>
     </main>

@@ -5,12 +5,15 @@ import { useApp } from "@/context/AppContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { playSuccessChime } from "@/lib/sounds";
 
+type ThembaMode = "bi" | "growth" | "assistant";
+
 export default function GlobalThembaDrawer() {
   const { businessId, thembaOpen, setThembaOpen, history, setHistory, activeTab } = useApp();
   const { locale, t } = useLanguage();
   const [input, setInput] = useState("");
   const [asking, setAsking] = useState(false);
   const [approved, setApproved] = useState<Record<number, boolean>>({});
+  const [mode, setMode] = useState<ThembaMode>("bi");
 
   if (!businessId) return null;
 
@@ -30,6 +33,7 @@ export default function GlobalThembaDrawer() {
           history: history.slice(-4),
           locale,
           active_tab: activeTab,
+          mode,
         }),
       });
       const json = await r.json();
@@ -182,6 +186,12 @@ export default function GlobalThembaDrawer() {
         </div>
 
         <div className="p-4 bg-white dark:bg-[#1A1F52] border-t border-[#E8E2D5] dark:border-[#2A3070]">
+          <div className="flex gap-1 mb-3 p-1 bg-[#F1F2FF] dark:bg-[#2A3070] rounded-xl">
+            <button onClick={() => setMode("bi")} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${mode === "bi" ? "bg-white dark:bg-[#14173F] text-[#5B5BE0] shadow-sm" : "text-[#5A5F8C]"}`}>BI Mode</button>
+            <button onClick={() => setMode("growth")} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${mode === "growth" ? "bg-white dark:bg-[#14173F] text-[#5B5BE0] shadow-sm" : "text-[#5A5F8C]"}`}>Growth</button>
+            <button onClick={() => setMode("assistant")} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${mode === "assistant" ? "bg-white dark:bg-[#14173F] text-[#5B5BE0] shadow-sm" : "text-[#5A5F8C]"}`}>Assistant</button>
+          </div>
+
           <form onSubmit={(e) => { e.preventDefault(); ask(input); }} className="relative">
             <input
               value={input}

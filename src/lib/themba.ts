@@ -9,7 +9,8 @@ export interface ThembaInput {
   businessName: string;
   history?: ConversationTurn[];
   locale?: "en" | "xh" | "zu" | "af";
-  active_tab?: string; // which dashboard tab the user is viewing
+  active_tab?: string;
+  mode?: "bi" | "growth" | "assistant";
 }
 
 export interface ProposedAction {
@@ -26,31 +27,53 @@ export interface ThembaAnswer {
   provider: "gemini" | "groq" | "fallback";
 }
 
-// Tabs that map to the tactical "Business Companion" mode. Anything not listed
-// here and not in GROWTH_TABS falls through to SCRIBE Guide mode below — which
-// is also the default branch in modeForTab().
-const COMPANION_TABS = ["overview", "records", "stock", "suppliers", "intelligence", "reports"];
+// Tabs that map to tactical / BI-style mode. Anything not here and not in
+// GROWTH_TABS falls through to the SCRIBE Guide fallback (used for Settings,
+// Admin, and any tab we haven't explicitly classified).
+const COMPANION_TABS = ["overview", "records", "stock", "suppliers", "intelligence", "reports", "cases"];
 const GROWTH_TABS = ["tasks", "opportunities"];
 
+// Legacy: tab-derived mode (used only as a fallback when the frontend
+// doesn't pass an explicit mode — some callers like /api/themba pre-toggle).
 function modeForTab(activeTab: string): "companion" | "growth" | "guide" {
   if (GROWTH_TABS.includes(activeTab)) return "growth";
   if (COMPANION_TABS.includes(activeTab)) return "companion";
   return "guide";
 }
 
-const SYSTEM_PROMPT = (activeTab: string) => `
+// Unified internal mode. Frontend "bi" is semantically equivalent to
+// tab-derived "companion" — both mean "analytical / tactical". "assistant"
+// is a genuinely new mode (drafting help) that has no tab analog.
+type InternalMode = "companion" | "growth" | "guide" | "assistant";
+
+function resolveMode(
+  explicitMode: ThembaInput["mode"],
+  activeTab: string,
+): InternalMode {
+  if (explicitMode === "bi") return "companion";
+  if (explicitMode === "growth") return "growth";
+  if (explicitMode === "assistant") return "assistant";
+  return modeForTab(activeTab);
+}
+
+const MODE_INSTRUCTIONS: Record<InternalMode, string> = {
+  companion: `**Business Companion / BI** — Focus on daily operations, immediate cash flow, and specific transactions. Be tactical. Cite specific record IDs, amounts, or stock counts from CONTEXT. If the user asks for predictions or long-term planning, briefly answer and suggest switching to Growth mode.`,
+
+  growth: `**Growth & Strategy** — Focus on long-term planning, funding, expansion, and business models. Be strategic. Propose concrete next steps as specific tasks (not vague advice). Always ask for the trader's approval before suggesting any state changes.`,
+
+  guide: `**SCRIBE Guide** — Focus on explaining how SCRIBE works: what the readiness score means, how evidence tiers affect credibility, how to use specific features. Do not invent business numbers. If the user actually wants business analysis, offer to switch modes.`,
+
+  assistant: `**Assistant** — Help the trader draft messages, emails, or WhatsApp texts to suppliers or customers. Be polite, professional, and locally appropriate (South African English, ZAR amounts). Do NOT fabricate financial figures — if a number is needed, ask the trader to provide it.`,
+};
+
+const SYSTEM_PROMPT = (activeTab: string, mode: InternalMode) => `
 You are Themba, SCRIBE's AI Business Operations Assistant for South African small businesses.
 
 The user is currently looking at the **${activeTab.toUpperCase()}** tab.
-Based on that tab, apply the mode below that best matches it.
+YOUR ACTIVE MODE: ${MODE_INSTRUCTIONS[mode]}
 
 IMPORTANT CONTEXT: You are looking at **Siyanda's Spaza**, a real 20-year-old business in Gugulethu/Khayelitsha.
 The data you are analyzing is real historical data (2021-2026) provided by the owner.
-
-YOUR THREE MODES (Adapt based on the active tab):
-1. **Business Companion** (Overview, Records, Stock, Suppliers, Intelligence, Reports): Focus on daily operations, immediate cash flow, and specific transactions. Be tactical. Use the numbers in CONTEXT to answer precisely.
-2. **Growth & Strategy** (Growth Studio, Launch Studio): Focus on long-term planning, funding, expansion, and business models. Be strategic. Propose concrete next steps, not just advice.
-3. **SCRIBE Guide** (Settings, Admin, and any "how does SCRIBE work?" query on any tab): Focus on explaining how the product works, what the readiness score means, and how to use features. Do not invent data.
 
 CRITICAL INSTRUCTIONS:
 1. You must output a strictly valid JSON object. Do not use markdown backticks.
@@ -68,7 +91,7 @@ Schema:
 }
 
 RULES:
-- If the user says "hello", "hey", "help", or "let's begin", greet them warmly and tell them you can check stock, draft messages, or create plans. Ask what they want to start with. Reference the current tab if it makes the greeting more relevant.
+- If the user says "hello", "hey", "help", or "let's begin", greet them warmly and tell them you can check stock, draft messages, or create plans. Reference the current mode so they know what you can do in it.
 - If the user asks to draft an email or message, set type to "draft_message" and write the draft in the "description" field.
 - Never invent numbers. Use the CONTEXT.
 - If asked to fix a stock variance, set type to "create_task".
@@ -119,6 +142,7 @@ function fallbackAnswer(
   records: LedgerRecord[],
   businessName: string,
   activeTab: string,
+  mode: InternalMode,
 ): ThembaAnswer {
   const stock = reconcileStock(records);
   const revenue = revenueRange(records);
@@ -126,14 +150,15 @@ function fallbackAnswer(
   const q = question.toLowerCase().trim();
 
   if (/^(hi|hello|hey|heyy|howzit|molo|sawubona|good (morning|afternoon|evening))/i.test(q)) {
-    const mode = modeForTab(activeTab);
     let modeContext: string;
-    if (mode === "companion") {
-      modeContext = "I see you're checking your daily operations. Do you want to investigate your stock, review recent sales, or record a new transaction?";
-    } else if (mode === "growth") {
-      modeContext = "I see you're in the planning studio. Do you want to draft a growth plan or explore funding options?";
-    } else {
+    if (mode === "growth") {
+      modeContext = "I see you're in planning mode. Do you want to draft a growth plan or explore funding options?";
+    } else if (mode === "assistant") {
+      modeContext = "What would you like to draft? A supplier message, a WhatsApp to a customer, or something else?";
+    } else if (mode === "guide") {
       modeContext = "How can I help you navigate SCRIBE today?";
+    } else {
+      modeContext = "I see you're checking your daily operations. Do you want to investigate your stock, review recent sales, or record a new transaction?";
     }
     return {
       answer: `Hello! ${modeContext}`,
@@ -178,13 +203,16 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
     active_tab = "overview",
   } = input;
 
+  // Resolve the effective mode: explicit user choice > tab-derived default.
+  const mode = resolveMode(input.mode, active_tab);
+
   const refusal = preflight(question, records);
   if (refusal) return refusal;
 
   const languageLine = locale !== "en"
     ? `\n\nLANGUAGE INSTRUCTION: Respond in ${LANGUAGE_NAMES[locale]}. If you cannot produce a fluent response, respond in English and prefix with "[English fallback]".`
     : "";
-  const systemPrompt = SYSTEM_PROMPT(active_tab) + languageLine;
+  const systemPrompt = SYSTEM_PROMPT(active_tab, mode) + languageLine;
 
   const context = buildRichContext(records, businessName, history);
   const contextString = JSON.stringify(context);
@@ -267,5 +295,5 @@ export async function askThemba(input: ThembaInput): Promise<ThembaAnswer> {
   }
 
   // ─── 3. DETERMINISTIC FALLBACK ───
-  return fallbackAnswer(question, records, businessName, active_tab);
+  return fallbackAnswer(question, records, businessName, active_tab, mode);
 }

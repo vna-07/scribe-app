@@ -38,11 +38,33 @@ export default function CasesTab({ businessId }: { businessId: string }) {
   const [toast, setToast] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    // ── Safety #1: don't hit the API with an empty business_id. ──
+    // Shows the empty state immediately instead of a 400/401 error banner.
+    if (!businessId) {
+      setCases([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setError(null);
-      const r = await fetch(`/api/cases?business_id=${businessId}`, { cache: "no-store" });
+      const r = await fetch(`/api/cases?business_id=${encodeURIComponent(businessId)}`, {
+        cache: "no-store",
+      });
       if (!r.ok) throw new Error(`Failed to load cases (${r.status})`);
-      setCases(await r.json());
+
+      const data = await r.json();
+
+      // ── Safety #2: only setCases if the payload is actually an array. ──
+      // Guards against the API returning 200 {error: "..."} — which would
+      // otherwise get stored as state and crash .map() on the next render.
+      if (!Array.isArray(data)) {
+        console.error("Cases API returned non-array payload:", data);
+        setCases([]);
+        setError("Cases API returned an unexpected payload.");
+      } else {
+        setCases(data);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load cases");
     } finally {
@@ -50,7 +72,14 @@ export default function CasesTab({ businessId }: { businessId: string }) {
     }
   }, [businessId]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  // ── Safety #1 continued: skip the fetch entirely when businessId is missing. ──
+  useEffect(() => {
+    if (!businessId) {
+      setLoading(false);
+      return;
+    }
+    refresh();
+  }, [refresh, businessId]);
 
   function showToast(msg: string) {
     setToast(msg);

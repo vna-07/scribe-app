@@ -5,6 +5,7 @@ import Link from "next/link";
 
 /* ═══════════════════════════════════════════════════════════════
    SCRIBE landing page — Team CODE BLOODED
+   FNB App of the Year 2026 · competition submission
    Prototype build. All demo data is synthetic and labelled as such.
    ═══════════════════════════════════════════════════════════════ */
 
@@ -54,7 +55,7 @@ type IconC = typeof Lock;
 const NAVY = "#14173F";
 const INDIGO = "#5B5BE0";
 const DEEP = "#4B4FC9";
-const SLATE = "#4A4F7A";
+const SLATE = "#2F3463";   /* darker than before so body text stays readable on tinted backgrounds */
 const LAV = "#A9AEFF";
 
 type VerdictKey = "SEALED" | "WARN" | "BROKEN";
@@ -70,6 +71,14 @@ const THEMES: Record<ThemeKey, { bg: string; a: string; b: string; dot: string }
   warm:  { bg: "#FBF1D9", a: "#FCE7B4", b: "#D99A00", dot: "rgba(120,80,0,.09)" },
   mint:  { bg: "#E4F0E8", a: "#C7E0D3", b: "#47745D", dot: "rgba(30,90,60,.10)" },
   dark:  { bg: NAVY,       a: "#232A5C", b: LAV,       dot: "rgba(255,255,255,.06)" },
+};
+
+/* ─── Competition submission details ─────────────────────────── */
+const SUBMISSION = {
+  comp: "FNB App of the Year 2026",
+  team: "Team CODE BLOODED · SCRIBE Intelligence",
+  track: "Financial inclusion and money confidence",
+  aspect: "Youth employment and work readiness",
 };
 
 /* ─── Content ────────────────────────────────────────────────── */
@@ -279,11 +288,36 @@ const TEAM = [
     focus: "Shaping a sustainable business model and a path to long-term growth." },
 ];
 
+/* Competition challenges + solution (bottom of page) */
+const CHALLENGES: {
+  num: string; name: string; problemHead: string; problem: string;
+  respHead: string; resp: string; tags: string[];
+}[] = [
+  { num: "01", name: "Financial inclusion and money confidence",
+    problemHead: "How might we make everyday money management simpler, safer and more useful?",
+    problem: "For people with irregular incomes, limited financial knowledge or limited access to formal services, understanding everyday finances can be difficult. Scattered records and unclear financial activity can make it harder to see where money goes, identify problems and plan ahead.",
+    respHead: "How SCRIBE responds",
+    resp: "SCRIBE helps organise business transactions and supporting documents into a clearer financial picture. By structuring records, surfacing discrepancies for review and explaining available information, it aims to make financial activity easier to understand and act on.",
+    tags: ["Money visibility", "Record organisation", "Evidence-linked insights", "Safer financial decisions"] },
+  { num: "02", name: "Youth employment and work readiness",
+    problemHead: "How might we shorten the distance between young people and meaningful income?",
+    problem: "Young people can struggle to turn their skills and experience into credible profiles, practical opportunities and career mobility. Informal work and self-employment can also produce valuable experience that is difficult to document.",
+    respHead: "Where SCRIBE connects",
+    resp: "SCRIBE’s primary focus is small-business financial intelligence, not recruitment or job matching. However, by helping young entrepreneurs and small-business owners organise business activity and build clearer records, it can support the development of more structured, sustainable income-generating activity. Direct skills verification and job matching would be a separate future direction, not a current SCRIBE capability.",
+    tags: ["Youth entrepreneurship", "Small-business operations", "Income visibility", "Future opportunity"] },
+];
+
+const SOLUTION: [string, string][] = [
+  ["Capture and structure", "Bring supported business records into one organised workflow."],
+  ["Review and reconcile", "Surface discrepancies in the available data without automatically assuming fraud or error."],
+  ["Understand and act", "Use business summaries and the Themba assistant to investigate records and consider next steps."],
+];
+
 const ROTATING = ["a sale happens in cash", "stock doesn’t reconcile", "a lender asks for proof", "someone edits the books"];
 
 const NAV: [string, string][] = [
-  ["preview", "Product"], ["how", "How it works"], ["integrations", "Integrations"],
-  ["themba", "Themba"], ["trust", "Trust"], ["team", "Team"], ["faq", "FAQ"],
+  ["submission", "Submission"], ["preview", "Product"], ["how", "How it works"], ["integrations", "Integrations"],
+  ["themba", "Themba"], ["trust", "Trust"], ["team", "Team"], ["faq", "FAQ"], ["challenges", "Challenges"],
 ];
 
 /* ─── CSS ────────────────────────────────────────────────────── */
@@ -311,7 +345,9 @@ const CSS = `
 .sk-ring{animation:sk-ring 1.6s ease-out infinite}
 .sk-float{animation:sk-float 9s ease-in-out infinite}
 .sk-dot{animation:sk-dots 1.1s infinite}
-.sk-shine{background-image:linear-gradient(90deg,currentColor 0%,${INDIGO} 45%,currentColor 90%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sk-shine 7s linear infinite}
+.sk-shine{background-image:linear-gradient(90deg,${NAVY} 0%,${INDIGO} 50%,${NAVY} 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sk-shine 7s linear infinite}
+.sk-lede{background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:14px;padding:.75rem 1rem;width:fit-content;max-width:100%}
+.sk-dark .sk-lede{background:rgba(14,17,48,.8)}
 .sk-reveal{opacity:0;transform:translateY(22px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
 .sk-reveal.in{opacity:1;transform:none}
 .sk-b1,.sk-b2,.sk-b3{position:absolute;border-radius:9999px;will-change:transform}
@@ -414,25 +450,68 @@ function Pill({ children, color = NAVY, bg = "rgba(20,23,63,.08)" }: { children:
   return <span className="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap" style={{ color, backgroundColor: bg }}>{children}</span>;
 }
 
-/* ─── Dynamic background ─────────────────────────────────────── */
-function Backdrop({ t }: { t: { bg: string; a: string; b: string; dot: string } }) {
+/* ─── Dynamic background (calmer blobs so text stays readable) ── */
+function Backdrop({ t, dark }: { t: { bg: string; a: string; b: string; dot: string }; dark: boolean }) {
   const tr = "background-color 1.4s ease";
   const mask = "radial-gradient(ellipse at 50% 30%, #000 20%, transparent 75%)";
   return (
     <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none overflow-hidden" style={{ backgroundColor: t.bg, transition: tr }}>
       <div className="absolute inset-0 sk-hue">
-        <div className="sk-b1 sk-drift1" style={{ backgroundColor: t.a, opacity: 0.7, transition: tr }} />
-        <div className="sk-b2 sk-drift2" style={{ backgroundColor: t.b, opacity: 0.22, transition: tr }} />
-        <div className="sk-b3 sk-drift3" style={{ backgroundColor: t.b, opacity: 0.16, transition: tr }} />
+        <div className="sk-b1 sk-drift1" style={{ backgroundColor: t.a, opacity: dark ? 0.6 : 0.55, transition: tr }} />
+        <div className="sk-b2 sk-drift2" style={{ backgroundColor: t.b, opacity: dark ? 0.08 : 0.12, transition: tr }} />
+        <div className="sk-b3 sk-drift3" style={{ backgroundColor: t.b, opacity: dark ? 0.06 : 0.09, transition: tr }} />
       </div>
       <div className="absolute inset-0" style={{
         backgroundImage: `radial-gradient(${t.dot} 1px, transparent 1px)`, backgroundSize: "28px 28px",
         maskImage: mask, WebkitMaskImage: mask,
       }} />
       <div className="absolute inset-0 hidden md:block" style={{
-        background: "radial-gradient(480px circle at var(--mx,50%) var(--my,30%), rgba(91,91,224,.14), transparent 62%)",
+        background: "radial-gradient(480px circle at var(--mx,50%) var(--my,30%), rgba(91,91,224,.10), transparent 62%)",
       }} />
     </div>
+  );
+}
+
+/* ─── Competition submission badge + banner ──────────────────── */
+function SubmissionBadge() {
+  return (
+    <div className="rounded-2xl border-2 p-4 sm:p-5 mb-8 bg-white/95 shadow-lg max-w-xl" style={{ borderColor: NAVY }}>
+      <p className="text-xs font-black tracking-[0.2em] mb-1" style={{ color: DEEP }}>COMPETITION SUBMISSION</p>
+      <p className="text-xl sm:text-2xl font-black leading-tight">{SUBMISSION.comp}</p>
+      <p className="text-sm font-semibold mt-1">{SUBMISSION.team}</p>
+      <p className="text-sm mt-2" style={{ color: SLATE }}>
+        Challenge 01: <b>{SUBMISSION.track}</b><br />Challenge 02: <b>{SUBMISSION.aspect}</b>
+      </p>
+    </div>
+  );
+}
+
+function SubmissionBanner() {
+  return (
+    <section id="submission" data-theme="light" className="py-12 md:py-16">
+      <div className="max-w-[1400px] mx-auto px-5 sm:px-6 md:px-12">
+        <Reveal>
+          <div className="rounded-3xl bg-white/95 border-2 shadow-xl p-6 md:p-10 grid md:grid-cols-[1.2fr_1fr] gap-6 md:gap-10 items-center" style={{ borderColor: NAVY }}>
+            <div>
+              <p className="inline-block text-xs font-black tracking-[0.2em] px-4 py-2 rounded-full mb-4 text-white" style={{ backgroundColor: NAVY }}>COMPETITION SUBMISSION</p>
+              <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-2">{SUBMISSION.comp}</h2>
+              <p className="text-lg font-semibold" style={{ color: DEEP }}>{SUBMISSION.team}</p>
+            </div>
+            <div className="space-y-3">
+              {[["Challenge 01", SUBMISSION.track], ["Challenge 02", SUBMISSION.aspect]].map(([k, v]) => (
+                <div key={k} className="rounded-xl p-4" style={{ backgroundColor: "#EEF0FF" }}>
+                  <p className="text-xs font-black tracking-widest uppercase mb-1" style={{ color: DEEP }}>{k}</p>
+                  <p className="font-bold">{v}</p>
+                </div>
+              ))}
+              <button type="button" onClick={() => scrollToId("challenges")} className="inline-flex items-center gap-2 text-sm font-bold underline underline-offset-4 decoration-2" style={{ color: DEEP }}>
+                See how SCRIBE answers both <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
   );
 }
 
@@ -514,7 +593,7 @@ function LiveCheck({ onVerdict }: { onVerdict: (v: VerdictKey) => void }) {
     <div
       onMouseEnter={() => { hover.current = true; }}
       onMouseLeave={() => { hover.current = false; }}
-      className="rounded-3xl bg-white/80 backdrop-blur border border-black/10 shadow-2xl p-3 sm:p-5"
+      className="rounded-3xl bg-white/90 backdrop-blur border border-black/10 shadow-2xl p-3 sm:p-5"
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="relative flex h-2.5 w-2.5">
@@ -530,7 +609,7 @@ function LiveCheck({ onVerdict }: { onVerdict: (v: VerdictKey) => void }) {
             className="text-xs font-semibold px-3 py-2 rounded-full border transition-colors min-h-[36px]"
             style={idx === i
               ? { backgroundColor: NAVY, color: "#fff", borderColor: NAVY }
-              : { borderColor: "rgba(20,23,63,.2)", color: NAVY }}>
+              : { borderColor: "rgba(20,23,63,.3)", color: NAVY }}>
             {sc.tab}
           </button>
         ))}
@@ -549,8 +628,8 @@ function LiveCheck({ onVerdict }: { onVerdict: (v: VerdictKey) => void }) {
             </div>
             <ul className="space-y-2">
               {STEP_LABELS.map((l, idx) => (
-                <li key={l} className="flex items-center gap-3 text-sm transition-opacity duration-300" style={{ opacity: idx <= step ? 1 : 0.35 }}>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full text-white" style={{ backgroundColor: idx < step ? DEEP : "rgba(20,23,63,.25)" }}>
+                <li key={l} className="flex items-center gap-3 text-sm transition-opacity duration-300" style={{ opacity: idx <= step ? 1 : 0.45 }}>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full text-white" style={{ backgroundColor: idx < step ? DEEP : "rgba(20,23,63,.3)" }}>
                     {idx < step ? <Check size={12} /> : <span className="h-1.5 w-1.5 rounded-full bg-white" />}
                   </span>
                   {l}
@@ -589,19 +668,19 @@ function ProductPreview() {
   const JOURNEY = ["Pick a record", "Inspect the evidence", "Ask Themba why"];
 
   return (
-    <div className="rounded-3xl bg-white/85 backdrop-blur border border-black/10 shadow-2xl overflow-hidden">
+    <div className="rounded-3xl bg-white/90 backdrop-blur border border-black/10 shadow-2xl overflow-hidden">
       {/* Header */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 sm:px-6 py-3 border-b border-black/10" style={{ backgroundColor: NAVY, color: "#fff" }}>
         <Store size={18} color={LAV} />
-        <p className="text-sm font-bold">Thandi’s Spaza <span className="font-medium text-[#A9AEFF]">· fictional demo business</span></p>
+        <p className="text-sm font-bold">Thandi’s Spaza <span className="font-medium text-[#C9CCFF]">· fictional demo business</span></p>
         <span className="sm:ml-auto text-[11px] font-bold rounded-full px-2.5 py-0.5" style={{ backgroundColor: "#FFF4DC", color: "#7A5600" }}>Illustrative data</span>
       </div>
 
       {/* Journey */}
-      <ol className="flex flex-wrap gap-x-5 gap-y-1 px-4 sm:px-6 py-3 text-xs font-semibold border-b border-black/5 bg-white/60">
+      <ol className="flex flex-wrap gap-x-5 gap-y-1 px-4 sm:px-6 py-3 text-xs font-semibold border-b border-black/5 bg-white/80">
         {JOURNEY.map((j, idx) => (
-          <li key={j} className="flex items-center gap-2" style={{ opacity: idx < journey ? 1 : 0.45 }}>
-            <span className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] text-white" style={{ backgroundColor: idx < journey ? DEEP : "rgba(20,23,63,.3)" }}>{idx + 1}</span>
+          <li key={j} className="flex items-center gap-2" style={{ opacity: idx < journey ? 1 : 0.55 }}>
+            <span className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] text-white" style={{ backgroundColor: idx < journey ? DEEP : "rgba(20,23,63,.4)" }}>{idx + 1}</span>
             {j}
           </li>
         ))}
@@ -659,7 +738,7 @@ function ProductPreview() {
 
           <div>
             <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: SLATE }}>Source · {t.source}</p>
-            <p className="rounded-xl border border-dashed border-black/20 bg-[#F6F7FF] px-4 py-3 text-sm break-words">{t.raw}</p>
+            <p className="rounded-xl border border-dashed border-black/30 bg-[#F6F7FF] px-4 py-3 text-sm break-words">{t.raw}</p>
           </div>
 
           <div>
@@ -695,7 +774,7 @@ function ProductPreview() {
             <div className="mt-3 min-h-[5.5rem]" aria-live="polite">
               {thinking && (
                 <div className="inline-flex rounded-2xl rounded-bl-sm bg-white border border-black/5 px-4 py-3 gap-1" aria-label="Themba is typing">
-                  {[0, 1, 2].map((d) => <span key={d} className="sk-dot h-1.5 w-1.5 rounded-full bg-[#4A4F7A]" style={{ animationDelay: `${d * 0.18}s` }} />)}
+                  {[0, 1, 2].map((d) => <span key={d} className="sk-dot h-1.5 w-1.5 rounded-full bg-[#2F3463]" style={{ animationDelay: `${d * 0.18}s` }} />)}
                 </div>
               )}
               {asked && (
@@ -708,7 +787,7 @@ function ProductPreview() {
           </div>
         </div>
       </div>
-      <p className="px-4 sm:px-6 py-3 text-xs border-t border-black/10 bg-white/60" style={{ color: SLATE }}>
+      <p className="px-4 sm:px-6 py-3 text-xs border-t border-black/10 bg-white/80" style={{ color: SLATE }}>
         Everything above is synthetic and for illustration. Figures are not real trading results.
       </p>
     </div>
@@ -745,10 +824,10 @@ function ChatDemo() {
         <div className="h-8 w-8 rounded-full flex items-center justify-center font-black text-sm" style={{ backgroundColor: INDIGO, color: "#fff" }}>T</div>
         <div>
           <p className="text-sm font-bold text-white leading-none">Themba</p>
-          <p className="text-xs text-[#A9AEFF]">Explains your records · illustrative chat</p>
+          <p className="text-xs text-[#C9CCFF]">Explains your records · illustrative chat</p>
         </div>
         <button type="button" onClick={() => { setN(0); setStarted(true); }}
-          className="ml-auto text-xs font-semibold text-[#A9AEFF] hover:text-white transition-colors px-2 py-2">
+          className="ml-auto text-xs font-semibold text-[#C9CCFF] hover:text-white transition-colors px-2 py-2">
           Replay
         </button>
       </div>
@@ -758,7 +837,7 @@ function ChatDemo() {
             <div className={`max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-snug ${
               m.from === "you" ? "text-white rounded-br-sm" : "bg-white border border-black/5 rounded-bl-sm"
             } ${m.draft ? "italic" : ""}`}
-              style={m.from === "you" ? { backgroundColor: INDIGO } : undefined}>
+              style={m.from === "you" ? { backgroundColor: DEEP } : undefined}>
               {m.t}
               {m.draft && (
                 <span className="block not-italic text-xs mt-2 font-semibold" style={{ color: SLATE }}>
@@ -772,7 +851,7 @@ function ChatDemo() {
           <div className="flex justify-start">
             <div className="rounded-2xl rounded-bl-sm bg-white border border-black/5 px-4 py-3 flex gap-1" aria-label="Themba is typing">
               {[0, 1, 2].map((d) => (
-                <span key={d} className="sk-dot h-1.5 w-1.5 rounded-full bg-[#4A4F7A]" style={{ animationDelay: `${d * 0.18}s` }} />
+                <span key={d} className="sk-dot h-1.5 w-1.5 rounded-full bg-[#2F3463]" style={{ animationDelay: `${d * 0.18}s` }} />
               ))}
             </div>
           </div>
@@ -795,12 +874,12 @@ function IntegrationCentre() {
     <div className="space-y-10">
       {/* Standalone vs connected */}
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="rounded-2xl bg-white/85 border border-black/10 p-6">
+        <div className="rounded-2xl bg-white/90 border border-black/10 p-6">
           <Pill color="#fff" bg={VERDICT.SEALED.c}>Works today</Pill>
           <h3 className="text-xl font-black mt-3 mb-2">Standalone SCRIBE</h3>
           <p style={{ color: SLATE }}>Capture by voice, photo or manual entry. Sealed records, reconciliation and Themba explanations all work without connecting anything.</p>
         </div>
-        <div className="rounded-2xl bg-white/60 border border-dashed border-black/20 p-6">
+        <div className="rounded-2xl bg-white/85 border border-dashed border-black/30 p-6">
           <Pill color="#7A5600" bg="#FFF4DC">Proposed</Pill>
           <h3 className="text-xl font-black mt-3 mb-2">Connected SCRIBE</h3>
           <p style={{ color: SLATE }}>Integrations would add stronger evidence from outside your own entries. They make SCRIBE more powerful. They aren’t needed to use it.</p>
@@ -808,7 +887,7 @@ function IntegrationCentre() {
       </div>
 
       {/* Connection picker */}
-      <div className="rounded-3xl bg-white/85 backdrop-blur border border-black/10 shadow-xl p-4 sm:p-6">
+      <div className="rounded-3xl bg-white/90 backdrop-blur border border-black/10 shadow-xl p-4 sm:p-6">
         <div className="flex items-center gap-2 mb-4">
           <Plug size={18} color={DEEP} />
           <p className="font-bold">Integration Centre preview</p>
@@ -821,7 +900,7 @@ function IntegrationCentre() {
             return (
               <button key={c.name} type="button" aria-pressed={on} onClick={() => setConn(idx)}
                 className="flex items-center gap-2 rounded-xl border px-3 py-3 text-sm font-bold min-h-[48px] transition-colors"
-                style={on ? { backgroundColor: NAVY, color: "#fff", borderColor: NAVY } : { borderColor: "rgba(20,23,63,.15)" }}>
+                style={on ? { backgroundColor: NAVY, color: "#fff", borderColor: NAVY } : { borderColor: "rgba(20,23,63,.25)" }}>
                 <Icon size={18} color={on ? LAV : DEEP} /> {c.name}
               </button>
             );
@@ -838,7 +917,7 @@ function IntegrationCentre() {
       </div>
 
       {/* Walkthrough */}
-      <div className="rounded-3xl bg-white/85 backdrop-blur border border-black/10 shadow-xl overflow-hidden">
+      <div className="rounded-3xl bg-white/90 backdrop-blur border border-black/10 shadow-xl overflow-hidden">
         <div className="px-4 sm:px-6 py-3 flex flex-wrap items-center gap-2" style={{ backgroundColor: NAVY, color: "#fff" }}>
           <p className="font-bold text-sm">POS walkthrough</p>
           <span className="text-[11px] font-bold rounded-full px-2.5 py-0.5" style={{ backgroundColor: "#FFF4DC", color: "#7A5600" }}>Synthetic POS export · not a live connection</span>
@@ -848,7 +927,7 @@ function IntegrationCentre() {
             <li key={l}>
               <button type="button" onClick={() => setW(idx)} aria-current={idx === w ? "step" : undefined}
                 className="w-full py-3 px-1 text-[11px] sm:text-xs font-bold min-h-[48px] transition-colors"
-                style={{ color: idx === w ? DEEP : SLATE, boxShadow: idx === w ? `inset 0 -3px 0 ${DEEP}` : undefined, opacity: idx <= w ? 1 : 0.6 }}>
+                style={{ color: idx === w ? DEEP : SLATE, boxShadow: idx === w ? `inset 0 -3px 0 ${DEEP}` : undefined, opacity: idx <= w ? 1 : 0.7 }}>
                 <span className="block sm:inline sm:mr-1">{idx + 1}</span>{l}
               </button>
             </li>
@@ -914,7 +993,7 @@ function IntegrationCentre() {
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-t border-black/10 bg-white/60">
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-t border-black/10 bg-white/80">
           <button type="button" onClick={() => setW((p) => Math.max(0, p - 1))} disabled={w === 0}
             className="inline-flex items-center gap-2 text-sm font-bold px-3 py-2 min-h-[44px] rounded-lg disabled:opacity-30">
             <ArrowLeft size={16} /> Back
@@ -931,15 +1010,15 @@ function IntegrationCentre() {
         <h3 className="text-xl font-black mb-4">Roadmap</h3>
         <div className="grid md:grid-cols-3 gap-4">
           {ROADMAP.map(([h, items, now]) => (
-            <div key={h} className="rounded-2xl border p-5" style={now ? { backgroundColor: "rgba(255,255,255,.85)", borderColor: `${VERDICT.SEALED.c}66` } : { backgroundColor: "rgba(255,255,255,.5)", borderColor: "rgba(20,23,63,.12)", borderStyle: "dashed" }}>
+            <div key={h} className="rounded-2xl border p-5" style={now ? { backgroundColor: "rgba(255,255,255,.92)", borderColor: `${VERDICT.SEALED.c}66` } : { backgroundColor: "rgba(255,255,255,.8)", borderColor: "rgba(20,23,63,.2)", borderStyle: "dashed" }}>
               <p className="text-sm font-black mb-3" style={{ color: now ? VERDICT.SEALED.c : SLATE }}>{h}</p>
               <ul className="space-y-1.5 text-sm">
-                {items.map((x) => <li key={x} className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: now ? VERDICT.SEALED.c : "rgba(20,23,63,.35)" }} />{x}</li>)}
+                {items.map((x) => <li key={x} className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: now ? VERDICT.SEALED.c : "rgba(20,23,63,.45)" }} />{x}</li>)}
               </ul>
             </div>
           ))}
         </div>
-        <p className="text-xs mt-3" style={{ color: SLATE }}>Roadmap items are plans, not commitments or live features.</p>
+        <p className="text-xs mt-3 sk-lede" style={{ color: SLATE }}>Roadmap items are plans, not commitments or live features.</p>
       </div>
     </div>
   );
@@ -992,9 +1071,9 @@ function Channels({ onWhatsApp }: { onWhatsApp: () => void }) {
   return (
     <div>
       <h3 className="text-2xl md:text-3xl font-black tracking-tight mb-2">Take SCRIBE wherever business happens.</h3>
-      <p className="text-lg mb-8" style={{ color: SLATE }}>Choose how you want to interact with your business records.</p>
+      <p className="text-lg mb-8 sk-lede" style={{ color: SLATE }}>Choose how you want to interact with your business records.</p>
       <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-        <div className="rounded-3xl bg-white/90 border border-black/10 shadow-lg p-6 sm:p-8 flex flex-col">
+        <div className="rounded-3xl bg-white/95 border border-black/10 shadow-lg p-6 sm:p-8 flex flex-col">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: NAVY }}><Send size={22} color={LAV} /></div>
             <Pill color="#fff" bg={VERDICT.SEALED.c}>Available to try</Pill>
@@ -1006,7 +1085,7 @@ function Channels({ onWhatsApp }: { onWhatsApp: () => void }) {
             Check the Telegram Bot <ArrowUpRight size={18} color={LAV} />
           </a>
         </div>
-        <div className="rounded-3xl bg-white/60 border border-dashed border-black/25 p-6 sm:p-8 flex flex-col">
+        <div className="rounded-3xl bg-white/85 border border-dashed border-black/30 p-6 sm:p-8 flex flex-col">
           <div className="flex items-center justify-between gap-3 mb-4">
             <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-black/10"><MessageCircle size={22} color={NAVY} /></div>
             <Pill color="#7A5600" bg="#FFF4DC">Coming soon</Pill>
@@ -1021,6 +1100,79 @@ function Channels({ onWhatsApp }: { onWhatsApp: () => void }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/* ─── Challenges + solution (bottom of page) ─────────────────── */
+function ChallengesSection() {
+  return (
+    <section id="challenges" data-theme="light" className="py-16 md:py-24">
+      <div className="max-w-[1400px] mx-auto px-5 sm:px-6 md:px-12">
+        <Reveal>
+          <p className="inline-block text-xs font-black tracking-[0.2em] px-4 py-2 rounded-full mb-5 text-white" style={{ backgroundColor: NAVY }}>FNB APP OF THE YEAR · 2026</p>
+          <h2 className="text-3xl md:text-6xl font-black tracking-tight max-w-4xl mb-5">Technology should create opportunity.</h2>
+          <p className="sk-lede text-base md:text-xl max-w-3xl mb-10 md:mb-14" style={{ color: SLATE }}>
+            SCRIBE Intelligence by Team CODE BLOODED is built around a simple idea: when people understand their money and their business better, they can make more informed decisions about what comes next.
+          </p>
+        </Reveal>
+
+        <div className="space-y-6 md:space-y-8">
+          {CHALLENGES.map((c, idx) => (
+            <Reveal key={c.num} delay={idx * 100}>
+              <div className="rounded-3xl bg-white/95 border border-black/10 shadow-xl overflow-hidden">
+                <div className="px-6 md:px-10 py-4" style={{ backgroundColor: NAVY, color: "#fff" }}>
+                  <p className="text-sm md:text-base font-black tracking-wide">Challenge {c.num} · <span className="text-[#C9CCFF]">{c.name}</span></p>
+                </div>
+                <div className="grid md:grid-cols-2">
+                  <div className="p-6 md:p-10 md:border-r border-black/10">
+                    <p className="text-xs font-black tracking-[0.2em] mb-3" style={{ color: VERDICT.BROKEN.c }}>THE PROBLEM</p>
+                    <h3 className="text-xl md:text-2xl font-black leading-snug mb-4">{c.problemHead}</h3>
+                    <p className="leading-relaxed text-base md:text-lg" style={{ color: SLATE }}>{c.problem}</p>
+                  </div>
+                  <div className="p-6 md:p-10 border-t md:border-t-0 border-black/10" style={{ backgroundColor: "#F3F4FF" }}>
+                    <p className="text-xs font-black tracking-[0.2em] mb-3" style={{ color: DEEP }}>{c.respHead.toUpperCase()}</p>
+                    <p className="leading-relaxed text-base md:text-lg mb-5">{c.resp}</p>
+                    <ul className="flex flex-wrap gap-2">
+                      {c.tags.map((tg) => (
+                        <li key={tg}><span className="inline-block rounded-full px-3 py-1.5 text-sm font-bold text-white" style={{ backgroundColor: DEEP }}>{tg}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <div className="mt-14 md:mt-20">
+          <Reveal>
+            <p className="text-xs font-black tracking-[0.2em] mb-3" style={{ color: DEEP }}>OUR SOLUTION</p>
+            <h3 className="text-3xl md:text-5xl font-black tracking-tight max-w-3xl mb-5">From everyday records to informed decisions.</h3>
+            <p className="sk-lede text-base md:text-lg max-w-3xl mb-8" style={{ color: SLATE }}>
+              SCRIBE Intelligence helps small businesses turn fragmented records into structured, traceable information. Supported documents and transactions can be organised, available records compared, and potential inconsistencies brought forward for human review. Its business intelligence experience is designed to help users understand what their records show, what needs attention and what they can investigate next.
+            </p>
+          </Reveal>
+          <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+            {SOLUTION.map(([h, d], idx) => (
+              <Reveal key={h} delay={idx * 100}>
+                <div className="h-full rounded-2xl bg-white/95 border border-black/10 shadow-lg p-6">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full font-black mb-4" style={{ backgroundColor: NAVY, color: LAV }}>{idx + 1}</span>
+                  <h4 className="text-xl font-black mb-2">{h}</h4>
+                  <p className="leading-relaxed" style={{ color: SLATE }}>{d}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal delay={150}>
+            <div className="mt-10 rounded-3xl p-8 md:p-12 text-center" style={{ backgroundColor: NAVY, color: "#fff" }}>
+              <p className="text-2xl md:text-4xl font-black tracking-tight mb-3">Your business, understood.</p>
+              <p className="text-base md:text-lg font-semibold" style={{ color: "#C9CCFF" }}>Better-organised records. Clearer business intelligence. More informed decisions.</p>
+              <p className="mt-6 text-sm font-bold tracking-wide" style={{ color: LAV }}>SCRIBE Intelligence · Team CODE BLOODED</p>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1119,13 +1271,19 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
     : (THEMES[theme as ThemeKey] || THEMES.light);
   const dark = theme === "dark";
   const M = MOMENTS[moment];
-  const navBg = scrolled || menu ? (dark ? "rgba(20,23,63,.9)" : "rgba(233,235,255,.9)") : "transparent";
+  const navBg = scrolled || menu ? (dark ? "rgba(20,23,63,.94)" : "rgba(233,235,255,.94)") : "transparent";
 
   return (
     <div ref={rootRef} className={`sk-root relative min-h-screen font-sans selection:bg-[#14173F] selection:text-[#A9AEFF] ${dark ? "sk-dark" : ""}`} style={{ color: NAVY }}>
       <style>{CSS}</style>
-      <Backdrop t={t} />
+      <Backdrop t={t} dark={dark} />
       <div ref={barRef} aria-hidden="true" className="fixed top-0 left-0 right-0 h-[3px] z-50 origin-left" style={{ backgroundColor: INDIGO, transform: "scaleX(0)" }} />
+
+      {/* Always-visible competition tag */}
+      <div className="fixed bottom-3 left-3 z-30 rounded-full px-3 py-1.5 text-[11px] font-black shadow-lg pointer-events-none max-w-[calc(100vw-1.5rem)] truncate"
+        style={{ backgroundColor: NAVY, color: "#fff", border: `1px solid ${LAV}` }}>
+        FNB App of the Year 2026 · Competition submission
+      </div>
 
       {/* Nav */}
       <nav aria-label="Main"
@@ -1141,9 +1299,9 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
             </div>
             <span className="text-lg sm:text-xl font-black tracking-[0.18em]">SCRIBE</span>
           </button>
-          <div className="hidden xl:flex items-center gap-6 text-sm font-semibold">
+          <div className="hidden xl:flex items-center gap-5 text-sm font-semibold">
             {NAV.map(([id, l]) => (
-              <button key={id} type="button" onClick={() => go(id)} className="opacity-70 hover:opacity-100 transition-opacity py-2">{l}</button>
+              <button key={id} type="button" onClick={() => go(id)} className="opacity-80 hover:opacity-100 transition-opacity py-2">{l}</button>
             ))}
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
@@ -1180,18 +1338,19 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
 
           <div className="max-w-[1400px] mx-auto px-5 sm:px-6 md:px-12 pt-28 sm:pt-36 md:pt-44 pb-16 md:pb-24 grid lg:grid-cols-[1.05fr_.95fr] gap-10 lg:gap-14 items-center">
             <div className="min-w-0">
-              <span className="inline-block px-3 py-1.5 rounded-full text-xs font-bold mb-6 md:mb-8" style={{ backgroundColor: NAVY, color: LAV }}>
+              <SubmissionBadge />
+              <span className="inline-block px-3 py-1.5 rounded-full text-xs font-bold mb-6 md:mb-8" style={{ backgroundColor: NAVY, color: "#fff" }}>
                 Financial intelligence for the informal economy
               </span>
               <h1 className="text-[2.75rem] leading-[1] sm:text-6xl xl:text-7xl font-black tracking-tighter mb-5 md:mb-6">
                 Your business,<br />
                 <span className="sk-shine">understood.</span>
               </h1>
-              <p className="text-lg sm:text-xl md:text-2xl font-semibold mb-5 min-h-[4.25rem] sm:min-h-[3.25rem] md:min-h-[2.25rem]" style={{ color: DEEP }}>
+              <p className="sk-lede text-lg sm:text-xl md:text-2xl font-semibold mb-5 min-h-[4.25rem] sm:min-h-[3.25rem] md:min-h-[2.25rem]" style={{ color: DEEP }}>
                 Making every record provable when{" "}
                 <span key={word} className="sk-pop inline-block sk-shine">{ROTATING[word]}</span>
               </p>
-              <p className="text-base sm:text-lg max-w-xl leading-relaxed mb-8 md:mb-10 font-medium" style={{ color: SLATE }}>
+              <p className="sk-lede text-base sm:text-lg max-w-xl leading-relaxed mb-8 md:mb-10 font-medium" style={{ color: SLATE }}>
                 Turn everyday sales, expenses, stock records and documents into financial intelligence: what the evidence supports, what doesn’t reconcile, and what to do next. Sealed, signed and explained in plain language.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -1207,7 +1366,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
                   Create account
                 </Link>
               </div>
-              <p className="mt-6 text-sm font-medium" style={{ color: SLATE }}>
+              <p className="sk-lede mt-6 text-sm font-medium" style={{ color: SLATE }}>
                 Prefer chat?{" "}
                 <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="font-bold underline decoration-2 underline-offset-4" style={{ color: DEEP }}>
                   Try SCRIBE on Telegram
@@ -1219,7 +1378,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
         </header>
 
         {/* Marquee */}
-        <div aria-hidden="true" className="border-y border-black/10 bg-white/40 backdrop-blur overflow-hidden py-4">
+        <div aria-hidden="true" className="border-y border-black/10 bg-white/70 backdrop-blur overflow-hidden py-4">
           <div className="sk-marquee flex w-max gap-10 whitespace-nowrap text-sm font-semibold">
             {(() => {
               const items = ["Cash sales forgotten", "Stock variances", "Missing receipts", "Edited records", "No lender proof", "Fragmented WhatsApp records", "Duplicate entries", "Broken hash chain", "Cash on hand vs reported"];
@@ -1231,6 +1390,9 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
             })()}
           </div>
         </div>
+
+        {/* COMPETITION SUBMISSION */}
+        <SubmissionBanner />
 
         {/* PILLARS */}
         <section data-theme="light" className="py-16 md:py-24">
@@ -1261,7 +1423,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
           <div className="max-w-[1400px] mx-auto px-5 sm:px-6 md:px-12">
             <Reveal>
               <h2 className="text-3xl md:text-5xl font-black tracking-tight max-w-3xl mb-4">Explore a business. Inspect the evidence.</h2>
-              <p className="text-base md:text-lg max-w-2xl mb-8 md:mb-10" style={{ color: SLATE }}>
+              <p className="sk-lede text-base md:text-lg max-w-2xl mb-8 md:mb-10" style={{ color: SLATE }}>
                 Meet a fictional spaza shop. Pick a record, see the evidence behind it, and ask Themba why it looks the way it does.
               </p>
             </Reveal>
@@ -1273,7 +1435,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
         <section id="moments" data-theme="warm" className="py-16 md:py-24">
           <div className="max-w-[1400px] mx-auto px-5 sm:px-6 md:px-12">
             <Reveal><h2 className="text-3xl md:text-5xl font-black tracking-tight max-w-3xl mb-4">Records break at four predictable moments.</h2></Reveal>
-            <Reveal delay={100}><p className="text-base md:text-lg max-w-2xl mb-8 md:mb-12" style={{ color: SLATE }}>Pick one to see how records fall apart, and how SCRIBE is designed to put them back together.</p></Reveal>
+            <Reveal delay={100}><p className="sk-lede text-base md:text-lg max-w-2xl mb-8 md:mb-12" style={{ color: SLATE }}>Pick one to see how records fall apart, and how SCRIBE is designed to put them back together.</p></Reveal>
             <div className="grid lg:grid-cols-[.8fr_1.2fr] gap-6 md:gap-8 items-start">
               <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible sk-scroll pb-1 -mx-5 px-5 sm:mx-0 sm:px-0" role="group" aria-label="Moments where records break">
                 {MOMENTS.map((m, idx) => {
@@ -1284,14 +1446,14 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
                       className="flex items-center gap-3 md:gap-4 text-left rounded-2xl px-4 md:px-5 py-3.5 md:py-4 border transition-all duration-300 lg:hover:translate-x-1 shrink-0 lg:shrink min-h-[52px]"
                       style={on
                         ? { backgroundColor: NAVY, color: "#fff", borderColor: NAVY }
-                        : { backgroundColor: "rgba(255,255,255,.6)", borderColor: "rgba(20,23,63,.1)" }}>
+                        : { backgroundColor: "rgba(255,255,255,.88)", borderColor: "rgba(20,23,63,.15)" }}>
                       <Icon size={22} color={on ? LAV : DEEP} className="shrink-0" />
                       <span className="font-bold whitespace-nowrap lg:whitespace-normal">{m.title}</span>
                     </button>
                   );
                 })}
               </div>
-              <div key={moment} className="sk-pop rounded-3xl bg-white/80 backdrop-blur border border-black/10 shadow-xl p-6 md:p-10 grid md:grid-cols-2 gap-6 md:gap-8" aria-live="polite">
+              <div key={moment} className="sk-pop rounded-3xl bg-white/95 backdrop-blur border border-black/10 shadow-xl p-6 md:p-10 grid md:grid-cols-2 gap-6 md:gap-8" aria-live="polite">
                 <div>
                   <p className="text-sm font-bold mb-2" style={{ color: VERDICT.BROKEN.c }}>Where it breaks</p>
                   <p className="text-base md:text-lg leading-relaxed">{M.scam}</p>
@@ -1309,7 +1471,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
         <section id="how" data-theme="mint" className="py-16 md:py-24">
           <div className="max-w-[1100px] mx-auto px-5 sm:px-6 md:px-12">
             <Reveal><h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Capture. Structure. Reconcile. Explain. Verify.</h2></Reveal>
-            <Reveal delay={100}><p className="text-base md:text-lg mb-10 md:mb-14 max-w-2xl" style={{ color: SLATE }}>Everything that decides is a fixed rule you can test. The AI only explains.</p></Reveal>
+            <Reveal delay={100}><p className="sk-lede text-base md:text-lg mb-10 md:mb-14 max-w-2xl" style={{ color: SLATE }}>Everything that decides is a fixed rule you can test. The AI only explains.</p></Reveal>
             <div ref={howRef} className="relative pl-11 md:pl-16">
               <div className="absolute left-[15px] md:left-[23px] top-2 bottom-2 w-0.5 bg-black/10" />
               <div ref={lineRef} className="absolute left-[15px] md:left-[23px] top-2 bottom-2 w-0.5 origin-top" style={{ backgroundColor: DEEP, transform: "scaleY(0)" }} />
@@ -1323,9 +1485,9 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
                         </span>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-1">
                           <h3 className="text-xl md:text-2xl font-bold">{s.h}</h3>
-                          <Pill color={DEEP} bg="rgba(75,79,201,.12)">{s.tag}</Pill>
+                          <Pill color={DEEP} bg="rgba(75,79,201,.14)">{s.tag}</Pill>
                         </div>
-                        <p className="text-base md:text-lg max-w-xl" style={{ color: SLATE }}>{s.d}</p>
+                        <p className="sk-lede text-base md:text-lg max-w-xl" style={{ color: SLATE }}>{s.d}</p>
                       </div>
                     </Reveal>
                   </li>
@@ -1334,7 +1496,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
             </div>
             <Reveal delay={100}>
               <div className="mt-12 md:mt-16 grid md:grid-cols-2 gap-4">
-                <div className="rounded-2xl bg-white/85 border border-black/10 p-5 md:p-6">
+                <div className="rounded-2xl bg-white/95 border border-black/10 p-5 md:p-6">
                   <p className="text-sm font-black mb-3" style={{ color: VERDICT.SEALED.c }}>What a sealed record shows</p>
                   <ul className="space-y-2 text-sm md:text-base">
                     {["It hasn’t changed since it was saved.", "Its numbers were calculated by code, not by AI.", "Which evidence tier it sits in."].map((x) => (
@@ -1342,7 +1504,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-2xl bg-white/60 border border-dashed border-black/25 p-5 md:p-6">
+                <div className="rounded-2xl bg-white/85 border border-dashed border-black/30 p-5 md:p-6">
                   <p className="text-sm font-black mb-3" style={{ color: VERDICT.BROKEN.c }}>What it does not show</p>
                   <ul className="space-y-2 text-sm md:text-base">
                     {["That the sale or expense really happened.", "That a payment arrived or a loan will be approved.", "That a business is creditworthy."].map((x) => (
@@ -1360,7 +1522,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
           <div className="max-w-[1100px] mx-auto px-5 sm:px-6 md:px-12">
             <Reveal>
               <h2 className="text-3xl md:text-5xl font-black tracking-tight max-w-3xl mb-4">SCRIBE works on its own. Connections make it stronger.</h2>
-              <p className="text-base md:text-lg max-w-2xl mb-10 md:mb-12" style={{ color: SLATE }}>
+              <p className="sk-lede text-base md:text-lg max-w-2xl mb-10 md:mb-12" style={{ color: SLATE }}>
                 A preview of the proposed POS, payments, supplier and accounting connections, shown with synthetic data. Nothing here is connected yet.
               </p>
             </Reveal>
@@ -1374,7 +1536,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
           <div className="max-w-[1400px] mx-auto px-5 sm:px-6 md:px-12 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <Reveal>
               <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-6">Themba turns a number into a plan.</h2>
-              <p className="text-base md:text-lg leading-relaxed mb-8" style={{ color: SLATE }}>SCRIBE computes the numbers. Themba explains what they mean, in plain language, grounded in your actual records.</p>
+              <p className="sk-lede text-base md:text-lg leading-relaxed mb-8" style={{ color: SLATE }}>SCRIBE computes the numbers. Themba explains what they mean, in plain language, grounded in your actual records.</p>
               <ul className="space-y-4">
                 {[
                   "Explains which records drove the number.",
@@ -1398,7 +1560,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
           <div className="max-w-[1400px] mx-auto px-5 sm:px-6 md:px-12">
             <Reveal>
               <h2 className="text-3xl md:text-5xl font-black tracking-tight max-w-3xl mb-4">Built for money confidence and work readiness.</h2>
-              <p className="text-base md:text-lg max-w-2xl mb-10 md:mb-12" style={{ color: SLATE }}>
+              <p className="sk-lede text-base md:text-lg max-w-2xl mb-10 md:mb-12" style={{ color: SLATE }}>
                 People who earn irregularly run real businesses, but leave records nobody can check. SCRIBE turns that activity into evidence they can use. Each point shows whether it exists today.
               </p>
             </Reveal>
@@ -1407,7 +1569,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
                 const Icon = col.icon;
                 return (
                   <Reveal key={col.head} delay={idx * 120}>
-                    <div className="h-full rounded-3xl bg-white/85 backdrop-blur border border-black/10 shadow-lg p-6 md:p-8">
+                    <div className="h-full rounded-3xl bg-white/95 backdrop-blur border border-black/10 shadow-lg p-6 md:p-8">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="h-11 w-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: NAVY }}><Icon size={22} color={LAV} /></div>
                         <h3 className="text-xl md:text-2xl font-black">{col.head}</h3>
@@ -1453,7 +1615,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-12">
               {TRUST.map(([Icon, h, d], idx) => (
                 <Reveal key={h} delay={(idx % 3) * 100}>
-                  <div className="border-t border-black/15 py-6 md:py-7 group">
+                  <div className="border-t border-black/20 py-6 md:py-7 group">
                     <Icon size={24} color={DEEP} className="mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6" />
                     <h3 className="text-lg font-bold mb-1">{h}</h3>
                     <p style={{ color: SLATE }}>{d}</p>
@@ -1465,20 +1627,20 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
         </section>
 
         {/* 05 · MEET CODE BLOODED */}
-        <section id="team" data-theme="dark" className="py-16 md:py-24" style={{ color: "#E9EBFF" }}>
+        <section id="team" data-theme="dark" className="py-16 md:py-24" style={{ color: "#F2F3FF" }}>
           <div className="max-w-[1400px] mx-auto px-5 sm:px-6 md:px-12">
             <Reveal>
               <div className="mb-10 md:mb-14">
-                <p className="text-xs font-semibold border px-4 py-2 rounded-full w-fit mb-5" style={{ color: LAV, borderColor: "rgba(169,174,255,.3)" }}>Team CODE BLOODED</p>
+                <p className="text-xs font-semibold border px-4 py-2 rounded-full w-fit mb-5" style={{ color: "#D5D8FF", borderColor: "rgba(169,174,255,.5)" }}>Team CODE BLOODED</p>
                 <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">Built by CODE BLOODED</h2>
-                <p className="text-lg max-w-xl" style={{ color: LAV }}>Three founders. One mission: make business intelligence more accessible.</p>
+                <p className="text-lg max-w-xl" style={{ color: "#D5D8FF" }}>Three founders. One mission: make business intelligence more accessible.</p>
               </div>
             </Reveal>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
               {TEAM.map((m, idx) => (
                 <Reveal key={m.name} delay={idx * 90}>
                   <Tilt max={6} className="h-full">
-                    <div className="border border-white/5 rounded-2xl p-6 md:p-8 hover:border-[#A9AEFF]/50 transition-colors duration-300 group h-full flex flex-col" style={{ backgroundColor: "#0E1130" }}>
+                    <div className="border border-white/10 rounded-2xl p-6 md:p-8 hover:border-[#A9AEFF]/60 transition-colors duration-300 group h-full flex flex-col" style={{ backgroundColor: "#0E1130" }}>
                       <div
                         className="w-14 h-14 rounded-xl border border-white/10 flex items-center justify-center text-xl font-black mb-6 transition-all duration-300 group-hover:scale-110 group-hover:!bg-[#A9AEFF] group-hover:!text-[#14173F]"
                         style={{ backgroundColor: NAVY, color: LAV }}>
@@ -1486,7 +1648,7 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
                       </div>
                       <h3 className="text-xl font-bold mb-1">{m.name}</h3>
                       <p className="text-sm font-semibold mb-4" style={{ color: LAV }}>{m.role}</p>
-                      <p className="text-sm leading-relaxed mb-5 flex-1" style={{ color: "rgba(169,174,255,.85)" }}>{m.desc}</p>
+                      <p className="text-sm leading-relaxed mb-5 flex-1" style={{ color: "#D5D8FF" }}>{m.desc}</p>
                       <p className="text-sm font-semibold pt-4 border-t border-white/10"><span style={{ color: LAV }}>Focus: </span>{m.focus}</p>
                     </div>
                   </Tilt>
@@ -1500,11 +1662,11 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
         <section id="faq" data-theme="light" className="py-16 md:py-24">
           <div className="max-w-[900px] mx-auto px-5 sm:px-6 md:px-12">
             <Reveal><h2 className="text-3xl md:text-5xl font-black tracking-tight mb-8 md:mb-10">Questions we expect.</h2></Reveal>
-            <div className="border-t border-black/15">
+            <div className="border-t border-black/20 bg-white/80 rounded-2xl px-4 md:px-6">
               {FAQ.map(([q, a], idx) => {
                 const open = faq === idx;
                 return (
-                  <div key={q} className="border-b border-black/15">
+                  <div key={q} className="border-b border-black/15 last:border-b-0">
                     <h3>
                       <button type="button" aria-expanded={open} aria-controls={`faq-${idx}`} onClick={() => setFaq(open ? -1 : idx)}
                         className="w-full flex items-center justify-between gap-4 md:gap-6 py-5 text-left min-h-[56px]">
@@ -1522,8 +1684,11 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
           </div>
         </section>
 
+        {/* CHALLENGES + SOLUTION */}
+        <ChallengesSection />
+
         {/* FOOTER */}
-        <footer data-theme="dark" className="py-16 md:py-20 px-5 text-center" style={{ color: "#E9EBFF" }}>
+        <footer data-theme="dark" className="py-16 md:py-20 px-5 text-center" style={{ color: "#F2F3FF" }}>
           <div className="flex justify-center items-center gap-3 mb-5">
             <div className="w-8 h-8 grid grid-cols-2 gap-0.5 rotate-45" aria-hidden="true">
               <div className="rounded-tl-full rounded-bl-full" style={{ backgroundColor: LAV }} />
@@ -1533,25 +1698,25 @@ export default function LandingClient({ demoBizId }: { demoBizId: string | null 
             </div>
             <span className="text-xl font-black tracking-[0.18em]">SCRIBE</span>
           </div>
-          <p className="mb-2 font-medium" style={{ color: LAV }}>Your business, understood.</p>
-          <p className="mb-8 font-medium" style={{ color: LAV }}>Build records. Prove them.</p>
+          <p className="mb-2 font-medium" style={{ color: "#D5D8FF" }}>Your business, understood.</p>
+          <p className="mb-8 font-medium" style={{ color: "#D5D8FF" }}>Build records. Prove them.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center max-w-sm sm:max-w-none mx-auto">
             <DemoCTA demoBizId={demoBizId}
               className="font-bold py-3.5 px-8 rounded-xl hover:bg-white hover:!text-[#14173F] transition-colors inline-flex items-center justify-center gap-2 shadow-lg min-h-[48px]"
               style={{ backgroundColor: INDIGO, color: "#fff" }}>
               Explore the demo <ArrowUpRight size={18} />
             </DemoCTA>
-            <Link href="/signup" className="font-bold py-3.5 px-8 rounded-xl border border-white/30 hover:bg-white/10 transition-colors inline-flex items-center justify-center min-h-[48px]">
+            <Link href="/signup" className="font-bold py-3.5 px-8 rounded-xl border border-white/40 hover:bg-white/10 transition-colors inline-flex items-center justify-center min-h-[48px]">
               Create account
             </Link>
           </div>
-          <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-semibold" style={{ color: LAV }}>
+          <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-semibold" style={{ color: "#D5D8FF" }}>
             <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="py-2 hover:text-white">Telegram bot</a>
             <button type="button" onClick={() => setWa(true)} className="py-2 hover:text-white">WhatsApp (coming soon)</button>
             <Link href="/login" className="py-2 hover:text-white">Sign in</Link>
           </div>
-          <p className="mt-8 text-xs max-w-xl mx-auto" style={{ color: "rgba(169,174,255,.75)" }}>
-            Prototype build by Team CODE BLOODED. Synthetic data only. Legal and privacy positions are provisional. WhatsApp and POS integrations are planned and not yet available.
+          <p className="mt-8 text-xs max-w-xl mx-auto pb-8" style={{ color: "rgba(213,216,255,.92)" }}>
+            Competition submission: FNB App of the Year 2026. Prototype build by Team CODE BLOODED. Synthetic data only. Legal and privacy positions are provisional. WhatsApp and POS integrations are planned and not yet available.
           </p>
         </footer>
       </main>

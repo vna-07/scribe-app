@@ -23,7 +23,7 @@ SCRIBE turns fragmented business records into structured, tamper-evident financi
 ![Track](https://img.shields.io/badge/Track-Youth%20Entrepreneurship%20%26%20Small--Business%20Growth-16a34a)
 ![Status](https://img.shields.io/badge/Status-Working%20MVP-f59e0b)
 
-**[At a glance](#at-a-glance)** · **[Try it](#try-scribe)** · **[Demo scripts](#demo-scripts-60-seconds-each)** · **[Problem](#the-problem)** · **[Solution](#the-solution)** · **[Features](#what-works-today)** · **[Ledger](#data-integrity-the-tamper-evident-ledger)** · **[Themba](#themba-the-business-copilot)** · **[Architecture](#architecture)** · **[Evidence](#testing-and-validation)** · **[Cost](#running-cost)** · **[Roadmap](#roadmap)** · **[Setup](#setup-and-environment)** · **[Contact](#team-and-contact)**
+**[At a glance](#at-a-glance)** · **[Try it](#try-scribe)** · **[Demo scripts](#demo-scripts-60-seconds-each)** · **[Problem](#the-problem)** · **[Solution](#the-solution)** · **[Features](#what-works-today)** · **[Ledger](#data-integrity-the-tamper-evident-ledger)** · **[Investigations](#investigations--case-management)** · **[Themba](#themba-the-business-copilot)** · **[Architecture](#architecture)** · **[Evidence](#testing-and-validation)** · **[Cost](#running-cost)** · **[Roadmap](#roadmap)** · **[Setup](#setup-and-environment)** · **[Contact](#team-and-contact)**
 
 </div>
 
@@ -40,7 +40,7 @@ SCRIBE turns fragmented business records into structured, tamper-evident financi
 | **Design principle** | *AI reads, code decides, the trader confirms, the ledger remembers.* |
 | **Built for** | FNB App of the Year Hackathon 2026, Youth Entrepreneurship & Small-Business Growth track. |
 | **Version** | 0.9.0 (see [Version history](#version-history)) |
-| **Status** | Working MVP, live and deployed, running on a real (anonymised) spaza shop dataset. Not a finished product, and this README says where the limits are. |
+| **Status** | Working MVP, live and deployed. Features real anonymised data, a live Telegram bot, interactive investigation cases, and a comprehensive integration roadmap. |
 
 > *Most tools record what a business says happened. SCRIBE shows what the evidence supports, what doesn't reconcile, and what still needs to be verified.*
 
@@ -59,25 +59,26 @@ SCRIBE turns fragmented business records into structured, tamper-evident financi
 9. [Data integrity: the tamper-evident ledger](#data-integrity-the-tamper-evident-ledger)
 10. [Reconciliation and the financial engine](#reconciliation-and-the-financial-engine)
 11. [Themba's recommendation engine](#thembas-recommendation-engine)
-12. [Themba, the business copilot](#themba-the-business-copilot)
-13. [Document intelligence and voice capture](#document-intelligence-and-voice-capture)
-14. [Business Launch Studio and Growth Studio](#business-launch-studio-and-growth-studio)
-15. [Architecture](#architecture)
-16. [Data model](#data-model)
-17. [Security and privacy](#security-and-privacy)
-18. [Testing and validation](#testing-and-validation)
-19. [Running cost](#running-cost)
-20. [Development story and real-world engagement](#development-story-and-real-world-engagement)
-21. [Impact, limitations and responsible AI](#impact-limitations-and-responsible-ai)
-22. [Roadmap](#roadmap)
-23. [Setup and environment](#setup-and-environment)
-24. [Browser support](#browser-support)
-25. [Deployment and rollback](#deployment-and-rollback)
-26. [API reference](#api-reference)
-27. [Version history](#version-history)
-28. [Troubleshooting](#troubleshooting)
-29. [FAQ for reviewers](#faq-for-reviewers)
-30. [Team and contact](#team-and-contact)
+12. [Investigations & Case Management](#investigations--case-management)
+13. [Themba, the business copilot](#themba-the-business-copilot)
+14. [Document intelligence and voice capture](#document-intelligence-and-voice-capture)
+15. [Business Launch Studio and Growth Studio](#business-launch-studio-and-growth-studio)
+16. [Architecture](#architecture)
+17. [Data model](#data-model)
+18. [Security and privacy](#security-and-privacy)
+19. [Testing and validation](#testing-and-validation)
+20. [Running cost](#running-cost)
+21. [Development story and real-world engagement](#development-story-and-real-world-engagement)
+22. [Impact, limitations and responsible AI](#impact-limitations-and-responsible-ai)
+23. [Roadmap](#roadmap)
+24. [Setup and environment](#setup-and-environment)
+25. [Browser support](#browser-support)
+26. [Deployment and rollback](#deployment-and-rollback)
+27. [API reference](#api-reference)
+28. [Version history](#version-history)
+29. [Troubleshooting](#troubleshooting)
+30. [FAQ for reviewers](#faq-for-reviewers)
+31. [Team and contact](#team-and-contact)
 
 ---
 
@@ -344,7 +345,8 @@ SCRIBE is not an OCR demo and not a ledger demo. The differentiator is how the p
 | **Themba, a grounded copilot** | Context-aware, refuses unsafe requests, proposes actions that need approval. | ✅ Working |
 | **Planning and funding preparation** | Start, Expand and Find Funding modes, a reinvestment simulator, a South African funding directory. | ✅ Working |
 | **Trust Centre** | A single place explaining integrity, privacy and what the seal does and does not prove. | ✅ Working |
-| **Telegram capture channel** | Send records through a chat app people already use. | 🧪 Prototype |
+| **Telegram Bot (Live)** | A fully interactive bot with a 6-action menu: check docs, check messages, record transactions, view insights, investigations, and ask Themba. | ✅ Working |
+| **Integration Centre** | An interactive, 4-step POS roadmap demo that clearly separates Standalone SCRIBE from Connected SCRIBE. | ✅ Working |
 | **Adaptive record structures** | Business-specific columns and vocabulary, learned per business. | 🧭 Planned (UI mockup built) |
 | **WhatsApp Business integration** | The channel most traders actually live in. | 🧭 Planned |
 | **Consented bank-feed verification tier** | Corroborate records against bank data with the owner's consent. | 🧭 Planned |
@@ -370,10 +372,14 @@ SCRIBE is not an OCR demo and not a ledger demo. The differentiator is how the p
 <summary><b>🧠 Themba, the AI business assistant</b></summary>
 
 - Multi-provider gateway: Google Gemini first, Groq Llama 3.3 as fallback, then a deterministic fallback if every provider is down.
-- Context-aware: tone and content adapt to the tab you are on (Stock, Growth, Settings).
-- Grounded: figures come from the deterministic engine, never from the model's imagination.
-- Agentic with consent: proposes `create_task` and `draft_message` as cards that need explicit approval.
-- Safe: pre-flight refusals for credit decisions, theft accusations and regulated financial advice.
+- **Three distinct modes:** 
+  - **BI Mode:** Explains the deterministic engine's calculations and cites record IDs.
+  - **Growth Mode:** Proposes specific tasks, purchase orders, and actionable business advice.
+  - **Assistant Mode:** Drafts WhatsApp messages, emails, and supplier communications.
+- Context-aware: Tone and content adapt to the active mode and the tab you are on.
+- Grounded: Figures come from the deterministic engine, never from the model's imagination.
+- Agentic with consent: Proposes `create_task` and `draft_message` as cards that need explicit approval.
+- Safe: Pre-flight refusals for credit decisions, theft accusations and regulated financial advice.
 
 </details>
 
@@ -421,6 +427,26 @@ SCRIBE is not an OCR demo and not a ledger demo. The differentiator is how the p
 </details>
 
 <details>
+<summary><b>🔌 Integration Centre (POS Roadmap)</b></summary>
+
+- A dedicated dashboard tab that explores the future of SCRIBE.
+- **Interactive 4-Step Demo:** Before connection → Connect sales data → Reconcile and explain → Take action.
+- **Clear Boundaries:** Explicitly states that a POS records what the system says happened, not proof that cash reached the bank.
+- **Roadmap Visual:** Traces the journey from Standalone Foundation to Automated API Connections.
+- **Chat Apps Section:** Links directly to the live Telegram Bot and shows a mock "Coming Soon" modal for WhatsApp.
+
+</details>
+
+<details>
+<summary><b>🖥️ Interactive Landing Page</b></summary>
+
+- **LiveCheck Simulator:** Visitors can click through a recorded sale, a tampered record, and a stock variance directly on the homepage.
+- **ChatDemo:** An animated Themba chat that types out a grounded explanation of a profit drop.
+- **Founder Bios:** A clean, professional section introducing Team Code Blooded and their specific disciplines.
+
+</details>
+
+<details>
 <summary><b>📦 Inventory, suppliers, sales and expenses</b></summary>
 
 - Product catalogue with SKU, unit, cost and selling price, and reorder thresholds.
@@ -460,7 +486,7 @@ mindmap
       PDF
       Voice
       Manual entry
-      Telegram prototype
+      Telegram bot live
     Trust
       SHA-256 hash chain
       Ed25519 signatures
@@ -472,12 +498,14 @@ mindmap
       Revenue ranges
       Consistency Score
       Recommendations
+      Investigation cases
       Completeness
     Act
       Themba copilot
       Tasks and purchase orders
       Reinvestment simulator
       Funding directory
+      Integration Centre
     Prove
       Printable statement
       QR and hash
@@ -591,6 +619,19 @@ The recommendation engine is the signature feature of the Intelligence view. It 
 
 ---
 
+## Investigations & Case Management
+
+SCRIBE is not just a passive ledger; it actively helps traders investigate anomalies. The **Investigations** tab turns data discrepancies into structured, actionable cases.
+
+| Capability | Description |
+|---|---|
+| **8 Core Scenarios** | Pre-seeded synthetic cases demonstrate Legitimate Payments, Amount Mismatches, Altered Documents, Supplier Bank-Detail Changes (BEC fraud), Duplicates, and Stock Variances. |
+| **Evidence Timeline** | Every case has a chronological timeline showing when the document was extracted, when the anomaly was flagged, and the current review status. |
+| **Themba's Analysis** | Each case includes a deterministic finding from the engine (e.g., *"Receipt shows R450, but bank SMS shows R540"*). |
+| **Actionable Resolution** | Users can click "Ask Themba about this" to jump into the chat, or "Mark Resolved" to close the case. |
+
+---
+
 ## Themba, the business copilot
 
 Themba helps owners ask better questions about their own business. It is deliberately constrained: **AI reads, code decides, the trader confirms.**
@@ -621,7 +662,7 @@ flowchart TD
 | **Consent before action** | Actions are structured cards. Nothing is written until the owner approves. |
 | **Refuses what it should** | Pre-flight checks block credit decisions, theft accusations and regulated financial advice. |
 | **Resilient** | If every AI provider fails, a deterministic fallback still answers from the engine. |
-| **Context-aware** | Tone and content change with the tab, for example Stock versus Growth. |
+| **Context-aware** | Tone and content change with the active mode (BI, Growth, Assistant) and the tab, for example Stock versus Growth. |
 
 ---
 
@@ -688,8 +729,8 @@ Projections rest on **explicit assumptions and the records the business actually
 flowchart TB
     subgraph Clients["User interfaces"]
         WEB["Web app (installable PWA)"]
-        TG["Telegram bot (prototype)"]
-        WA["WhatsApp (planned)"]
+        TG["Telegram bot (Live)"]
+        WA["WhatsApp (Mock UI built)"]
     end
     Clients -->|"HTTPS + httpOnly session cookie"| API
     subgraph API["Next.js API layer"]
@@ -1026,26 +1067,26 @@ flowchart LR
     subgraph NOW["Now: working MVP"]
         N1["Hash-chained, signed ledger"]
         N2["Per-product reconciliation"]
-        N3["Themba copilot and recommendations"]
+        N3["Themba copilot (BI, Growth, Assistant)"]
         N4["Review-first imports and voice"]
-        N5["Launch and Growth Studios"]
+        N5["8 Investigation Cases UI"]
+        N6["Live Telegram Bot"]
+        N7["Integration Centre & Roadmap"]
     end
     subgraph NEXT["Next: validate and harden"]
         X1["OCR and voice accuracy study"]
         X2["Duplicate detection on import"]
         X3["Owner feedback sessions"]
         X4["Native-reviewed isiXhosa, isiZulu, Afrikaans"]
-        X5["Email delivery for password reset"]
-        X6["Self-service account deletion"]
-        X7["Full PDF invoice export"]
+        X5["WhatsApp Business Bot (Mock UI built)"]
+        X6["Email delivery for password reset"]
+        X7["Self-service account deletion"]
     end
     subgraph LATER["Later: reach and trust"]
-        L1["WhatsApp Business integration"]
-        L2["Consented bank-feed verification tier"]
-        L3["Supplier and customer counter-signing"]
-        L4["Adaptive OCR with per-business vocabulary"]
-        L5["Custom ledger column builder"]
-        L6["POS integrations"]
+        L1["Consented bank-feed verification tier"]
+        L2["Supplier and customer counter-signing"]
+        L3["Adaptive OCR with per-business vocabulary"]
+        L4["POS integrations (Live API)"]
     end
     NOW --> NEXT --> LATER
 ```

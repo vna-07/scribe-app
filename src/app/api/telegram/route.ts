@@ -29,8 +29,6 @@ async function answerCallback(callbackQueryId: string) {
   });
 }
 
-// Escape user-controlled text so a case titled "Q3 *leak*" doesn't make
-// Telegram reject the whole sendMessage with 400.
 function escapeMd(s: string) {
   return s.replace(/[_*`\[\]]/g, "\\$&");
 }
@@ -40,6 +38,7 @@ const mainMenu = {
     [{ text: "📄 Check a document", callback_data: "check_doc" }, { text: "💬 Check a message", callback_data: "check_msg" }],
     [{ text: "💰 Record a transaction", callback_data: "record_tx" }, { text: "📊 Business insights", callback_data: "insights" }],
     [{ text: "🔍 My investigations", callback_data: "cases" }, { text: "🤖 Ask Themba", callback_data: "themba" }],
+    [{ text: "🔌 Explore Integrations", callback_data: "integrations" }],
     [{ text: "🚀 Open SCRIBE Workspace", url: WEB_URL }],
     [{ text: "🎭 Enter Demo Mode", callback_data: "demo_mode" }],
   ],
@@ -89,7 +88,7 @@ export async function POST(req: NextRequest) {
     if (body.callback_query) {
       const { id, data, message } = body.callback_query;
       const chatId = String(message.chat.id);
-      await answerCallback(id); // dismiss the spinner immediately
+      await answerCallback(id);
 
       switch (data) {
         case "demo_mode":
@@ -153,6 +152,15 @@ export async function POST(req: NextRequest) {
           );
           break;
 
+        case "integrations":
+          await sendMessage(
+            chatId,
+            "🔌 *Explore Integrations*\n\n" +
+              "We are building connections for POS systems, bank feeds, and supplier imports.\n\n" +
+              `[View the full product roadmap](${WEB_URL}) in the web app.`,
+          );
+          break;
+
         default:
           await sendMessage(chatId, "Unknown action.", mainMenu);
       }
@@ -167,7 +175,6 @@ export async function POST(req: NextRequest) {
     const chatId = String(message.chat.id);
     const text = message.text || "";
 
-    // /start and /menu
     if (text.startsWith("/start") || text === "/menu") {
       await sendMessage(
         chatId,
@@ -179,7 +186,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // /link CODE
     if (text.startsWith("/link")) {
       const code = text.split(/\s+/)[1];
       if (!code || code === "YOUR_CODE") {
@@ -213,7 +219,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // /cases slash command (in addition to the menu button)
     const command = text.split(/\s+/)[0].split("@")[0].toLowerCase();
     if (command === "/cases") {
       const userId = await resolveLinkedUser(chatId);
@@ -225,7 +230,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // Photo (receipt)
     if (message.photo) {
       const userId = await resolveLinkedUser(chatId);
       if (!userId) {
@@ -233,9 +237,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      // Highest-res photo is the last element in message.photo[]
-      // (Fetch via getFile + /file/bot<token>/<path> when the extraction
-      // pipeline ships. For now we just acknowledge.)
       await sendMessage(
         chatId,
         "📸 *Receipt received.*\n\nDocument extraction is coming in the next update — for now the receipt isn't stored.",
@@ -243,7 +244,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // Linked user, free text → Themba stub
     const userId = await resolveLinkedUser(chatId);
     if (userId && text) {
       await sendMessage(
@@ -255,7 +255,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // Not linked, no recognized command → nudge to menu
     await sendMessage(chatId, "I didn't quite catch that. Here is the main menu:", mainMenu);
     return NextResponse.json({ ok: true });
   } catch (error) {

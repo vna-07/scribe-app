@@ -20,6 +20,7 @@ import GrowthTab from "./GrowthTab";
 import ReportsTab from "./ReportsTab";
 import OpportunitiesTab from "./OpportunitiesTab";
 import CasesTab from "./CasesTab";
+import IntegrationsTab from "./IntegrationsTab";
 import GuidedTour from "./GuidedTour";
 import { calculateCompleteness } from "@/lib/completeness";
 import CompletenessCard from "@/components/CompletenessCard";
@@ -36,7 +37,8 @@ type MainTab =
   | "reports"
   | "opportunities"
   | "suppliers"
-  | "cases";
+  | "cases"
+  | "integrations";
 
 export default function DemoDashboard({ initialData }: { initialData: DemoData }) {
   const { setBusinessId, setThembaOpen, setActiveTab } = useApp();
@@ -218,6 +220,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
             { id: "suppliers", label: "Suppliers", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> },
             { id: "intelligence", label: "Intelligence", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg> },
             { id: "cases", label: "Investigations", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> },
+            { id: "integrations", label: "Integrations", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> },
             { id: "tasks", label: "Growth Studio", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg> },
             { id: "opportunities", label: "Launch Studio", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg> },
             { id: "reports", label: "Reports", icon: <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> },
@@ -226,7 +229,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               key={item.id}
               aria-current={mainTab === item.id ? "page" : undefined}
               onClick={() => {
-                if (['overview', 'records', 'tasks', 'stock', 'intelligence', 'cases', 'reports', 'opportunities', 'suppliers'].includes(item.id)) setMainTab(item.id as any);
+                if (['overview', 'records', 'tasks', 'stock', 'intelligence', 'cases', 'integrations', 'reports', 'opportunities', 'suppliers'].includes(item.id)) setMainTab(item.id as any);
                 else alert(`${item.label} module coming soon.`);
               }}
               title={isCollapsed ? item.label : undefined}
@@ -262,7 +265,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
         <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {mainTab === "overview" ? "Molo, Siyanda" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "suppliers" ? "Suppliers" : mainTab === "intelligence" ? "Business Intelligence" : mainTab === "cases" ? "Investigations" : mainTab === "reports" ? "Reports & Exports" : mainTab === "opportunities" ? "Launch Studio" : "Growth Studio"}
+              {mainTab === "overview" ? "Molo, Siyanda" : mainTab === "records" ? "Records & Evidence" : mainTab === "stock" ? "Stock & Inventory" : mainTab === "suppliers" ? "Suppliers" : mainTab === "intelligence" ? "Business Intelligence" : mainTab === "cases" ? "Investigations" : mainTab === "integrations" ? "Integrations" : mainTab === "reports" ? "Reports & Exports" : mainTab === "opportunities" ? "Launch Studio" : "Growth Studio"}
             </h1>
             <p className="text-sm font-semibold text-[#4A4F7A]">{data.businessName} · Week of 19 Oct</p>
           </div>
@@ -662,6 +665,13 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           </div>
         )}
 
+        {/* ─── INTEGRATIONS TAB ─── */}
+        {mainTab === "integrations" && (
+          <div className="flex-1 overflow-auto">
+            <IntegrationsTab />
+          </div>
+        )}
+
         {/* ─── LAUNCH STUDIO TAB ─── */}
         {mainTab === "opportunities" && (
           <div className="flex-1 overflow-auto">
@@ -695,7 +705,7 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
           { id: "themba", label: "Themba", icon: <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> },
           { id: "more", label: "More", icon: <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg> }
         ].map((tab) => {
-          const isActive = mainTab === tab.id || (tab.id === "more" && ["intelligence", "cases", "tasks", "reports", "opportunities"].includes(mainTab));
+          const isActive = mainTab === tab.id || (tab.id === "more" && ["intelligence", "cases", "tasks", "reports", "opportunities", "integrations"].includes(mainTab));
           return (
             <button
               key={tab.id}
@@ -955,6 +965,10 @@ export default function DemoDashboard({ initialData }: { initialData: DemoData }
               <button onClick={() => { setMainTab("cases"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 Investigations
+              </button>
+              <button onClick={() => { setMainTab("integrations"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                Integrations
               </button>
               <button onClick={() => { setMainTab("tasks"); setShowMore(false); }} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#F1F2FF] dark:hover:bg-[#2A3070] font-bold text-sm text-[#14173F] dark:text-white transition-colors">
                 <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
